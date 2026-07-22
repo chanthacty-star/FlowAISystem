@@ -1,0 +1,265 @@
+@* @page "/admin-dashboard/ai-knowledge/edit/{Id:int}"
+@using FlowAISystem.Application.DTOs.AI.Category
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.Interfaces
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IAIKnowledgeManagementService AIKnowledgeService
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Edit AI Knowledge
+</PageTitle>
+
+
+<h2 class="mb-4">
+    Edit AI Knowledge
+</h2>
+
+
+@if (model == null)
+{
+    <p>
+        Loading...
+    </p>
+}
+else
+{
+    <AIKnowledgeForm 
+        Model="model"
+        ButtonText="Update Knowledge"
+        OnValidSubmit="UpdateKnowledge" />
+}
+
+
+
+@code
+{
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+    private UpdateAIKnowledgeDto? model;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var knowledge =
+            await AIKnowledgeService
+                .GetByIdAsync(Id);
+
+
+
+        if (knowledge == null)
+        {
+            Navigation.NavigateTo(
+                "/admin-dashboard/ai-knowledge");
+
+            return;
+        }
+
+
+
+        model = new UpdateAIKnowledgeDto
+        {
+
+            Id = knowledge.Id,
+
+            Question = knowledge.Question,
+
+            Keywords = knowledge.Keywords,
+
+            Answer = knowledge.Answer,
+
+            CategoryId = knowledge.CategoryId
+
+        };
+
+    }
+
+
+
+
+    private async Task UpdateKnowledge()
+    {
+
+        if (model == null)
+            return;
+
+
+
+        await AIKnowledgeService
+            .UpdateAsync(model);
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-knowledge");
+
+    }
+
+} *@
+
+
+@page "/admin-dashboard/ai-knowledge/edit/{Id:int}"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.DTOs.AI.Category
+@using FlowAISystem.Application.Interfaces
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IAIKnowledgeManagementService AIKnowledgeService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Edit AI Knowledge
+</PageTitle>
+
+
+
+<div class="container mt-4">
+
+
+    <h2 class="mb-4">
+        ✏️ Edit AI Knowledge
+    </h2>
+
+
+
+    @if (model == null)
+    {
+        <div class="alert alert-info">
+
+            Loading knowledge...
+
+        </div>
+    }
+    else
+    {
+
+        <AIKnowledgeForm
+            Model="model"
+            Categories="categories"
+            ButtonText="Update Knowledge"
+            OnValidSubmit="UpdateKnowledge" />
+
+    }
+
+
+</div>
+
+
+
+
+
+@code
+{
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+    private UpdateAIKnowledgeDto? model;
+
+
+
+    private List<AICategoryDto> categories = new();
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        // Load Categories
+        categories =
+            await AIKnowledgeService
+                .GetCategoriesAsync();
+
+
+
+        // Load Knowledge
+        var knowledge =
+            await AIKnowledgeService
+                .GetByIdAsync(Id);
+
+
+
+        if (knowledge == null)
+        {
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/ai-knowledge");
+
+            return;
+
+        }
+
+
+
+        model =
+            new UpdateAIKnowledgeDto
+            {
+
+                Id = knowledge.Id,
+
+
+                Question =
+                    knowledge.Question,
+
+
+                Keywords =
+                    knowledge.Keywords,
+
+
+                Answer =
+                    knowledge.Answer,
+
+
+                CategoryId =
+                    knowledge.CategoryId
+
+            };
+
+    }
+
+
+
+
+
+
+
+    private async Task UpdateKnowledge()
+    {
+
+        if (model == null)
+            return;
+
+
+
+        await AIKnowledgeService
+            .UpdateAsync(model);
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-knowledge");
+
+    }
+
+}
+

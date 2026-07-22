@@ -1,0 +1,877 @@
+@page "/student-dashboard/student-profile"
+
+@inject IUserService UserService
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Components.Forms
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+
+@attribute [Authorize(Roles="Student")]
+
+
+@inject IStudentService StudentService
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+
+<PageTitle>
+    Student Profile
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    🎓 Student Profile
+</h3>
+
+
+
+@if(profile == null)
+{
+    <div class="alert alert-info">
+        Loading profile...
+    </div>
+}
+else
+{
+
+<div class="row">
+
+
+    <!-- Profile Card -->
+
+    <div class="col-md-4">
+
+
+        <div class="card shadow">
+
+
+            <div class="card-body text-center">
+
+
+                @if(string.IsNullOrEmpty(profile.ProfileImage))
+                {
+                    <img src="/images/default-user.png"
+                         class="rounded-circle mb-3"
+                         width="150"
+                         height="150" />
+                }
+                else
+                {
+                    <img src="@profile.ProfileImage"
+                         class="rounded-circle mb-3"
+                         width="150"
+                         height="150" />
+                }
+
+
+
+                <h4>
+                    @profile.FirstName @profile.LastName
+                </h4>
+
+
+                <p class="text-muted">
+                    @profile.DepartmentName
+                </p>
+
+
+
+                <InputFile OnChange="UploadImage"
+                    class="form-control mt-2" />
+
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <!-- Information -->
+
+    <div class="col-md-8">
+
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+
+                <h5>
+                    Personal Information
+                </h5>
+
+
+                <hr />
+
+
+
+                <p>
+                    <strong>
+                        Student Number:
+                    </strong>
+
+                    @profile.StudentNumber
+                </p>
+
+
+
+                <p>
+                    <strong>
+                        Name:
+                    </strong>
+
+                    @profile.FirstName @profile.LastName
+                </p>
+
+
+
+                <p>
+                    <strong>
+                        Email:
+                    </strong>
+
+                    @profile.Email
+                </p>
+
+
+
+                <p>
+                    <strong>
+                        Phone:
+                    </strong>
+
+                    @profile.PhoneNumber
+                </p>
+
+
+
+                <p>
+                    <strong>
+                        Gender:
+                    </strong>
+
+                    @profile.Gender
+                </p>
+
+
+
+                <p>
+                    <strong>
+                        Date Of Birth:
+                    </strong>
+
+                    @profile.DateOfBirth
+                </p>
+
+
+            </div>
+
+        </div>
+
+
+
+        <br />
+
+
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+
+                <h5>
+                    Academic Information
+                </h5>
+
+
+                <hr />
+
+
+
+                <p>
+                    <strong>
+                        Department:
+                    </strong>
+
+                    @profile.DepartmentName
+                </p>
+
+
+
+                <p>
+                    <strong>
+                        Enrollment Date:
+                    </strong>
+
+                    @profile.EnrollmentDate
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <br />
+
+
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+
+                <h5>
+                    Account Information
+                </h5>
+
+
+                <hr />
+
+
+
+                <p>
+                    <strong>
+                        Username:
+                    </strong>
+
+                    @profile.Username
+                </p>
+
+
+
+                <p>
+                    <strong>
+                        Status:
+                    </strong>
+
+                    <button class="btn btn-warning mt-3"
+                            @onclick="ShowPasswordForm">
+
+                        🔐 Change Password
+
+                    </button>
+
+
+                    @if(profile.AccountActive)
+                    {
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            Disabled
+                        </span>
+                    }
+                    @if(showPasswordForm)
+                    {
+                        <div class="card shadow mt-3">
+
+                            <div class="card-body">
+
+                                <h5>
+                                    Change Password
+                                </h5>
+
+                                <hr />
+
+
+                                <input type="password"
+                                       class="form-control mb-2"
+                                       placeholder="Current Password"
+                                       @bind="currentPassword" />
+
+
+                                <input type="password"
+                                       class="form-control mb-2"
+                                       placeholder="New Password"
+                                       @bind="newPassword" />
+
+
+                                <input type="password"
+                                       class="form-control mb-2"
+                                       placeholder="Confirm Password"
+                                       @bind="confirmPassword" />
+
+
+                                <button class="btn btn-success"
+                                        @onclick="ChangePassword">
+
+                                    Save Password
+
+                                </button>
+
+
+                                @if(!string.IsNullOrEmpty(passwordMessage))
+                                {
+                                    <div class="alert alert-info mt-3">
+
+                                        @passwordMessage
+
+                                    </div>
+                                }
+
+                            </div>
+
+                        </div>
+                    }
+
+
+                </p>
+
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+}
+
+
+
+
+@code {
+
+
+    private StudentProfileDto? profile;
+
+
+    private bool showPasswordForm = false;
+
+
+    private string currentPassword = string.Empty;
+
+
+    private string newPassword = string.Empty;
+
+
+    private string confirmPassword = string.Empty;
+
+
+    private string passwordMessage = string.Empty;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+        var user =
+            authState.User;
+
+
+
+        var userIdClaim =
+            user.FindFirst("sub");
+
+
+
+        if(userIdClaim != null)
+        {
+
+            int userId =
+                int.Parse(userIdClaim.Value);
+
+
+
+            profile =
+                await StudentService
+                    .GetProfileAsync(userId);
+
+        }
+
+    }
+
+
+
+
+
+
+
+    private async Task UploadImage(
+        InputFileChangeEventArgs e)
+    {
+
+        if(profile == null)
+            return;
+
+
+
+        if(!profile.UserId.HasValue)
+            return;
+
+
+
+        var file =
+            e.File;
+
+
+
+        if(file == null)
+            return;
+
+
+
+        var extension =
+            Path.GetExtension(file.Name);
+
+
+
+        var fileName =
+            $"student_{profile.Id}{extension}";
+
+
+
+        var folder =
+            Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "images",
+                "students");
+
+
+
+        if(!Directory.Exists(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+
+
+        var filePath =
+            Path.Combine(
+                folder,
+                fileName);
+
+
+
+        await using FileStream fs =
+            new(
+                filePath,
+                FileMode.Create);
+
+
+
+        await file.OpenReadStream(
+                5 * 1024 * 1024)
+            .CopyToAsync(fs);
+
+
+
+        var imagePath =
+            $"/images/students/{fileName}";
+
+
+
+        await StudentService
+            .UpdateProfileImageAsync(
+                profile.UserId.Value,
+                imagePath);
+
+
+
+        profile.ProfileImage =
+            imagePath;
+
+    }
+
+
+
+
+
+
+
+    private void ShowPasswordForm()
+    {
+        showPasswordForm = true;
+    }
+
+
+
+
+
+
+
+    private async Task ChangePassword()
+    {
+
+        if(profile == null)
+            return;
+
+
+
+        if(!profile.UserId.HasValue)
+        {
+
+            passwordMessage =
+                "Student does not have a user account.";
+
+            return;
+
+        }
+
+
+
+        var dto =
+            new ChangePasswordDto
+            {
+
+                UserId =
+                    profile.UserId.Value,
+
+
+                CurrentPassword =
+                    currentPassword,
+
+
+                NewPassword =
+                    newPassword,
+
+
+                ConfirmPassword =
+                    confirmPassword
+
+            };
+
+
+
+        var result =
+            await UserService
+                .ChangePasswordAsync(dto);
+
+
+
+
+        if(result)
+        {
+
+            passwordMessage =
+                "Password changed successfully.";
+
+
+            currentPassword =
+                string.Empty;
+
+
+            newPassword =
+                string.Empty;
+
+
+            confirmPassword =
+                string.Empty;
+
+        }
+        else
+        {
+
+            passwordMessage =
+                "Password change failed.";
+
+        }
+
+    }
+
+}
+
+@* @page "/student-dashboard/student-profile"
+
+@inject IUserService UserService
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Components.Forms
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@attribute [Authorize(Roles="Student")]
+
+@inject IStudentService StudentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Student Profile</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <span class="fs-2 me-2">🎓</span>
+        <h2 class="h3 mb-0 text-gray-800 fw-bold">Student Profile</h2>
+    </div>
+
+    @if (profile == null)
+    {
+        <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading profile...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Left Side: Profile Card -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm text-center py-4 px-3">
+                    <div class="card-body">
+                        <!-- Profile Image Container -->
+                        <div class="position-relative d-inline-block mb-3">
+                            @if (string.IsNullOrEmpty(profile.ProfileImage))
+                            {
+                                <img src="/images/default-user.png"
+                                     class="rounded-circle border border-3 border-white shadow-sm object-fit-cover"
+                                     width="150"
+                                     height="150"
+                                     alt="Profile Image" />
+                            }
+                            else
+                            {
+                                <img src="@profile.ProfileImage"
+                                     class="rounded-circle border border-3 border-white shadow-sm object-fit-cover"
+                                     width="150"
+                                     height="150"
+                                     alt="Profile Image" />
+                            }
+                        </div>
+
+                        <h4 class="fw-bold mb-1">@profile.FirstName @profile.LastName</h4>
+                        <p class="text-muted small mb-3">@profile.DepartmentName</p>
+                        
+                        @if (profile.AccountActive)
+                        {
+                            <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 mb-4">Active Student</span>
+                        }
+                        else
+                        {
+                            <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 mb-4">Account Disabled</span>
+                        }
+
+                        <!-- Clean Upload Area -->
+                        <div class="mt-2 text-start">
+                            <label class="form-label small fw-semibold text-muted mb-1">Update Profile Photo</label>
+                            <InputFile OnChange="UploadImage" class="form-control form-control-sm" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Details & Actions -->
+            <div class="col-lg-8">
+                <!-- Personal & Academic Info Card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                        <h5 class="fw-bold text-dark m-0">Personal & Academic Details</h5>
+                    </div>
+                    <div class="card-body px-4 py-3">
+                        <hr class="text-muted opacity-25 mt-2 mb-4" />
+            
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Student ID</label>
+                                <span class="fw-semibold text-dark">@profile.StudentNumber</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Full Name</label>
+                                <span class="fw-semibold text-dark">@profile.FirstName @profile.LastName</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Email Address</label>
+                                <span class="fw-semibold text-dark">@profile.Email</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Phone Number</label>
+                                <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(profile.PhoneNumber) ? "Not Provided" : profile.PhoneNumber)</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Gender</label>
+                                <span class="fw-semibold text-dark text-capitalize">@profile.Gender</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Date of Birth</label>
+                                <span class="fw-semibold text-dark">@profile.DateOfBirth.ToString("MMMM dd, yyyy")</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Department</label>
+                                <span class="fw-semibold text-dark">@profile.DepartmentName</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block">Enrollment Date</label>
+                                <span class="fw-semibold text-dark">@profile.EnrollmentDate.ToString("MMMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings & Password Update Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                        <h5 class="fw-bold text-dark m-0">Account Settings</h5>
+                    </div>
+                    <div class="card-body px-4 py-3">
+                        <hr class="text-muted opacity-25 mt-2 mb-3" />
+                        
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div>
+                                <label class="text-muted small d-block">Username</label>
+                                <span class="fw-semibold text-dark">@profile.Username</span>
+                            </div>
+                            <div>
+                                @if (!showPasswordForm)
+                                {
+                                    <button class="btn btn-outline-primary btn-sm px-3" @onclick="ShowPasswordForm">
+                                        🔐 Change Password
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        @if (showPasswordForm)
+                        {
+                            <div class="card border border-light-subtle bg-light-subtle shadow-none mt-4">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="fw-bold mb-0 text-dark">Change Password</h6>
+                                        <button type="button" class="btn-close btn-sm" aria-label="Close" @onclick="() => showPasswordForm = false"></button>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label small fw-semibold text-muted">Current Password</label>
+                                            <input type="password" class="form-control" placeholder="••••••••" @bind="currentPassword" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold text-muted">New Password</label>
+                                            <input type="password" class="form-control" placeholder="••••••••" @bind="newPassword" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold text-muted">Confirm New Password</label>
+                                            <input type="password" class="form-control" placeholder="••••••••" @bind="confirmPassword" />
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <button class="btn btn-light btn-sm" @onclick="() => showPasswordForm = false">Cancel</button>
+                                        <button class="btn btn-primary btn-sm px-4" @onclick="ChangePassword">Save Password</button>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(passwordMessage))
+                                    {
+                                        <div class="alert alert-info py-2 px-3 mt-3 mb-0 small rounded-3" role="alert">
+                                            @passwordMessage
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private StudentProfileDto? profile;
+    private bool showPasswordForm = false;
+    private string currentPassword = string.Empty;
+    private string newPassword = string.Empty;
+    private string confirmPassword = string.Empty;
+    private string passwordMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.FindFirst("sub");
+
+        if (userIdClaim != null)
+        {
+            int userId = int.Parse(userIdClaim.Value);
+            profile = await StudentService.GetProfileAsync(userId);
+        }
+    }
+
+    private async Task UploadImage(InputFileChangeEventArgs e)
+    {
+        if (profile == null) return;
+        var file = e.File;
+        if (file == null) return;
+
+        var extension = Path.GetExtension(file.Name);
+        var fileName = $"student_{profile.UserId}{extension}";
+        var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "students");
+
+        if (!Directory.Exists(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        var filePath = Path.Combine(folder, fileName);
+
+        await using FileStream fs = new(filePath, FileMode.Create);
+        await file.OpenReadStream(5 * 1024 * 1024).CopyToAsync(fs);
+
+        var imagePath = $"/images/students/{fileName}";
+        await StudentService.UpdateProfileImageAsync(profile.UserId, imagePath);
+        profile.ProfileImage = imagePath;
+    }
+
+    private void ShowPasswordForm()
+    {
+        showPasswordForm = true;
+    }
+
+    private async Task ChangePassword()
+    {
+        if (profile == null) return;
+
+        if (profile.UserId == 0)
+        {
+            passwordMessage = "User account not found.";
+            return;
+        }
+
+        var dto = new ChangePasswordDto
+        {
+            UserId = profile.UserId,
+            CurrentPassword = currentPassword,
+            NewPassword = newPassword,
+            ConfirmPassword = confirmPassword
+        };
+
+        var result = await UserService.ChangePasswordAsync(dto);
+
+        if (result)
+        {
+            passwordMessage = "Password changed successfully.";
+            currentPassword = string.Empty;
+            newPassword = string.Empty;
+            confirmPassword = string.Empty;
+            // Close the form after successful change
+            showPasswordForm = false;
+        }
+        else
+        {
+            passwordMessage = "Password change failed.";
+        }
+    }
+} *@

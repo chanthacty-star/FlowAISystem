@@ -1,0 +1,263 @@
+@page "/admin-dashboard/teachers/delete/{Id:int}"
+
+
+@using FlowAISystem.Shared.DTOs.Teachers
+@using FlowAISystem.Application.Interfaces.Services
+
+
+@inject ITeacherService TeacherService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Delete Teacher
+</PageTitle>
+
+
+
+
+@if (loading)
+{
+    <p>
+        Loading...
+    </p>
+}
+else if (teacher == null)
+{
+
+    <div class="alert alert-danger">
+
+        Teacher not found.
+
+    </div>
+
+}
+else
+{
+
+    <div class="card border-danger shadow-sm">
+
+
+        <div class="card-header bg-danger text-white">
+
+            <h3>
+                🗑️ Delete Teacher
+            </h3>
+
+        </div>
+
+
+
+
+
+        <div class="card-body">
+
+
+            <div class="alert alert-warning">
+
+                <strong>
+                    Warning!
+                </strong>
+
+                <br />
+
+                Are you sure you want to delete this teacher?
+
+            </div>
+
+
+
+
+
+
+            <table class="table table-bordered">
+
+
+                <tr>
+
+                    <th width="200">
+                        Teacher Name
+                    </th>
+
+                    <td>
+                        @teacher.TeacherName
+                    </td>
+
+                </tr>
+
+
+
+
+                <tr>
+
+                    <th>
+                        Full Name
+                    </th>
+
+                    <td>
+                        @teacher.FullName
+                    </td>
+
+                </tr>
+
+
+
+
+
+                <tr>
+
+                    <th>
+                        Email
+                    </th>
+
+                    <td>
+                        @teacher.Email
+                    </td>
+
+                </tr>
+
+
+
+
+
+                <tr>
+
+                    <th>
+                        Phone Number
+                    </th>
+
+                    <td>
+                        @teacher.PhoneNumber
+                    </td>
+
+                </tr>
+
+
+
+
+
+
+                <tr>
+
+                    <th>
+                        Department
+                    </th>
+
+                    <td>
+                        @teacher.DepartmentName
+                    </td>
+
+                </tr>
+
+
+
+
+
+            </table>
+
+
+
+
+
+
+
+            <button class="btn btn-danger"
+                    @onclick="DeleteTeacher">
+
+
+                Delete
+
+
+            </button>
+
+
+
+
+
+            <a href="/admin-dashboard/teachers"
+               class="btn btn-secondary ms-2">
+
+
+                Cancel
+
+
+            </a>
+
+
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+
+
+@code {
+
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+
+
+    private TeacherDto? teacher;
+
+
+
+
+    private bool loading = true;
+
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        teacher =
+            await TeacherService
+                .GetByIdAsync(Id);
+
+
+
+        loading = false;
+
+
+    }
+
+
+
+
+
+
+
+
+    private async Task DeleteTeacher()
+    {
+
+
+        await TeacherService
+            .DeleteAsync(Id);
+
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/teachers");
+
+
+    }
+
+
+}

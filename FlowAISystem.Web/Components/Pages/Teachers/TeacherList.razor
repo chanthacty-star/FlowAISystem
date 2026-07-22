@@ -1,0 +1,159 @@
+@page "/admin-dashboard/teachers"
+
+@using FlowAISystem.Shared.DTOs.Teachers
+@using FlowAISystem.Application.Interfaces.Services
+
+@inject ITeacherService TeacherService
+
+
+<PageTitle>
+    Teachers
+</PageTitle>
+
+
+<h3 class="mb-4">
+    👨‍🏫 Teachers Management
+</h3>
+
+
+<div class="mb-3">
+
+    <a href="/admin-dashboard/teachers/create"
+       class="btn btn-primary">
+
+        ➕ Add Teacher
+
+    </a>
+
+</div>
+
+
+
+@if (teachers == null)
+{
+    <p>
+        Loading...
+    </p>
+}
+else if (!teachers.Any())
+{
+    <div class="alert alert-info">
+
+        No teachers found.
+
+    </div>
+}
+else
+{
+
+<table class="table table-striped table-hover">
+
+
+<thead>
+
+<tr>
+
+<th>
+    Name
+</th>
+
+<th>
+    Email
+</th>
+
+<th>
+    Department
+</th>
+
+<th>
+    Actions
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+
+@foreach(var teacher in teachers)
+{
+
+<tr>
+
+<td>
+    @teacher.FullName
+</td>
+
+
+<td>
+    @teacher.Email
+</td>
+
+
+<td>
+    @teacher.DepartmentName
+</td>
+
+
+<td>
+
+
+<a class="btn btn-sm btn-info"
+   href="/admin-dashboard/teachers/details/@teacher.Id">
+
+    Details
+
+</a>
+
+
+<a class="btn btn-sm btn-warning ms-1"
+   href="/admin-dashboard/teachers/edit/@teacher.Id">
+
+    Edit
+
+</a>
+
+
+<a class="btn btn-sm btn-danger ms-1"
+   href="/admin-dashboard/teachers/delete/@teacher.Id">
+
+    Delete
+
+</a>
+
+
+</td>
+
+
+</tr>
+
+}
+
+
+</tbody>
+
+
+</table>
+
+}
+
+
+
+@code {
+
+    private List<TeacherListItemDto> teachers = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        teachers =
+            await TeacherService.GetAllAsync(
+                new TeacherSearchDto());
+
+    }
+
+}

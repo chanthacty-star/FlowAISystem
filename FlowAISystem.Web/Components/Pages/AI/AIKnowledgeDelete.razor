@@ -1,0 +1,166 @@
+@page "/admin-dashboard/ai-knowledge/delete/{id:int}"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.Interfaces
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IAIKnowledgeManagementService AIKnowledgeService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Delete AI Knowledge
+</PageTitle>
+
+
+
+<h2 class="mb-4 text-danger">
+    Delete AI Knowledge
+</h2>
+
+
+
+@if (knowledge == null)
+{
+
+    <p>
+        Loading...
+    </p>
+
+}
+else
+{
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-body">
+
+
+            <h5>
+                Are you sure you want to delete this knowledge?
+            </h5>
+
+
+            <hr />
+
+
+            <p>
+                <strong>
+                    Question:
+                </strong>
+
+                @knowledge.Question
+            </p>
+
+
+
+            <p>
+                <strong>
+                    Category:
+                </strong>
+
+                @knowledge.CategoryName
+            </p>
+
+
+
+            <p>
+                <strong>
+                    Answer:
+                </strong>
+
+                @knowledge.Answer
+            </p>
+
+
+
+            <button class="btn btn-danger me-2"
+                    @onclick="DeleteKnowledge">
+
+                Yes, Delete
+
+            </button>
+
+
+
+            <button class="btn btn-secondary"
+                    @onclick="Cancel">
+
+                Cancel
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+@code
+{
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+    private AIKnowledgeDto? knowledge;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        knowledge =
+            await AIKnowledgeService.GetByIdAsync(Id);
+
+
+
+        if (knowledge == null)
+        {
+
+            Navigation.NavigateTo(
+                "/admin/ai-knowledge");
+
+        }
+
+    }
+
+
+
+
+    private async Task DeleteKnowledge()
+    {
+
+        await AIKnowledgeService.DeleteAsync(Id);
+
+
+
+        Navigation.NavigateTo(
+            "/admin/ai-knowledge");
+
+    }
+
+
+
+
+    private void Cancel()
+    {
+
+        Navigation.NavigateTo(
+            "/admin/ai-knowledge");
+
+    }
+
+}
+

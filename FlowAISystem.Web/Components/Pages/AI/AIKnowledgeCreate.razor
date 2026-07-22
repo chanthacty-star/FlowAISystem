@@ -1,0 +1,218 @@
+@* @page "/admin-dashboard/ai-knowledge/create"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.Interfaces
+@using FlowAISystem.Application.DTOs.AI.Category
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IAIKnowledgeManagementService AIKnowledgeService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Create AI Knowledge
+</PageTitle>
+
+
+
+<div class="container-fluid py-4">
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+
+        <h2 class="fw-bold">
+
+            🤖 Create AI Knowledge
+
+        </h2>
+
+
+
+        <button class="btn btn-secondary"
+                @onclick="GoBack">
+
+            ← Back
+
+        </button>
+
+
+    </div>
+
+
+
+    @if (loading)
+    {
+        <div class="alert alert-info">
+
+            Loading categories...
+
+        </div>
+    }
+    else
+    {
+
+        <AIKnowledgeForm 
+            Model="model"
+            Categories="categories"
+            ButtonText="Save Knowledge"
+            OnValidSubmit="CreateKnowledge" />
+
+    }
+
+
+</div>
+
+
+
+@code
+{
+
+    private CreateAIKnowledgeDto model =
+        new();
+
+
+    private List<AICategoryDto> categories =
+        new();
+
+
+    private bool loading = true;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        categories =
+            await AIKnowledgeService.GetCategoriesAsync();
+
+
+        loading = false;
+
+    }
+
+
+
+
+    private async Task CreateKnowledge()
+    {
+
+        await AIKnowledgeService
+            .CreateAsync(model);
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-knowledge");
+
+    }
+
+
+
+
+
+    private void GoBack()
+    {
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-knowledge");
+
+    }
+
+} *@
+
+@page "/admin-dashboard/ai-knowledge/create"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.DTOs.AI.Category
+@using FlowAISystem.Application.Interfaces
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IAIKnowledgeManagementService AIKnowledgeService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Create AI Knowledge
+</PageTitle>
+
+
+
+<div class="container mt-4">
+
+
+    <h2 class="mb-4">
+        ➕ Create AI Knowledge
+    </h2>
+
+
+
+    @if (categories == null)
+    {
+        <p>
+            Loading categories...
+        </p>
+    }
+    else
+    {
+
+        <AIKnowledgeForm
+            Model="model"
+            Categories="categories"
+            ButtonText="Save Knowledge"
+            OnValidSubmit="CreateKnowledge" />
+
+    }
+
+
+</div>
+
+
+
+
+
+@code
+{
+
+    private CreateAIKnowledgeDto model = new();
+
+
+    private List<AICategoryDto> categories = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        categories =
+            await AIKnowledgeService
+                .GetCategoriesAsync();
+
+    }
+
+
+
+
+    private async Task CreateKnowledge()
+    {
+
+        await AIKnowledgeService
+            .CreateAsync(model);
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-knowledge");
+
+    }
+
+}

@@ -1,0 +1,228 @@
+@page "/admin-dashboard/ai-categories/delete/{Id:int}"
+
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.Interfaces
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IAICategoryService CategoryService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Delete AI Category
+</PageTitle>
+
+
+
+
+<div class="container-fluid py-4">
+
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-header bg-danger text-white">
+
+
+            <h5 class="mb-0">
+
+                🗑️ Delete AI Category
+
+            </h5>
+
+
+        </div>
+
+
+
+
+
+        <div class="card-body">
+
+
+
+            @if (category == null)
+            {
+
+                <p>
+                    Loading...
+                </p>
+
+            }
+            else
+            {
+
+
+                <h5>
+                    Are you sure you want to delete this category?
+                </h5>
+
+
+
+                <div class="alert alert-warning mt-3">
+
+
+                    <strong>
+                        @category.Name
+                    </strong>
+
+
+                    <br />
+
+
+                    @category.Description
+
+
+                </div>
+
+
+
+
+
+                <div class="text-end">
+
+
+                    <a href="/admin-dashboard/ai-categories"
+                       class="btn btn-secondary me-2">
+
+
+                        Cancel
+
+
+                    </a>
+
+
+
+
+
+                    <button class="btn btn-danger"
+                            @onclick="DeleteCategory">
+
+
+                        🗑️ Delete
+
+
+                    </button>
+
+
+                </div>
+
+
+            }
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+
+
+@code
+{
+
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+
+    private CategoryViewModel? category;
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        var result =
+            await CategoryService
+                .GetByIdAsync(Id);
+
+
+
+
+        if (result == null)
+        {
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/ai-categories");
+
+            return;
+
+        }
+
+
+
+
+
+        category = new CategoryViewModel
+        {
+
+            Id = result.Id,
+
+            Name = result.Name,
+
+            Description = result.Description
+
+        };
+
+
+    }
+
+
+
+
+
+    private async Task DeleteCategory()
+    {
+
+
+        await CategoryService
+            .DeleteAsync(Id);
+
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-categories");
+
+
+    }
+
+
+
+
+
+    private class CategoryViewModel
+    {
+
+        public int Id { get; set; }
+
+
+        public string Name { get; set; }
+            = string.Empty;
+
+
+
+        public string Description { get; set; }
+            = string.Empty;
+
+    }
+
+}

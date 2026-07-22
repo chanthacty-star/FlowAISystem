@@ -1,0 +1,390 @@
+@page "/admin-dashboard/ai-knowledge"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.Interfaces
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IAIKnowledgeManagementService AIKnowledgeService
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    AI Knowledge Management
+</PageTitle>
+
+
+<h2>
+    AI Knowledge Management
+</h2>
+
+
+<div class="row mb-4">
+
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h5>
+                    Total Knowledge
+                </h5>
+
+                <h2 class="text-primary">
+                    @knowledgeList.Count
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<div class="row mb-3">
+
+
+    <div class="col-md-6">
+
+        <input class="form-control"
+               placeholder="🔍 Search knowledge..."
+               @bind="searchText"
+               @bind:event="oninput" />
+
+    </div>
+
+
+
+    <div class="col-md-3">
+
+        <select class="form-select"
+                @bind="selectedCategory">
+
+            <option value="">
+                All Categories
+            </option>
+
+
+            @foreach (var category in Categories)
+            {
+                <option value="@category">
+                    @category
+                </option>
+            }
+
+
+        </select>
+
+    </div>
+
+
+
+    <div class="col-md-3 text-end">
+
+
+        <button class="btn btn-primary"
+                @onclick="CreateKnowledge">
+
+            + Add Knowledge
+
+        </button>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+@if (filteredKnowledge == null)
+{
+    <p>
+        Loading...
+    </p>
+}
+else
+{
+
+    <table class="table table-striped table-hover">
+
+
+        <thead class="table-dark">
+
+            <tr>
+
+                <th>
+                    ID
+                </th>
+
+
+                <th>
+                    Question
+                </th>
+
+
+                <th>
+                    Category
+                </th>
+
+
+                <th>
+                    Last Updated
+                </th>
+
+
+                <th>
+                    Actions
+                </th>
+
+
+            </tr>
+
+        </thead>
+
+
+
+        <tbody>
+
+
+            @foreach (var item in PaginatedKnowledge)
+            {
+
+                <tr>
+
+
+                    <td>
+                        @item.Id
+                    </td>
+
+
+
+                    <td>
+                        @item.Question
+                    </td>
+
+
+
+                    <td>
+                        <span class="badge bg-info">
+
+                            @item.CategoryName
+
+                        </span>
+                    </td>
+
+
+
+                    <td>
+                        @item.CreatedAt.ToString("yyyy-MM-dd")
+                    </td>
+
+
+
+                    <td>
+
+
+                        <button class="btn btn-warning btn-sm me-2"
+                                @onclick="() => EditKnowledge(item.Id)">
+
+                            Edit
+
+                        </button>
+
+
+
+                        <button class="btn btn-danger btn-sm"
+                                @onclick="() => DeleteKnowledge(item.Id)">
+
+                            Delete
+
+                        </button>
+
+
+                    </td>
+
+
+                </tr>
+
+            }
+
+
+        </tbody>
+
+
+    </table>
+
+
+}
+
+
+
+
+
+<div class="text-center">
+
+
+    <button class="btn btn-secondary me-2"
+            disabled="@(currentPage == 1)"
+            @onclick="PreviousPage">
+
+        Previous
+
+    </button>
+
+
+
+    <span>
+
+        Page @currentPage
+
+    </span>
+
+
+
+    <button class="btn btn-secondary ms-2"
+            disabled="@(currentPage == TotalPages)"
+            @onclick="NextPage">
+
+        Next
+
+    </button>
+
+
+</div>
+
+
+
+
+
+@code {
+
+
+    private List<AIKnowledgeDto> knowledgeList = new();
+
+
+    private string searchText = "";
+
+    private string selectedCategory = "";
+
+    private int currentPage = 1;
+
+    private int pageSize = 5;
+
+
+
+    private IEnumerable<AIKnowledgeDto> filteredKnowledge =>
+        knowledgeList
+        .Where(x =>
+            (
+            string.IsNullOrWhiteSpace(searchText)
+            ||
+            x.Question.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase)
+            )
+            &&
+            (
+            string.IsNullOrWhiteSpace(selectedCategory)
+            ||
+            x.CategoryName == selectedCategory
+            )
+        );
+
+
+
+    private IEnumerable<AIKnowledgeDto> PaginatedKnowledge =>
+        filteredKnowledge
+        .Skip(
+            (currentPage - 1)
+            *
+            pageSize)
+        .Take(pageSize);
+
+
+
+    private int TotalPages =>
+        Math.Max(
+            1,
+            (int)Math.Ceiling(
+                filteredKnowledge.Count()
+                /
+                (double)pageSize));
+
+
+
+    private IEnumerable<string> Categories =>
+        knowledgeList
+        .Select(x => x.CategoryName)
+        .Distinct();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        knowledgeList =
+            await AIKnowledgeService.GetAllAsync();
+
+    }
+
+
+
+    private void CreateKnowledge()
+    {
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-knowledge/create");
+    }
+
+
+
+    private void EditKnowledge(int id)
+    {
+        Navigation.NavigateTo(
+            $"/admin-dashboard/ai-knowledge/edit/{id}");
+    }
+
+
+
+    private void DeleteKnowledge(int id)
+    {
+        Navigation.NavigateTo(
+            $"/admin-dashboard/ai-knowledge/delete/{id}");
+    }
+
+
+
+    private void PreviousPage()
+    {
+
+        if (currentPage > 1)
+        {
+            currentPage--;
+        }
+
+    }
+
+
+
+    private void NextPage()
+    {
+
+        if (currentPage < TotalPages)
+        {
+            currentPage++;
+        }
+
+    }
+
+
+}
+

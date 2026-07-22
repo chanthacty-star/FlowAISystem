@@ -1,0 +1,92 @@
+@implements IDisposable
+
+@using FlowAISystem.Web.Services
+@using FlowAISystem.Web.Components.Shared.Notifications
+
+@inject NotificationService NotificationService
+
+@if (notification != null)
+{
+    <div class="position-fixed top-0 end-0 p-3"
+         style="z-index:2000;">
+
+        <div class="toast show">
+
+            <div class="toast-header @HeaderClass text-white">
+
+                <strong class="me-auto">
+
+                    @notification.Title
+
+                </strong>
+
+                <button class="btn-close btn-close-white"
+                        @onclick="Close">
+
+                </button>
+
+            </div>
+
+            <div class="toast-body">
+
+                @notification.Message
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code{
+
+    private NotificationMessage? notification;
+
+    protected override void OnInitialized()
+    {
+        NotificationService.OnNotify += ShowNotification;
+    }
+
+    private async void ShowNotification(NotificationMessage msg)
+    {
+        notification = msg;
+
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(msg.Duration);
+
+        notification = null;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Close()
+    {
+        notification = null;
+    }
+
+    private string HeaderClass
+    {
+        get
+        {
+            return notification?.Type switch
+            {
+                NotificationType.Success => "bg-success",
+
+                NotificationType.Error => "bg-danger",
+
+                NotificationType.Warning => "bg-warning",
+
+                NotificationType.Information => "bg-info",
+
+                _ => "bg-primary"
+            };
+        }
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnNotify -= ShowNotification;
+    }
+
+}

@@ -1,0 +1,434 @@
+@* @page "/admin-dashboard/users/create"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Domain.Entities
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Authorization
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IUserService UserService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Create User
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    👤 Create User
+</h3>
+
+
+
+<EditForm Model="user"
+          OnValidSubmit="SaveUser">
+
+
+    <DataAnnotationsValidator />
+
+    <ValidationSummary class="alert alert-danger" />
+
+
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Username
+        </label>
+
+
+        <InputText class="form-control"
+                   @bind-Value="user.Username" />
+
+
+    </div>
+
+
+
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Email
+        </label>
+
+
+        <InputText class="form-control"
+                   @bind-Value="user.Email" />
+
+
+    </div>
+
+
+
+
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Password
+        </label>
+
+
+        <InputText class="form-control"
+                   type="password"
+                   @bind-Value="user.Password" />
+
+
+    </div>
+
+
+
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Confirm Password
+        </label>
+
+
+        <InputText class="form-control"
+                   type="password"
+                   @bind-Value="user.ConfirmPassword" />
+
+
+    </div>
+
+
+
+
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Role
+        </label>
+
+
+        <InputSelect class="form-select"
+                     @bind-Value="user.RoleId">
+
+
+            <option value="0">
+                -- Select Role --
+            </option>
+
+
+
+            @foreach(var role in roles)
+            {
+
+                <option value="@role.Id">
+
+                    @role.Name
+
+                </option>
+
+            }
+
+
+        </InputSelect>
+
+
+    </div>
+
+
+
+
+
+    <button class="btn btn-primary">
+
+        Create User
+
+    </button>
+
+
+    <a href="/admin-dashboard/users"
+       class="btn btn-secondary ms-2">
+
+        Cancel
+
+    </a>
+
+
+
+</EditForm>
+
+
+
+
+
+@code {
+
+
+    private CreateUserDto user = new();
+
+
+    private List<Role> roles = [];
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        roles =
+            await UserService.GetRolesAsync();
+
+    }
+
+
+
+
+
+    private async Task SaveUser()
+    {
+
+        await UserService.CreateAsync(user);
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/users");
+
+    }
+
+
+} *@
+
+@page "/admin-dashboard/users/create"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Domain.Entities
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>Create User | Admin Portal</PageTitle>
+
+<!-- Modern Custom CSS to elevate Bootstrap styles without external dependencies -->
+<style>
+    .form-section-title {
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #6c757d;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .custom-input-group {
+        transition: all 0.2s ease-in-out;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .custom-input-group:focus-within {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    }
+    .custom-input-group .input-group-text {
+        border: none;
+        background-color: #ffffff;
+        color: #9ca3af;
+        padding-left: 1rem;
+    }
+    .custom-input-group .form-control, 
+    .custom-input-group .form-select {
+        border: none;
+        box-shadow: none !important;
+        padding: 0.75rem 1rem 0.75rem 0.5rem;
+        background-color: #ffffff;
+    }
+    .custom-input-group .form-control::placeholder {
+        color: #adb5bd;
+    }
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .btn-action-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            
+            <!-- Breadcrumb Navigation & Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="/admin-dashboard" class="text-decoration-none text-muted small">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admin-dashboard/users" class="text-decoration-none text-muted small">Users</a></li>
+                        <li class="breadcrumb-item active text-primary small fw-semibold" aria-current="page">Create</li>
+                    </ol>
+                </nav>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h1 class="h3 fw-bold text-dark m-0">Create New User</h1>
+                        <p class="text-muted small m-0 mt-1">Provision a new account with specific role permissions.</p>
+                    </div>
+                    <a href="/admin-dashboard/users" class="btn btn-outline-secondary btn-sm px-3 rounded-3 d-flex align-items-center gap-1">
+                        <i class="bi bi-arrow-left"></i> Back to Directory
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Form Card -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <EditForm Model="user" OnValidSubmit="SaveUser">
+                        <DataAnnotationsValidator />
+                        
+                        <!-- Premium Styled Validation Summary -->
+                        @if (context.GetValidationMessages().Any())
+                        {
+                            <div class="alert alert-danger border-0 bg-danger-subtle text-danger rounded-3 d-flex align-items-start gap-3 p-3 mb-4" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Please correct the errors below</h6>
+                                    <ValidationSummary class="m-0 ps-3 small" />
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row g-5">
+                            
+                            <!-- Left Column: Account Details -->
+                            <div class="col-md-6 border-end-md">
+                                <div class="form-section-title">
+                                    <i class="bi bi-person-badge text-primary"></i> Profile Information
+                                </div>
+                                
+                                <!-- Username -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark small mb-1">Username</label>
+                                    <div class="input-group custom-input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <InputText class="form-control" 
+                                                   placeholder="johndoe"
+                                                   @bind-Value="user.Username" />
+                                    </div>
+                                    <div class="form-text text-muted small px-1">Must be unique across the organization.</div>
+                                    <ValidationMessage For="@(() => user.Username)" class="text-danger small mt-1 d-block" />
+                                </div>
+
+                                <!-- Email -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark small mb-1">Email Address</label>
+                                    <div class="input-group custom-input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <InputText class="form-control" 
+                                                   type="email"
+                                                   placeholder="john@example.com"
+                                                   @bind-Value="user.Email" />
+                                    </div>
+                                    <ValidationMessage For="@(() => user.Email)" class="text-danger small mt-1 d-block" />
+                                </div>
+
+                                <!-- Role Select -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-dark small mb-1">Account Role</label>
+                                    <div class="input-group custom-input-group">
+                                        <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+                                        <InputSelect class="form-select" @bind-Value="user.RoleId">
+                                            <option value="0">-- Select Role --</option>
+                                            @foreach(var role in roles)
+                                            {
+                                                <option value="@role.Id">@role.Name</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => user.RoleId)" class="text-danger small mt-1 d-block" />
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Password & Access Security -->
+                            <div class="col-md-6">
+                                <div class="form-section-title">
+                                    <i class="bi bi-key text-primary"></i> Security Credentials
+                                </div>
+
+                                <!-- Password -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark small mb-1">Password</label>
+                                    <div class="input-group custom-input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                        <InputText class="form-control" 
+                                                   type="password"
+                                                   placeholder="••••••••••••"
+                                                   @bind-Value="user.Password" />
+                                    </div>
+                                    <div class="form-text text-muted small px-1">Use at least 8 characters with letters and numbers.</div>
+                                    <ValidationMessage For="@(() => user.Password)" class="text-danger small mt-1 d-block" />
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark small mb-1">Confirm Password</label>
+                                    <div class="input-group custom-input-group">
+                                        <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                                        <InputText class="form-control" 
+                                                   type="password"
+                                                   placeholder="••••••••••••"
+                                                   @bind-Value="user.ConfirmPassword" />
+                                    </div>
+                                    <ValidationMessage For="@(() => user.ConfirmPassword)" class="text-danger small mt-1 d-block" />
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div class="d-flex justify-content-end align-items-center gap-3 mt-5 pt-4 border-top">
+                            <a href="/admin-dashboard/users" class="btn btn-action btn-light border text-secondary px-4">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-action btn-primary btn-action-primary px-4 d-inline-flex align-items-center gap-2">
+                                <i class="bi bi-person-plus-fill"></i> Create Account
+                            </button>
+                        </div>
+
+                    </EditForm>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateUserDto user = new();
+    private List<Role> roles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = await UserService.GetRolesAsync();
+    }
+
+    private async Task SaveUser()
+    {
+        await UserService.CreateAsync(user);
+        Navigation.NavigateTo("/admin-dashboard/users");
+    }
+}

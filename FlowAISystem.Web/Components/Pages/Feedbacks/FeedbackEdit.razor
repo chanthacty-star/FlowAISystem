@@ -1,0 +1,368 @@
+@page "/admin-dashboard/feedbacks/edit/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Feedbacks
+@using FlowAISystem.Web.Services
+
+
+@inject IFeedbackService FeedbackService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Edit Feedback
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    ✏️ Edit Feedback
+</h3>
+
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+@if(model == null)
+{
+
+<div class="alert alert-info">
+    Loading...
+</div>
+
+}
+else
+{
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Update">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Student
+</label>
+
+
+<input class="form-control"
+       value="@StudentName"
+       disabled />
+
+</div>
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Course
+</label>
+
+
+<input class="form-control"
+       value="@CourseName"
+       disabled />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Rating
+</label>
+
+
+
+<InputSelect class="form-select"
+             @bind-Value="model.Rating">
+
+
+<option value="5">
+⭐⭐⭐⭐⭐
+</option>
+
+
+<option value="4">
+⭐⭐⭐⭐
+</option>
+
+
+<option value="3">
+⭐⭐⭐
+</option>
+
+
+<option value="2">
+⭐⭐
+</option>
+
+
+<option value="1">
+⭐
+</option>
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Comment
+</label>
+
+
+<InputTextArea class="form-control"
+               rows="5"
+               @bind-Value="model.Comment" />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Feedback Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.FeedbackDate" />
+
+</div>
+
+
+
+
+
+
+<button class="btn btn-primary me-2"
+        type="submit">
+
+Save Changes
+
+</button>
+
+
+
+
+<button class="btn btn-secondary"
+        type="button"
+        @onclick="Cancel">
+
+Cancel
+
+</button>
+
+
+
+</EditForm>
+
+}
+
+
+</div>
+
+</div>
+
+
+
+
+
+@code {
+
+
+[Parameter]
+public int Id { get; set; }
+
+
+
+private UpdateFeedbackDto? model;
+
+
+
+private string StudentName = string.Empty;
+
+private string CourseName = string.Empty;
+
+
+
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadData();
+
+}
+
+
+
+
+
+
+
+
+private async Task LoadData()
+{
+
+    try
+    {
+
+        var feedback =
+            await FeedbackService.GetByIdAsync(Id);
+
+
+
+        if(feedback == null)
+        {
+
+            Notification.Error(
+                "Feedback not found.");
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/feedbacks");
+
+            return;
+
+        }
+
+
+
+
+        model = new UpdateFeedbackDto
+        {
+
+            Id = feedback.Id,
+
+
+            Rating =
+                feedback.Rating,
+
+
+            Comment =
+                feedback.Comment,
+
+
+            FeedbackDate =
+                feedback.FeedbackDate
+
+        };
+
+
+
+        StudentName =
+            feedback.StudentName;
+
+
+        CourseName =
+            feedback.CourseName;
+
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+
+private async Task Update()
+{
+
+    try
+    {
+
+        await FeedbackService.UpdateAsync(
+            model!);
+
+
+
+        Notification.Success(
+            "Feedback updated successfully.");
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/feedbacks");
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+
+private void Cancel()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/feedbacks");
+
+}
+
+
+}

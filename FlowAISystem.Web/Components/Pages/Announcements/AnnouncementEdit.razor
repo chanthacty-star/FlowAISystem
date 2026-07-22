@@ -1,0 +1,370 @@
+@page "/admin-dashboard/announcements/edit/{Id:int}"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Announcements
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+
+@inject IAnnouncementService AnnouncementService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Edit Announcement
+</PageTitle>
+
+
+
+
+<h3 class="mb-4">
+    ✏️ Edit Announcement
+</h3>
+
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+
+@if(model == null)
+{
+
+<div class="alert alert-info">
+    Loading...
+</div>
+
+}
+else
+{
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Update">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Title
+</label>
+
+
+<InputText class="form-control"
+           @bind-Value="model.Title" />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Content
+</label>
+
+
+<InputTextArea class="form-control"
+               rows="6"
+               @bind-Value="model.Content" />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Audience
+</label>
+
+
+<InputSelect class="form-select"
+             @bind-Value="model.Audience">
+
+
+<option value="@AnnouncementAudience.All">
+    All
+</option>
+
+
+<option value="@AnnouncementAudience.Students">
+    Students
+</option>
+
+
+<option value="@AnnouncementAudience.Teachers">
+    Teachers
+</option>
+
+
+<option value="@AnnouncementAudience.Staff">
+    Staff
+</option>
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Publish Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.PublishDate" />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Expire Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.ExpireDate" />
+
+</div>
+
+
+
+
+
+
+
+<button class="btn btn-primary me-2"
+        type="submit">
+
+Save Changes
+
+</button>
+
+
+
+
+
+<button class="btn btn-secondary"
+        type="button"
+        @onclick="Cancel">
+
+Cancel
+
+</button>
+
+
+
+</EditForm>
+
+
+}
+
+
+
+</div>
+
+</div>
+
+
+
+
+
+
+
+@code {
+
+
+[Parameter]
+public int Id { get; set; }
+
+
+
+private UpdateAnnouncementDto? model;
+
+
+
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadData();
+
+}
+
+
+
+
+
+
+
+
+private async Task LoadData()
+{
+
+    try
+    {
+
+        var announcement =
+            await AnnouncementService
+                .GetByIdAsync(Id);
+
+
+
+
+        if(announcement == null)
+        {
+
+            Notification.Error(
+                "Announcement not found.");
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/announcements");
+
+            return;
+
+        }
+
+
+
+
+
+
+        model = new UpdateAnnouncementDto
+        {
+
+            Id =
+                announcement.Id,
+
+
+            Title =
+                announcement.Title,
+
+
+            Content =
+                announcement.Content,
+
+
+            PublishDate =
+                announcement.PublishDate,
+
+
+            ExpireDate =
+                announcement.ExpireDate,
+
+
+            Audience =
+                announcement.Audience
+
+        };
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+private async Task Update()
+{
+
+    try
+    {
+
+        await AnnouncementService
+            .UpdateAsync(model!);
+
+
+
+        Notification.Success(
+            "Announcement updated successfully.");
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/announcements");
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+private void Cancel()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/announcements");
+
+}
+
+
+}

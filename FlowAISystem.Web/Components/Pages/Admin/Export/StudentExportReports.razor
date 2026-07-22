@@ -1,0 +1,60 @@
+@page "/admin-dashboard/reports/students/export"
+
+@using FlowAISystem.Application.Interfaces.Services.Reports
+@inject IReportService ReportService
+@inject IJSRuntime JS
+
+
+<h3>
+    Student Reports
+</h3>
+
+
+<div class="mt-3">
+
+    <button class="btn btn-danger me-2"
+            @onclick="ExportPdf">
+        Export PDF
+    </button>
+
+
+    <button class="btn btn-success"
+            @onclick="ExportExcel">
+        Export Excel
+    </button>
+
+</div>
+
+
+
+@code {
+
+    private async Task ExportPdf()
+    {
+        var bytes =
+            await ReportService.ExportStudentsPdfAsync();
+
+
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            "Students_Report.pdf",
+            "application/pdf",
+            bytes);
+    }
+
+
+
+    private async Task ExportExcel()
+    {
+        var bytes =
+            await ReportService.ExportStudentsExcelAsync();
+
+
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            "Students_Report.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            bytes);
+    }
+
+}

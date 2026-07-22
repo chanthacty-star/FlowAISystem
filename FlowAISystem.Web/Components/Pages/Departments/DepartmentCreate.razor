@@ -1,0 +1,159 @@
+@page "/admin-dashboard/departments/create"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Shared.DTOs.Departments
+@using FlowAISystem.Application.Interfaces.Services
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IDepartmentService DepartmentService
+@inject NavigationManager Navigation
+
+<PageTitle>Create Department</PageTitle>
+
+<h3 class="mb-4">
+
+    Create Department
+
+</h3>
+
+<EditForm Model="department"
+          OnValidSubmit="SaveDepartment">
+
+    <DataAnnotationsValidator />
+
+    <ValidationSummary class="alert alert-danger" />
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h5 class="mb-0">
+
+                Department Information
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <!-- Name -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Department Name
+
+                </label>
+
+                <InputText class="form-control"
+                           @bind-Value="department.Name" />
+
+                <ValidationMessage For="@(() => department.Name)"
+                                   class="text-danger" />
+
+            </div>
+
+            <!-- Code -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Department Code
+
+                </label>
+
+                <InputText class="form-control"
+                           placeholder="Example: CS"
+                           @bind-Value="department.Code" />
+
+                <ValidationMessage For="@(() => department.Code)"
+                                   class="text-danger" />
+
+            </div>
+
+            <!-- Description -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Description
+
+                </label>
+
+                <InputTextArea class="form-control"
+                               rows="5"
+                               @bind-Value="department.Description" />
+
+                <ValidationMessage For="@(() => department.Description)"
+                                   class="text-danger" />
+
+            </div>
+
+        </div>
+
+        <div class="card-footer">
+
+            <button class="btn btn-primary"
+                    type="submit"
+                    disabled="@isSaving">
+
+                @if (isSaving)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span>Saving...</span>
+                }
+                else
+                {
+                    <span>Save Department</span>
+                }
+
+            </button>
+
+            <a href="/admin-dashboard/departments"
+               class="btn btn-secondary ms-2">
+
+                Cancel
+
+            </a>
+
+        </div>
+
+    </div>
+
+</EditForm>
+
+@code
+{
+
+    private CreateDepartmentDto department = new();
+
+    private bool isSaving;
+
+    private async Task SaveDepartment()
+    {
+
+        isSaving = true;
+
+        try
+        {
+
+            await DepartmentService.CreateAsync(department);
+
+            Navigation.NavigateTo("/admin-dashboard/departments");
+
+        }
+        finally
+        {
+
+            isSaving = false;
+
+        }
+
+    }
+
+}

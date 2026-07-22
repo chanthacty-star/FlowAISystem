@@ -1,0 +1,404 @@
+@* @using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.DTOs.AI.Category
+
+<EditForm Model="Model"
+          OnValidSubmit="HandleSubmit">
+
+    <DataAnnotationsValidator />
+
+    <ValidationSummary />
+
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-header bg-primary text-white">
+
+            <h5>
+                🤖 AI Knowledge
+            </h5>
+
+        </div>
+
+
+
+        <div class="card-body">
+
+
+            <!-- Question -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Question
+                </label>
+
+
+                <InputText class="form-control"
+                           @bind-Value="Model.Question" />
+
+
+                <ValidationMessage For="@(() => Model.Question)" />
+
+            </div>
+
+
+
+
+            <!-- Keywords -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Keywords
+                </label>
+
+
+                <InputText class="form-control"
+                           placeholder="postgresql,database,sql"
+                           @bind-Value="Model.Keywords" />
+
+
+                <ValidationMessage For="@(() => Model.Keywords)" />
+
+            </div>
+
+
+
+
+            <!-- Category -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Category
+                </label>
+
+
+                <InputSelect class="form-select"
+                             @bind-Value="Model.CategoryId">
+
+
+                    <option value="0">
+                        -- Select Category --
+                    </option>
+
+
+                    @foreach (var category in Categories)
+                    {
+                        <option value="@category.Id">
+
+                            @category.Name
+
+                        </option>
+                    }
+
+
+                </InputSelect>
+
+
+                <ValidationMessage For="@(() => Model.CategoryId)" />
+
+
+            </div>
+
+
+
+
+
+            <!-- Answer -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Answer
+                </label>
+
+
+                <InputTextArea class="form-control"
+                               rows="6"
+                               @bind-Value="Model.Answer" />
+
+
+                <ValidationMessage For="@(() => Model.Answer)" />
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+        <div class="card-footer text-end">
+
+
+            <button type="submit"
+                    class="btn btn-success">
+
+                @ButtonText
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+</EditForm>
+
+
+
+@code {
+
+
+    [Parameter]
+    public AIKnowledgeFormDto Model { get; set; } = new();
+
+
+
+    [Parameter]
+    public List<AICategoryDto> Categories { get; set; }
+        = new();
+
+
+
+    [Parameter]
+    public string ButtonText { get; set; }
+        = "Save";
+
+
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+
+
+
+    private async Task HandleSubmit()
+    {
+
+        await OnValidSubmit.InvokeAsync();
+
+    }
+
+} *@
+
+
+@using FlowAISystem.Application.DTOs.AI
+@using FlowAISystem.Application.DTOs.AI.Category
+
+
+<EditForm Model="Model"
+          OnValidSubmit="HandleSubmit">
+
+
+    <DataAnnotationsValidator />
+
+    <ValidationSummary />
+
+
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-header bg-primary text-white">
+
+            <h5>
+                🤖 AI Knowledge
+            </h5>
+
+        </div>
+
+
+
+        <div class="card-body">
+
+
+
+            <!-- Question -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Question
+                </label>
+
+
+                <InputText class="form-control"
+                           @bind-Value="Model.Question" />
+
+
+                <ValidationMessage For="@(() => Model.Question)" />
+
+            </div>
+
+
+
+
+
+            <!-- Keywords -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Keywords
+                </label>
+
+
+                <InputText class="form-control"
+                           placeholder="postgresql,database,sql"
+                           @bind-Value="Model.Keywords" />
+
+
+                <ValidationMessage For="@(() => Model.Keywords)" />
+
+            </div>
+
+
+
+
+
+            <!-- Category -->
+
+            <div class="mb-3">
+
+
+                <label class="form-label">
+                    Category
+                </label>
+
+
+
+                <InputSelect class="form-select"
+                             @bind-Value="Model.CategoryId">
+
+
+                    <option value="0">
+                        -- Select Category --
+                    </option>
+
+
+
+                    @foreach(var category in Categories)
+                    {
+
+                        <option value="@category.Id">
+
+                            @category.Name
+
+                        </option>
+
+                    }
+
+
+                </InputSelect>
+
+
+
+                <ValidationMessage For="@(() => Model.CategoryId)" />
+
+
+            </div>
+
+
+
+
+
+
+
+            <!-- Answer -->
+
+
+            <div class="mb-3">
+
+
+                <label class="form-label">
+                    Answer
+                </label>
+
+
+
+                <InputTextArea class="form-control"
+                               rows="6"
+                               @bind-Value="Model.Answer" />
+
+
+
+                <ValidationMessage For="@(() => Model.Answer)" />
+
+
+
+            </div>
+
+
+
+
+        </div>
+
+
+
+
+
+
+        <div class="card-footer text-end">
+
+
+            <button type="submit"
+                    class="btn btn-success">
+
+                @ButtonText
+
+            </button>
+
+
+        </div>
+
+
+
+    </div>
+
+
+</EditForm>
+
+
+
+
+
+@code {
+
+
+    [Parameter]
+    public AIKnowledgeFormDto Model { get; set; }
+        = new();
+
+
+
+    [Parameter]
+    public List<AICategoryDto> Categories { get; set; }
+        = new();
+
+
+
+    [Parameter]
+    public string ButtonText { get; set; }
+        = "Save";
+
+
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+
+
+
+    private async Task HandleSubmit()
+    {
+        await OnValidSubmit.InvokeAsync();
+    }
+
+}

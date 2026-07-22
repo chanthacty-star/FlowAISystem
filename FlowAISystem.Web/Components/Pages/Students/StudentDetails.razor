@@ -1,0 +1,404 @@
+@page "/admin-dashboard/students/details/{Id:int}"
+
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Shared.DTOs.Students
+@using FlowAISystem.Application.Interfaces
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IStudentService StudentService
+
+@inject NavigationManager Navigation
+
+
+
+
+
+<PageTitle>
+    Student Details
+</PageTitle>
+
+
+
+
+
+<div class="container-fluid py-4">
+
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                👨‍🎓 Student Details
+
+            </h2>
+
+
+            <p class="text-muted">
+
+                View student information
+
+            </p>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+
+@if (loading)
+{
+
+    <div class="text-center">
+
+
+        <div class="spinner-border"></div>
+
+
+        <p>
+            Loading student information...
+        </p>
+
+
+    </div>
+
+
+}
+else if (student == null)
+{
+
+    <div class="alert alert-danger">
+
+        Student not found.
+
+    </div>
+
+
+}
+else
+{
+
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-header bg-primary text-white">
+
+
+            <h5 class="mb-0">
+
+                Student Information
+
+            </h5>
+
+
+        </div>
+
+
+
+
+
+        <div class="card-body">
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">
+                        Student Number
+                    </label>
+
+                    <p>
+                        @student.StudentNumber
+                    </p>
+
+                </div>
+
+
+
+
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">
+                        Full Name
+                    </label>
+
+                    <p>
+                        @student.FullName
+                    </p>
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">
+                        Email
+                    </label>
+
+
+                    <p>
+                        @student.Email
+                    </p>
+
+
+                </div>
+
+
+
+
+
+                <div class="col-md-6">
+
+
+                    <label class="fw-bold">
+                        Phone Number
+                    </label>
+
+
+                    <p>
+                        @student.PhoneNumber
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+
+                    <label class="fw-bold">
+                        Gender
+                    </label>
+
+
+                    <p>
+                        @student.Gender
+                    </p>
+
+
+                </div>
+
+
+
+
+
+
+                <div class="col-md-6">
+
+
+                    <label class="fw-bold">
+                        Department
+                    </label>
+
+
+                    <p>
+
+                        <span class="badge bg-info">
+
+                            @student.DepartmentName
+
+                        </span>
+
+
+                    </p>
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+
+                    <label class="fw-bold">
+                        Date Of Birth
+                    </label>
+
+
+                    <p>
+                        @student.DateOfBirth
+                    </p>
+
+
+                </div>
+
+
+
+
+
+
+                <div class="col-md-6">
+
+
+                    <label class="fw-bold">
+                        Enrollment Date
+                    </label>
+
+
+                    <p>
+                        @student.EnrollmentDate
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+            <hr />
+
+
+
+
+
+            <div class="text-end">
+
+
+
+                <a href="/admin-dashboard/students"
+                   class="btn btn-secondary me-2">
+
+
+                    ← Back
+
+
+                </a>
+
+
+
+
+
+                <a href="/admin-dashboard/students/edit/@student.Id"
+                   class="btn btn-warning">
+
+
+                    ✏ Edit
+
+
+                </a>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+}
+
+
+</div>
+
+
+
+
+
+
+
+
+@code
+{
+
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+
+
+    private StudentDto? student;
+
+
+
+
+    private bool loading = true;
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        student =
+            await StudentService
+                .GetByIdAsync(Id);
+
+
+
+        loading = false;
+
+
+    }
+
+
+}

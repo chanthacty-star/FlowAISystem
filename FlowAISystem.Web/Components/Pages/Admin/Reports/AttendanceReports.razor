@@ -1,0 +1,197 @@
+@page "/admin-dashboard/reports/attendance"
+
+@using FlowAISystem.Application.Interfaces.Services.Reports
+@using FlowAISystem.Shared.DTOs.Reports
+
+@inject IReportService ReportService
+
+
+<PageTitle>
+    Attendance Reports
+</PageTitle>
+
+
+<h3>
+    Attendance Reports
+</h3>
+
+
+
+<div class="card p-3 mb-3">
+
+
+    <button class="btn btn-primary"
+            @onclick="LoadReport">
+
+        Generate Attendance Report
+
+    </button>
+
+
+</div>
+
+
+
+
+@if (loading)
+{
+    <p>
+        Loading attendance report...
+    </p>
+}
+
+
+
+@if (reports.Any())
+{
+
+    <div class="card p-3">
+
+
+        <table class="table table-bordered">
+
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Student
+                    </th>
+
+
+                    <th>
+                        Course
+                    </th>
+
+
+                    <th>
+                        Total Sessions
+                    </th>
+
+
+                    <th>
+                        Present
+                    </th>
+
+
+                    <th>
+                        Absent
+                    </th>
+
+
+                    <th>
+                        Attendance Rate
+                    </th>
+
+
+                </tr>
+
+            </thead>
+
+
+
+            <tbody>
+
+
+                @foreach(var item in reports)
+                {
+
+                    <tr>
+
+                        <td>
+                            @item.StudentName
+                        </td>
+
+
+                        <td>
+                            @item.CourseName
+                        </td>
+
+
+                        <td>
+                            @item.TotalSessions
+                        </td>
+
+
+                        <td>
+                            @item.PresentCount
+                        </td>
+
+
+                        <td>
+                            @item.AbsentCount
+                        </td>
+
+
+                        <td>
+
+                            @item.AttendanceRate %
+
+                        </td>
+
+
+                    </tr>
+
+                }
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+}
+
+else if (!loading)
+{
+
+    <p class="text-muted">
+        No attendance data available.
+    </p>
+
+}
+
+
+
+
+@code {
+
+
+    private bool loading;
+
+
+    private List<AttendanceReportDto> reports
+        = new();
+
+
+
+    private async Task LoadReport()
+    {
+
+        try
+        {
+
+            loading = true;
+
+
+            reports =
+                await ReportService
+                .GetAttendanceReportAsync(null);
+
+        }
+
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+
+}

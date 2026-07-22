@@ -1,0 +1,207 @@
+@using FlowAISystem.Application.Interfaces.Services.Reports
+
+@inject IReportService ReportService
+@inject IJSRuntime JS
+
+
+<div class="card shadow-sm mt-4">
+
+    <div class="card-body">
+
+        <h5 class="fw-bold mb-3">
+
+            <i class="bi bi-download me-2"></i>
+
+            Export Reports
+
+        </h5>
+
+
+        <div class="d-flex flex-wrap gap-2">
+
+
+            <!-- Student PDF -->
+
+            <button class="btn btn-danger"
+                    @onclick="ExportStudentsPdf">
+
+                <i class="bi bi-file-earmark-pdf"></i>
+
+                Students PDF
+
+            </button>
+
+
+
+            <!-- Student Excel -->
+
+            <button class="btn btn-success"
+                    @onclick="ExportStudentsExcel">
+
+                <i class="bi bi-file-earmark-excel"></i>
+
+                Students Excel
+
+            </button>
+
+
+
+            <!-- AI Knowledge PDF -->
+
+            <button class="btn btn-danger"
+                    @onclick="ExportAIKnowledgePdf">
+
+                <i class="bi bi-robot"></i>
+
+                AI Knowledge PDF
+
+            </button>
+
+
+
+            <!-- AI Knowledge Excel -->
+
+            <button class="btn btn-success"
+                    @onclick="ExportAIKnowledgeExcel">
+
+                <i class="bi bi-file-earmark-excel"></i>
+
+                AI Knowledge Excel
+
+            </button>
+
+
+
+            <!-- Dashboard PDF -->
+
+            <button class="btn btn-primary"
+                    @onclick="ExportDashboardPdf">
+
+                <i class="bi bi-bar-chart"></i>
+
+                Dashboard PDF
+
+            </button>
+
+
+
+            <!-- Dashboard Excel -->
+
+            <button class="btn btn-info"
+                    @onclick="ExportDashboardExcel">
+
+                <i class="bi bi-file-earmark-excel"></i>
+
+                Dashboard Excel
+
+            </button>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+
+    private async Task ExportStudentsPdf()
+    {
+        var file =
+            await ReportService.ExportStudentsPdfAsync();
+
+
+        await Download(
+            file,
+            "Students_Report.pdf",
+            "application/pdf");
+    }
+
+
+
+    private async Task ExportStudentsExcel()
+    {
+        var file =
+            await ReportService.ExportStudentsExcelAsync();
+
+
+        await Download(
+            file,
+            "Students_Report.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+
+
+    private async Task ExportAIKnowledgePdf()
+    {
+        var file =
+            await ReportService.ExportAIKnowledgePdfAsync();
+
+
+        await Download(
+            file,
+            "AI_Knowledge_Report.pdf",
+            "application/pdf");
+    }
+
+
+
+    private async Task ExportAIKnowledgeExcel()
+    {
+        var file =
+            await ReportService.ExportAIKnowledgeExcelAsync();
+
+
+        await Download(
+            file,
+            "AI_Knowledge_Report.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+
+
+    private async Task ExportDashboardPdf()
+    {
+        var file =
+            await ReportService.ExportDashboardPdfAsync();
+
+
+        await Download(
+            file,
+            "Dashboard_Summary_Report.pdf",
+            "application/pdf");
+    }
+
+
+
+    private async Task ExportDashboardExcel()
+    {
+        var file =
+            await ReportService.ExportDashboardExcelAsync();
+
+
+        await Download(
+            file,
+            "Dashboard_Summary_Report.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+
+
+    private async Task Download(
+        byte[] file,
+        string filename,
+        string contentType)
+    {
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            filename,
+            contentType,
+            file);
+    }
+
+}

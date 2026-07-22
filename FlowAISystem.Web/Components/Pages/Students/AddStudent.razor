@@ -1,0 +1,538 @@
+@page "/admin-dashboard/students/create"
+
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Shared.DTOs.Students
+@using FlowAISystem.Application.Interfaces
+@using FlowAISystem.Domain.Entities
+@using FlowAISystem.Shared.Enums
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IStudentService StudentService
+
+@inject NavigationManager Navigation
+
+
+
+
+<PageTitle>
+    Add Student
+</PageTitle>
+
+
+
+
+
+<div class="container-fluid py-4">
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                👨‍🎓 Add Student
+
+            </h2>
+
+
+            <p class="text-muted">
+
+                Create a new student record
+
+            </p>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+    <div class="card shadow-sm">
+
+
+
+        <div class="card-header bg-primary text-white">
+
+
+            <h5 class="mb-0">
+
+                Student Information
+
+            </h5>
+
+
+        </div>
+
+
+
+
+
+        <div class="card-body">
+
+
+
+            <EditForm Model="student"
+                      OnValidSubmit="SaveStudent">
+
+
+                <DataAnnotationsValidator />
+
+                <ValidationSummary class="alert alert-danger" />
+
+
+
+
+
+                <!-- Student Number + Email -->
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            Student Number
+
+                        </label>
+
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.StudentNumber" />
+
+
+
+                        <ValidationMessage For="@(() => student.StudentNumber)" />
+
+
+                    </div>
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            Email
+
+                        </label>
+
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.Email" />
+
+
+
+                        <ValidationMessage For="@(() => student.Email)" />
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+
+                <!-- Name -->
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            First Name
+
+                        </label>
+
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.FirstName" />
+
+
+
+                        <ValidationMessage For="@(() => student.FirstName)" />
+
+
+                    </div>
+
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            Last Name
+
+                        </label>
+
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.LastName" />
+
+
+
+                        <ValidationMessage For="@(() => student.LastName)" />
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+                <!-- Phone + Gender -->
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            Phone Number
+
+                        </label>
+
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.PhoneNumber" />
+
+
+                    </div>
+
+
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            Gender
+
+                        </label>
+
+
+
+                        <InputSelect class="form-select"
+                                     @bind-Value="student.Gender">
+
+
+                            @foreach(var gender in Enum.GetValues<Gender>())
+                            {
+
+                                <option value="@gender">
+
+                                    @gender
+
+                                </option>
+
+                            }
+
+
+                        </InputSelect>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+                <!-- Dates -->
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            Date Of Birth
+
+                        </label>
+
+
+
+                        <InputDate class="form-control"
+                                   @bind-Value="student.DateOfBirth" />
+
+
+                    </div>
+
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+
+                            Enrollment Date
+
+                        </label>
+
+
+
+                        <InputDate class="form-control"
+                                   @bind-Value="student.EnrollmentDate" />
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+                <!-- Department -->
+
+
+                <div class="mb-4">
+
+
+                    <label class="form-label">
+
+                        Department
+
+                    </label>
+
+
+
+                    <InputSelect class="form-select"
+                                 @bind-Value="student.DepartmentId">
+
+
+                        <option value="0">
+
+                            -- Select Department --
+
+                        </option>
+
+
+
+                        @foreach(var department in departments)
+                        {
+
+                            <option value="@department.Id">
+
+                                @department.Name
+
+                            </option>
+
+                        }
+
+
+                    </InputSelect>
+
+
+
+                    <ValidationMessage For="@(() => student.DepartmentId)" />
+
+
+                </div>
+
+
+
+
+
+
+
+
+                <div class="text-end">
+
+
+                    <a href="/admin-dashboard/students"
+                       class="btn btn-secondary me-2">
+
+
+                        Cancel
+
+
+                    </a>
+
+
+
+
+
+
+                    <button type="submit"
+                            class="btn btn-success"
+                            disabled="@isSaving">
+
+
+                        @if(isSaving)
+                        {
+
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+
+                            <span>
+                                Saving...
+                            </span>
+
+                        }
+                        else
+                        {
+
+                            <span>
+                                💾 Save Student
+                            </span>
+
+                        }
+
+
+                    </button>
+
+
+                </div>
+
+
+
+            </EditForm>
+
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+
+
+@code
+{
+
+    private CreateStudentDto student = new();
+
+
+    private List<Department> departments = [];
+
+
+    private bool isSaving;
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        departments =
+            await StudentService
+                .GetDepartmentsAsync();
+
+
+
+        student.EnrollmentDate =
+            DateOnly.FromDateTime(
+                DateTime.Today);
+
+    }
+
+
+
+
+
+    private async Task SaveStudent()
+    {
+
+        if(isSaving)
+            return;
+
+
+
+        isSaving = true;
+
+
+
+        try
+        {
+
+            await StudentService
+                .CreateAsync(student);
+
+
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/students");
+
+        }
+        finally
+        {
+
+            isSaving = false;
+
+        }
+
+    }
+
+}

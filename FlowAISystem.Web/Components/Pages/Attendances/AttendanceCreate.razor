@@ -1,0 +1,282 @@
+@page "/admin-dashboard/attendances/create"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Attendances
+@using FlowAISystem.Shared.DTOs.Enrollments
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+
+@inject IAttendanceService AttendanceService
+
+@inject IEnrollmentService EnrollmentService
+
+@inject NavigationManager Navigation
+
+@inject NotificationService Notification
+
+
+
+<PageTitle>
+    Create Attendance
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    ➕ Create Attendance
+</h3>
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Create">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Enrollment
+</label>
+
+
+<InputSelect class="form-select"
+             TValue="int"
+             @bind-Value="model.EnrollmentId">
+
+
+<option value="0">
+    Select Student / Course
+</option>
+
+
+@foreach(var enrollment in enrollments)
+{
+
+<option value="@enrollment.Id">
+
+    @enrollment.StudentName 
+    -
+    @enrollment.CourseName
+    -
+    @enrollment.ClassName
+
+</option>
+
+}
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Attendance Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.AttendanceDate" />
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Status
+</label>
+
+
+<InputSelect class="form-select"
+             @bind-Value="model.Status">
+
+
+<option value="@AttendanceStatus.Present">
+    Present
+</option>
+
+
+<option value="@AttendanceStatus.Absent">
+    Absent
+</option>
+
+
+<option value="@AttendanceStatus.Late">
+    Late
+</option>
+
+
+<option value="@AttendanceStatus.Excused">
+    Excused
+</option>
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Remark
+</label>
+
+
+<InputTextArea class="form-control"
+               @bind-Value="model.Remark" />
+
+</div>
+
+
+
+
+<button type="submit"
+        class="btn btn-primary me-2">
+
+Save
+
+</button>
+
+
+
+<button type="button"
+        class="btn btn-secondary"
+        @onclick="Cancel">
+
+Cancel
+
+</button>
+
+
+</EditForm>
+
+
+</div>
+
+</div>
+
+
+
+
+
+@code {
+
+
+private CreateAttendanceDto model = new()
+{
+    AttendanceDate = DateOnly.FromDateTime(
+        DateTime.Today)
+};
+
+
+
+private List<EnrollmentListItemDto> enrollments = new();
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadEnrollments();
+
+}
+
+
+
+
+private async Task LoadEnrollments()
+{
+
+    try
+    {
+
+        enrollments =
+            await EnrollmentService
+            .GetAllAsync(
+                new EnrollmentSearchDto());
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+private async Task Create()
+{
+
+    try
+    {
+
+        await AttendanceService
+            .CreateAsync(model);
+
+
+
+        Notification.Success(
+            "Attendance created successfully.");
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/attendances");
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+private void Cancel()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/attendances");
+
+}
+
+
+}

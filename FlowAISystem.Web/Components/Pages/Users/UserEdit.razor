@@ -1,0 +1,366 @@
+@* @page "/admin-dashboard/users/edit/{Id:int}"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Domain.Entities
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Authorization
+
+
+@attribute [Authorize(Roles="Admin")]
+
+
+@inject IUserService UserService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Edit User
+</PageTitle>
+
+
+<h3 class="mb-4">
+    ✏️ Edit User
+</h3>
+
+
+
+@if(user == null)
+{
+    <p>
+        Loading...
+    </p>
+}
+else
+{
+
+<EditForm Model="user"
+          OnValidSubmit="SaveUser">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+Username
+</label>
+
+
+<InputText class="form-control"
+           @bind-Value="user.Username"/>
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+Email
+</label>
+
+
+<InputText class="form-control"
+           @bind-Value="user.Email"/>
+
+</div>
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+Role
+</label>
+
+
+<InputSelect class="form-select"
+             @bind-Value="user.RoleId">
+
+
+<option value="0">
+-- Select Role --
+</option>
+
+
+@foreach(var role in roles)
+{
+
+<option value="@role.Id">
+
+@role.Name
+
+</option>
+
+}
+
+
+</InputSelect>
+
+</div>
+
+
+
+
+
+<div class="form-check mb-3">
+
+
+<InputCheckbox class="form-check-input"
+               @bind-Value="user.IsActive"/>
+
+
+<label class="form-check-label">
+
+Active User
+
+</label>
+
+
+</div>
+
+
+
+
+
+<button class="btn btn-primary">
+
+Save Changes
+
+</button>
+
+
+
+<a href="/admin-dashboard/users"
+class="btn btn-secondary ms-2">
+
+Cancel
+
+</a>
+
+
+</EditForm>
+
+}
+
+
+
+
+@code {
+
+
+[Parameter]
+public int Id { get; set; }
+
+
+
+private UpdateUserDto? user;
+
+
+private List<Role> roles = [];
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    roles =
+        await UserService.GetRolesAsync();
+
+
+
+    var data =
+        await UserService.GetByIdAsync(Id);
+
+
+
+    if(data != null)
+    {
+
+        user = new UpdateUserDto
+        {
+            Id = data.Id,
+
+            Username = data.Username,
+
+            Email = data.Email,
+
+            RoleId = data.RoleId,
+
+            IsActive = data.IsActive
+        };
+
+    }
+
+}
+
+
+
+
+
+private async Task SaveUser()
+{
+
+    if(user == null)
+        return;
+
+
+
+    await UserService.UpdateAsync(user);
+
+
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/users");
+
+}
+
+
+} *@
+
+@page "/admin-dashboard/users/edit/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Domain.Entities
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles="Admin")]
+
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>Edit User | FlowAI System</PageTitle>
+
+<div class="container py-4">
+    <!-- Header Block -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center mb-1">
+            <a href="/admin-dashboard/users" class="text-decoration-none text-secondary me-2">Users</a>
+            <span class="text-muted me-2">/</span>
+            <span class="text-dark fw-semibold">Edit User</span>
+        </div>
+        <h2 class="h4 fw-bold text-dark m-0">✏️ Edit User Account</h2>
+        <p class="text-muted small m-0">Update configurations and roles for this system user.</p>
+    </div>
+
+    @if (user == null)
+    {
+        <div class="d-flex align-items-center justify-content-center py-5">
+            <div class="spinner-border text-primary me-3" role="status"></div>
+            <span class="text-muted fw-medium">Loading user details...</span>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-body p-4">
+                
+                <EditForm Model="user" OnValidSubmit="SaveUser">
+                    <DataAnnotationsValidator />
+                    
+                    <!-- Alert Error Banner if Validation Fails -->
+                    <ValidationSummary class="alert alert-danger list-unstyled small" />
+
+                    <div class="row g-3">
+                        <!-- Username -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-secondary small">Username</label>
+                            <InputText class="form-control" @bind-Value="user.Username" placeholder="e.g. johndoe" />
+                        </div>
+
+                        <!-- Email Address -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-secondary small">Email Address</label>
+                            <InputText class="form-control" @bind-Value="user.Email" placeholder="e.g. john@example.com" />
+                        </div>
+
+                        <!-- Assigned Role -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-secondary small">Assigned Role</label>
+                            <InputSelect class="form-select" @bind-Value="user.RoleId">
+                                <option value="0">-- Select Role --</option>
+                                @foreach (var role in roles)
+                                {
+                                    <option value="@role.Id">@role.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <!-- Active Switch -->
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch p-3 bg-light rounded-3 w-100 border border-1 border-light">
+                                <InputCheckbox class="form-check-input ms-0 me-3" id="isActiveSwitch" @bind-Value="user.IsActive" />
+                                <label class="form-check-label fw-medium text-dark" for="isActiveSwitch">
+                                    Active Account Status
+                                    <span class="d-block text-muted small fw-normal">Allows the user to access and use the platform.</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <hr class="text-muted my-4" />
+
+                    <!-- Form Footer Buttons -->
+                    <div class="d-flex align-items-center justify-content-end gap-2">
+                        <a href="/admin-dashboard/users" class="btn btn-outline-secondary px-4">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-medium">
+                            Save Changes
+                        </button>
+                    </div>
+
+                </EditForm>
+
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private UpdateUserDto? user;
+    private List<Role> roles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = await UserService.GetRolesAsync() ?? new List<Role>();
+        var data = await UserService.GetByIdAsync(Id);
+
+        if (data != null)
+        {
+            user = new UpdateUserDto
+            {
+                Id = data.Id,
+                Username = data.Username,
+                Email = data.Email,
+                RoleId = data.RoleId,
+                IsActive = data.IsActive
+            };
+        }
+    }
+
+    private async Task SaveUser()
+    {
+        if (user == null)
+            return;
+
+        await UserService.UpdateAsync(user);
+        Navigation.NavigateTo("/admin-dashboard/users");
+    }
+}

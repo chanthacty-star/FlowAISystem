@@ -1,0 +1,298 @@
+@page "/admin-dashboard/attendances/edit/{Id:int}"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Attendances
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+
+@inject IAttendanceService AttendanceService
+
+@inject NavigationManager Navigation
+
+@inject NotificationService Notification
+
+
+
+<PageTitle>
+    Edit Attendance
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    ✏️ Edit Attendance
+</h3>
+
+
+
+
+@if(model == null)
+{
+
+<p>
+    Loading...
+</p>
+
+}
+else
+{
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Update">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Attendance Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.AttendanceDate" />
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Status
+</label>
+
+
+<InputSelect class="form-select"
+             @bind-Value="model.Status">
+
+
+<option value="@AttendanceStatus.Present">
+    Present
+</option>
+
+
+<option value="@AttendanceStatus.Absent">
+    Absent
+</option>
+
+
+<option value="@AttendanceStatus.Late">
+    Late
+</option>
+
+
+<option value="@AttendanceStatus.Excused">
+    Excused
+</option>
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Remark
+</label>
+
+
+<InputTextArea class="form-control"
+               @bind-Value="model.Remark" />
+
+</div>
+
+
+
+
+
+<button type="submit"
+        class="btn btn-primary me-2">
+
+Update
+
+</button>
+
+
+
+<button type="button"
+        class="btn btn-secondary"
+        @onclick="Cancel">
+
+Cancel
+
+</button>
+
+
+
+</EditForm>
+
+
+</div>
+
+</div>
+
+
+}
+
+
+
+
+
+@code {
+
+
+[Parameter]
+public int Id { get; set; }
+
+
+
+private UpdateAttendanceDto? model;
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadAttendance();
+
+}
+
+
+
+
+
+private async Task LoadAttendance()
+{
+
+    try
+    {
+
+        var attendance =
+            await AttendanceService
+            .GetByIdAsync(Id);
+
+
+
+        if(attendance == null)
+        {
+
+            Notification.Error(
+                "Attendance not found.");
+
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/attendances");
+
+            return;
+
+        }
+
+
+
+        model = new UpdateAttendanceDto
+        {
+
+            Id = attendance.Id,
+
+
+            EnrollmentId =
+                attendance.EnrollmentId,
+
+
+            AttendanceDate =
+                attendance.AttendanceDate,
+
+
+            Status =
+                attendance.Status,
+
+
+            Remark =
+                attendance.Remark
+
+        };
+
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+private async Task Update()
+{
+
+    try
+    {
+
+        await AttendanceService
+            .UpdateAsync(model!);
+
+
+
+        Notification.Success(
+            "Attendance updated successfully.");
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/attendances");
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+private void Cancel()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/attendances");
+
+}
+
+
+}

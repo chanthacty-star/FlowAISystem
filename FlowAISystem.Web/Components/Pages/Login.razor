@@ -1,0 +1,354 @@
+@* @page "/login"
+
+@rendermode InteractiveServer
+
+@using FlowAISystem.Application.DTOs.Auth
+@using FlowAISystem.Application.Interfaces
+@using FlowAISystem.Web.Authentication
+
+@inject IAuthService AuthService
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+
+<PageTitle>Login</PageTitle>
+
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-4">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+
+                    <h3 class="text-center mb-4">
+                        ?? FlowAISystem Login
+                    </h3>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Username
+                        </label>
+
+                        <input class="form-control"
+                               placeholder="Enter username"
+                               @bind="model.Username" />
+
+                    </div>
+
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Password
+                        </label>
+
+                        <input class="form-control"
+                               type="password"
+                               placeholder="Enter password"
+                               @bind="model.Password" />
+
+                    </div>
+
+
+
+                    <button class="btn btn-primary w-100"
+                            @onclick="LoginUser">
+
+                        Login
+
+                    </button>
+
+
+
+                    @if (!string.IsNullOrWhiteSpace(error))
+                    {
+
+                        <div class="alert alert-danger mt-3">
+
+                            @error
+
+                        </div>
+
+                    }
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+
+    private LoginRequestDto model = new();
+
+
+    private string? error;
+
+
+
+    private async Task LoginUser()
+    {
+
+        error = null;
+
+
+        var result =
+            await AuthService.LoginAsync(model);
+
+
+
+        if (result == null)
+        {
+
+            error = "Invalid username or password.";
+
+            return;
+
+        }
+
+
+
+        await AuthProvider.NotifyUserAuthentication(
+            result.Token
+        );
+
+
+
+        // Redirect depending on role
+
+        if (result.Role == "Admin")
+        {
+
+            Navigation.NavigateTo("/admin-dashboard");
+
+        }
+        else if (result.Role == "Teacher")
+        {
+
+            Navigation.NavigateTo("/teacher-dashboard");
+
+        }
+        else if (result.Role == "Student")
+        {
+
+            Navigation.NavigateTo("/student-dashboard");
+
+        }
+        else
+        {
+
+            Navigation.NavigateTo("/");
+
+        }
+
+    }
+
+} *@
+
+
+@page "/login"
+@rendermode InteractiveServer
+
+@using FlowAISystem.Application.DTOs.Auth
+@using FlowAISystem.Application.Interfaces
+@using FlowAISystem.Web.Authentication
+
+@inject IAuthService AuthService
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Login - FlowAISystem</PageTitle>
+
+<div class="login-wrapper d-flex align-items-center justify-content-center min-vh-100 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-10 col-sm-8 col-md-6 col-lg-4">
+                
+                <!-- Brand Logo / Heading Section -->
+                <div class="text-center mb-4">
+                    <div class="brand-icon-bg d-inline-flex align-items-center justify-content-center mb-2 shadow-sm rounded-circle">
+                        <i class="bi bi-cpu-fill text-primary fs-3"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark m-0">Flow<span class="text-primary">AI</span></h2>
+                    <p class="text-muted small">Welcome back! Please sign in to your account.</p>
+                </div>
+
+                <!-- Main Card -->
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-body p-4 p-sm-5 position-relative">
+                        
+                        <!-- Top Accent Line -->
+                        <div class="position-absolute top-0 start-0 end-0 bg-primary" style="height: 4px;"></div>
+
+                        <h4 class="fw-semibold text-secondary mb-4">Sign In</h4>
+
+                        <EditForm Model="model" OnValidSubmit="LoginUser">
+                            <!-- Username Field -->
+                            <div class="mb-3">
+                                <label class="form-label fw-medium text-secondary small">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control border-start-0 ps-0" 
+                                           placeholder="Enter username"
+                                           @bind="model.Username" 
+                                           required 
+                                           disabled="@isLoading" />
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="mb-4">
+                                <label class="form-label fw-medium text-secondary small">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    <input type="password" 
+                                           class="form-control border-start-0 ps-0" 
+                                           placeholder="Enter password"
+                                           @bind="model.Password" 
+                                           required 
+                                           disabled="@isLoading" />
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <button type="submit" 
+                                    class="btn btn-primary w-100 py-2.5 fw-semibold rounded-3 shadow-sm d-flex align-items-center justify-content-center"
+                                    disabled="@isLoading">
+                                @if (isLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Signing in...</span>
+                                }
+                                else
+                                {
+                                    <span>Sign In</span>
+                                    <i class="bi bi-arrow-right ms-2"></i>
+                                }
+                            </button>
+                        </EditForm>
+
+                        <!-- Error Toast / Alert -->
+                        @if (!string.IsNullOrWhiteSpace(error))
+                        {
+                            <div class="alert alert-danger d-flex align-items-center mt-4 border-0 shadow-sm rounded-3 transition-fade" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2 fs-5 flex-shrink-0"></i>
+                                <div class="small">@error</div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+
+                <!-- Optional Footer Links -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">&copy; 2026 FlowAISystem. All rights reserved.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-wrapper {
+        background: radial-gradient(circle at 10% 20%, rgba(242, 246, 253, 1) 0%, rgba(224, 234, 252, 1) 90.1%);
+    }
+    .brand-icon-bg {
+        width: 56px;
+        height: 56px;
+        background-color: #ffffff;
+    }
+    .form-control:focus {
+        border-color: #dee2e6;
+        box-shadow: none;
+    }
+    .input-group:focus-within .input-group-text,
+    .input-group:focus-within .form-control {
+        border-color: #0d6efd;
+    }
+    .btn-primary {
+        transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+    .transition-fade {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+@code {
+    private LoginRequestDto model = new();
+    private string? error;
+    private bool isLoading = false;
+
+    private async Task LoginUser()
+    {
+        if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Password))
+        {
+            error = "Please fill out all required fields.";
+            return;
+        }
+
+        try
+        {
+            error = null;
+            isLoading = true;
+
+            var result = await AuthService.LoginAsync(model);
+
+            if (result == null || string.IsNullOrEmpty(result.Token))
+            {
+                error = "Invalid username or password. Please try again.";
+                return;
+            }
+
+            await AuthProvider.NotifyUserAuthentication(result.Token);
+
+            var targetUri = result.Role switch
+            {
+                "Admin" => "/admin-dashboard",
+                "Teacher" => "/teacher-dashboard",
+                "Student" => "/student-dashboard",
+                _ => "/"
+            };
+
+            Navigation.NavigateTo(targetUri);
+        }
+        catch (Exception)
+        {
+            // The 'ex' variable is removed here to resolve warning CS0168.
+            // If you have an ILogger injected, you could do: Logger.LogError(ex, "Login failed");
+            error = "An unexpected error occurred. Please try again later.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

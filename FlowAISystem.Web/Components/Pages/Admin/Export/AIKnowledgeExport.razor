@@ -1,0 +1,54 @@
+@page "/export/ai-knowledge"
+
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JS
+
+
+<PageTitle>
+    AI Knowledge Export
+</PageTitle>
+
+
+<h3>
+    AI Knowledge Export
+</h3>
+
+
+<div class="card p-3">
+
+    <p>
+        Export AI Knowledge reports
+    </p>
+
+
+    <button class="btn btn-danger me-2"
+            @onclick="ExportPdf">
+        Export PDF
+    </button>
+
+
+    <button class="btn btn-success"
+            @onclick="ExportExcel">
+        Export Excel
+    </button>
+
+</div>
+
+
+@code {
+
+    private async Task ExportPdf()
+    {
+        // will connect to ExportService
+        // after we create it
+    }
+
+
+    private async Task ExportExcel()
+    {
+        // will connect to ExportService
+        // after we create it
+    }
+
+}

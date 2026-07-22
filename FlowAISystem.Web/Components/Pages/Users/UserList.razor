@@ -1,0 +1,223 @@
+@page "/admin-dashboard/users"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Authorization
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IUserService UserService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    User Management
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    👥 User Management
+</h3>
+
+
+
+<div class="mb-3">
+
+    <button class="btn btn-primary"
+            @onclick="CreateUser">
+
+        + Create User
+
+    </button>
+
+</div>
+
+
+
+
+<div class="card">
+
+<div class="card-body">
+
+
+<table class="table table-striped">
+
+
+<thead>
+
+<tr>
+
+<th>
+    Username
+</th>
+
+
+<th>
+    Email
+</th>
+
+
+<th>
+    Role
+</th>
+
+
+<th>
+    Status
+</th>
+
+
+<th>
+    Action
+</th>
+
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+@foreach(var user in users)
+{
+
+<tr>
+
+
+<td>
+    @user.Username
+</td>
+
+
+<td>
+    @user.Email
+</td>
+
+
+<td>
+    @user.RoleName
+</td>
+
+
+<td>
+
+@if(user.IsActive)
+{
+    <span class="badge bg-success">
+        Active
+    </span>
+}
+else
+{
+    <span class="badge bg-danger">
+        Disabled
+    </span>
+}
+
+</td>
+
+
+<td>
+
+
+<a class="btn btn-sm btn-info"
+   href="/admin-dashboard/users/details/@user.Id">
+
+    Details
+
+</a>
+
+
+
+<a class="btn btn-sm btn-warning ms-1"
+   href="/admin-dashboard/users/edit/@user.Id">
+
+    Edit
+
+</a>
+
+
+
+<a class="btn btn-sm btn-danger ms-1"
+   href="/admin-dashboard/users/delete/@user.Id">
+
+    Delete
+
+</a>
+
+
+
+</td>
+
+
+</tr>
+
+}
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+</div>
+
+
+
+
+
+@code {
+
+
+    private List<UserListItemDto> users = new();
+
+
+
+    private UserSearchDto search = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await LoadUsers();
+
+    }
+
+
+
+
+    private async Task LoadUsers()
+    {
+
+        users =
+            await UserService.GetAllAsync(search);
+
+    }
+
+
+
+
+
+    private void CreateUser()
+    {
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/users/create");
+
+    }
+
+
+}

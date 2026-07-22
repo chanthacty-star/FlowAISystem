@@ -1,0 +1,326 @@
+@page "/admin-dashboard/courses/edit/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Courses
+@using FlowAISystem.Shared.DTOs.Departments
+@using FlowAISystem.Web.Services
+
+@inject ICourseService CourseService
+
+@inject IDepartmentService DepartmentService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Edit Course
+</PageTitle>
+
+
+<h3 class="mb-4">
+    ✏ Edit Course
+</h3>
+
+
+
+@if (loading)
+{
+    <div class="text-center">
+
+        <div class="spinner-border text-primary"></div>
+
+        <p>
+            Loading course...
+        </p>
+
+    </div>
+}
+else if(model == null)
+{
+    <div class="alert alert-danger">
+
+        Course not found.
+
+    </div>
+}
+else
+{
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Update">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Course Code
+</label>
+
+<InputText class="form-control"
+           @bind-Value="model.Code" />
+
+</div>
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Course Name
+</label>
+
+
+<InputText class="form-control"
+           @bind-Value="model.Name" />
+
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Credits
+</label>
+
+
+<InputNumber class="form-control"
+             @bind-Value="model.Credits" />
+
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+
+<label class="form-label">
+    Department
+</label>
+
+
+<InputSelect TValue="int"
+             class="form-select"
+             @bind-Value="model.DepartmentId">
+
+
+<option value="0">
+    Select Department
+</option>
+
+
+@foreach(var department in departments)
+{
+
+<option value="@department.Id">
+
+    @department.Name
+
+</option>
+
+}
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+<button class="btn btn-primary me-2"
+        type="submit">
+
+    Update
+
+</button>
+
+
+
+<button class="btn btn-secondary"
+        type="button"
+        @onclick="Cancel">
+
+    Cancel
+
+</button>
+
+
+</EditForm>
+
+
+</div>
+
+</div>
+
+}
+
+
+
+
+@code {
+
+
+[Parameter]
+public int Id { get; set; }
+
+
+
+private UpdateCourseDto? model;
+
+
+
+private List<DepartmentListItemDto> departments = new();
+
+
+
+private bool loading = true;
+
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+try
+{
+
+    await LoadDropdowns();
+
+
+
+    var course =
+        await CourseService
+            .GetByIdAsync(Id);
+
+
+
+    if(course != null)
+    {
+
+        model = new UpdateCourseDto
+        {
+
+            Id = course.Id,
+
+            Code = course.Code,
+
+            Name = course.Name,
+
+            Credits = course.Credits,
+
+            DepartmentId = course.DepartmentId
+
+        };
+
+    }
+
+
+}
+catch(Exception ex)
+{
+
+    Notification.Error(ex.Message);
+
+}
+finally
+{
+
+    loading = false;
+
+}
+
+
+}
+
+
+
+
+
+
+private async Task LoadDropdowns()
+{
+
+departments =
+    await DepartmentService
+        .GetAllAsync(
+            new DepartmentSearchDto());
+
+}
+
+
+
+
+
+
+
+private async Task Update()
+{
+
+if(model == null)
+    return;
+
+
+try
+{
+
+    await CourseService
+        .UpdateAsync(model);
+
+
+
+    Notification.Success(
+        "Course updated successfully.");
+
+
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/courses");
+
+
+}
+catch(Exception ex)
+{
+
+    Notification.Error(
+        ex.Message);
+
+}
+
+
+}
+
+
+
+
+
+
+private void Cancel()
+{
+
+Navigation.NavigateTo(
+    "/admin-dashboard/courses");
+
+}
+
+
+}

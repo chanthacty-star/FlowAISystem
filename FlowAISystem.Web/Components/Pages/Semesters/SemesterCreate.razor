@@ -1,0 +1,289 @@
+@page "/admin-dashboard/semesters/create"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Semesters
+@using FlowAISystem.Shared.DTOs.AcademicYears
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+
+@inject ISemesterService SemesterService
+
+@inject IAcademicYearService AcademicYearService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Create Semester
+</PageTitle>
+
+
+<h3 class="mb-4">
+    ➕ Create Semester
+</h3>
+
+
+
+<div class="card shadow">
+
+
+    <div class="card-body">
+
+
+        <EditForm Model="@model"
+                  OnValidSubmit="Save">
+
+
+            <DataAnnotationsValidator />
+
+            <ValidationSummary />
+
+
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Semester Name
+                </label>
+
+
+                <InputText class="form-control"
+                           @bind-Value="model.Name" />
+
+            </div>
+
+
+
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Semester Type
+                </label>
+
+
+                <InputSelect class="form-select"
+                             @bind-Value="model.SemesterType">
+
+
+                    <option value="">
+                        Select Type
+                    </option>
+
+
+                    @foreach(var type in Enum.GetValues<SemesterType>())
+                    {
+
+                        <option value="@type">
+                            @type
+                        </option>
+
+                    }
+
+
+                </InputSelect>
+
+
+            </div>
+
+
+
+
+            <div class="mb-3">
+
+
+                <label class="form-label">
+                    Academic Year
+                </label>
+
+
+                <InputSelect class="form-select"
+                             @bind-Value="model.AcademicYearId">
+
+
+                    <option value="0">
+                        Select Academic Year
+                    </option>
+
+
+                    @foreach(var year in academicYears)
+                    {
+
+                        <option value="@year.Id">
+
+                            @year.Name
+
+                        </option>
+
+                    }
+
+
+                </InputSelect>
+
+
+            </div>
+
+
+
+
+            <div class="row">
+
+
+                <div class="col-md-6 mb-3">
+
+
+                    <label>
+                        Start Date
+                    </label>
+
+
+                    <InputDate class="form-control"
+                               @bind-Value="model.StartDate" />
+
+
+                </div>
+
+
+
+                <div class="col-md-6 mb-3">
+
+
+                    <label>
+                        End Date
+                    </label>
+
+
+                    <InputDate class="form-control"
+                               @bind-Value="model.EndDate" />
+
+
+                </div>
+
+
+            </div>
+
+
+
+
+            <div class="form-check mb-3">
+
+
+                <InputCheckbox class="form-check-input"
+                               @bind-Value="model.IsCurrent" />
+
+
+                <label class="form-check-label">
+
+                    Current Semester
+
+                </label>
+
+
+            </div>
+
+
+
+
+
+            <button class="btn btn-primary me-2"
+                    type="submit">
+
+
+                Save
+
+
+            </button>
+
+
+
+            <button class="btn btn-secondary"
+                    type="button"
+                    @onclick="Cancel">
+
+
+                Cancel
+
+
+            </button>
+
+
+
+        </EditForm>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+@code {
+
+
+    private CreateSemesterDto model = new();
+
+
+    private List<AcademicYearListItemDto> academicYears = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        academicYears =
+            await AcademicYearService
+                .GetAllAsync(new());
+
+
+    }
+
+
+
+
+    private async Task Save()
+    {
+
+        try
+        {
+
+            await SemesterService
+                .CreateAsync(model);
+
+
+
+            Notification.Success(
+                "Semester created successfully.");
+
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/semesters");
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(
+                ex.Message);
+
+        }
+
+    }
+
+
+
+
+    private void Cancel()
+    {
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/semesters");
+
+    }
+
+}

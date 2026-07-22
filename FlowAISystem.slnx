@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="FlowAISystem.Application/FlowAISystem.Application.csproj" />
+  <Project Path="FlowAISystem.Domain/FlowAISystem.Domain.csproj" />
+  <Project Path="FlowAISystem.Infrastructure/FlowAISystem.Infrastructure.csproj" />
+  <Project Path="FlowAISystem.Shared/FlowAISystem.Shared.csproj" />
+  <Project Path="FlowAISystem.Web/FlowAISystem.Web.csproj" />
+</Solution>

@@ -1,0 +1,199 @@
+@page "/admin-dashboard/reports/scores"
+
+@using FlowAISystem.Application.Interfaces.Services.Reports
+@using FlowAISystem.Shared.DTOs.Reports
+
+@inject IReportService ReportService
+
+
+<PageTitle>
+    Score Reports
+</PageTitle>
+
+
+
+<h3>
+    Score Reports
+</h3>
+
+
+
+<div class="card p-3 mb-3">
+
+
+    <button class="btn btn-primary"
+            @onclick="LoadReport">
+
+        Generate Score Report
+
+    </button>
+
+
+</div>
+
+
+
+@if (loading)
+{
+    <p>
+        Loading score report...
+    </p>
+}
+
+
+
+@if (reports.Any())
+{
+
+    <div class="card p-3">
+
+
+        <table class="table table-bordered">
+
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Student
+                    </th>
+
+
+                    <th>
+                        Course
+                    </th>
+
+
+                    <th>
+                        Total Marks
+                    </th>
+
+
+                    <th>
+                        Max Marks
+                    </th>
+
+
+                    <th>
+                        Percentage
+                    </th>
+
+
+                    <th>
+                        Grade
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+
+            <tbody>
+
+
+                @foreach(var item in reports)
+                {
+
+                    <tr>
+
+                        <td>
+                            @item.StudentName
+                        </td>
+
+
+                        <td>
+                            @item.CourseName
+                        </td>
+
+
+                        <td>
+                            @item.TotalMarks
+                        </td>
+
+
+                        <td>
+                            @item.MaxMarks
+                        </td>
+
+
+                        <td>
+                            @item.Percentage %
+                        </td>
+
+
+                        <td>
+
+                            <span class="badge bg-primary">
+                                @item.Grade
+                            </span>
+
+                        </td>
+
+
+                    </tr>
+
+                }
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+}
+
+else if (!loading)
+{
+
+    <p class="text-muted">
+        No score data available.
+    </p>
+
+}
+
+
+
+
+
+@code {
+
+
+    private bool loading;
+
+
+    private List<ScoreReportDto> reports
+        = new();
+
+
+
+    private async Task LoadReport()
+    {
+
+        try
+        {
+
+            loading = true;
+
+
+            reports =
+                await ReportService
+                .GetScoreReportAsync(null);
+
+        }
+
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+
+}

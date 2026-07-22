@@ -1,0 +1,158 @@
+@page "/admin-dashboard/users/delete/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.JSInterop
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Delete User - Admin Dashboard</PageTitle>
+
+<div class="container py-4" style="max-width: 600px;">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/admin-dashboard" class="text-decoration-none text-muted">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/admin-dashboard/users" class="text-decoration-none text-muted">Users</a></li>
+            <li class="breadcrumb-item active text-dark" aria-current="page">Delete</li>
+        </ol>
+    </nav>
+
+    @if (errorOccurred)
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body text-center py-5">
+                <div class="text-danger mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+                        <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                        <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.993c-.16-.902.055-1.511.9-1.511.865 0 1.01.62.9 1.511l-.4 3.1c-.049.37-.254.602-.5.602s-.451-.233-.5-.602l-.4-3.1z"/>
+                    </svg>
+                </div>
+                <h4 class="fw-bold text-dark mb-2">User Not Found</h4>
+                <p class="text-muted mb-4">The user you are trying to delete may have already been removed or does not exist.</p>
+                <a href="/admin-dashboard/users" class="btn btn-outline-secondary px-4">
+                    Return to User List
+                </a>
+            </div>
+        </div>
+    }
+    else if (user == null)
+    {
+        <!-- Skeleton Loading State -->
+        <div class="card border-0 shadow-sm p-4 text-center">
+            <div class="spinner-border text-danger mx-auto my-4" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted">Fetching user profile details safely...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Main Confirmation Card -->
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <!-- Red Warning Accent Top-Bar -->
+            <div class="bg-danger" style="height: 4px;"></div>
+            
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-danger-subtle text-danger p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-x-fill" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm6.146-2.854a.5.5 0 0 1 .708 0L14 6.293l1.146-1.147a.5.5 0 0 1 .708.708L14.707 7l1.147 1.146a.5.5 0 0 1-.708.708L14 7.707l-1.146 1.147a.5.5 0 0 1-.708-.708L13.293 7l-1.147-1.146a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-dark mb-1">Delete User Account</h4>
+                        <p class="text-muted small mb-0">This action is permanent and cannot be undone.</p>
+                    </div>
+                </div>
+
+                <div class="bg-light rounded-3 p-3 mb-4">
+                    <div class="row g-3">
+                        <div class="col-sm-4 text-muted small text-uppercase fw-semibold">Username</div>
+                        <div class="col-sm-8 text-dark fw-medium">@user.Username</div>
+
+                        <div class="col-sm-4 text-muted small text-uppercase fw-semibold">Email Address</div>
+                        <div class="col-sm-8 text-dark text-break">@user.Email</div>
+
+                        <div class="col-sm-4 text-muted small text-uppercase fw-semibold">Role Access</div>
+                        <div class="col-sm-8">
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1.5 rounded-2 small">
+                                @user.RoleName
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button Controls -->
+                <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end border-top pt-4">
+                    <a href="/admin-dashboard/users" class="btn btn-light border px-4 py-2 order-2 order-sm-1">
+                        Cancel, Keep User
+                    </a>
+                    <button class="btn btn-danger px-4 py-2 order-1 order-sm-2 d-inline-flex align-items-center justify-content-center gap-2"
+                            @onclick="DeleteUser"
+                            disabled="@deleting">
+                        @if (deleting)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span>Deleting Account...</span>
+                        }
+                        else
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+                            </svg>
+                            <span>Yes, Permanently Delete</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private UserDto? user;
+    private bool deleting;
+    private bool errorOccurred;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await UserService.GetByIdAsync(Id);
+            if (user == null)
+            {
+                errorOccurred = true;
+            }
+        }
+        catch (Exception)
+        {
+            errorOccurred = true;
+        }
+    }
+
+    private async Task DeleteUser()
+    {
+        deleting = true;
+        StateHasChanged(); // Force UI update to show loading spinner immediately
+
+        try
+        {
+            await UserService.DeleteAsync(Id);
+            Navigation.NavigateTo("/admin-dashboard/users");
+        }
+        catch (Exception)
+        {
+            deleting = false;
+            // Optionally, add logic here to display a UI toast message
+        }
+    }
+}

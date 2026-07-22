@@ -1,0 +1,364 @@
+@page "/admin-dashboard/feedbacks"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Feedbacks
+@using FlowAISystem.Web.Services
+
+@inject IFeedbackService FeedbackService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Feedback Management
+</PageTitle>
+
+
+<h3 class="mb-4">
+    ⭐ Feedback Management
+</h3>
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<div class="row mb-3">
+
+
+<div class="col-md-6">
+
+<input class="form-control"
+       placeholder="Search student or course..."
+       @bind="search.SearchTerm"
+       @bind:event="oninput" />
+
+</div>
+
+
+
+<div class="col-md-3">
+
+<select class="form-select"
+        @bind="search.Rating">
+
+<option value="">
+    All Ratings
+</option>
+
+<option value="5">
+    ⭐⭐⭐⭐⭐
+</option>
+
+<option value="4">
+    ⭐⭐⭐⭐
+</option>
+
+<option value="3">
+    ⭐⭐⭐
+</option>
+
+<option value="2">
+    ⭐⭐
+</option>
+
+<option value="1">
+    ⭐
+</option>
+
+</select>
+
+</div>
+
+
+
+<div class="col-md-3">
+
+<button class="btn btn-primary"
+        @onclick="LoadData">
+
+Search
+
+</button>
+
+
+<button class="btn btn-success ms-2"
+        @onclick="Create">
+
+➕ Create
+
+</button>
+
+</div>
+
+
+</div>
+
+
+
+
+
+@if(feedbacks.Count == 0)
+{
+
+<div class="alert alert-info">
+
+No feedback found.
+
+</div>
+
+}
+else
+{
+
+
+<table class="table table-striped">
+
+
+<thead>
+
+<tr>
+
+<th>
+Student
+</th>
+
+
+<th>
+Course
+</th>
+
+
+<th>
+Teacher
+</th>
+
+
+<th>
+Rating
+</th>
+
+
+<th>
+Comment
+</th>
+
+
+<th>
+Date
+</th>
+
+
+<th>
+Action
+</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+@foreach(var item in feedbacks)
+{
+
+<tr>
+
+
+<td>
+@item.StudentName
+</td>
+
+
+<td>
+@item.CourseName
+</td>
+
+
+<td>
+@item.TeacherName
+</td>
+
+
+
+<td>
+
+@for(int i = 0; i < item.Rating; i++)
+{
+    <span>⭐</span>
+}
+
+</td>
+
+
+
+<td>
+@item.Comment
+</td>
+
+
+
+<td>
+@item.FeedbackDate
+</td>
+
+
+
+<td>
+
+
+<button class="btn btn-sm btn-warning"
+        @onclick="() => Edit(item.Id)">
+
+Edit
+
+</button>
+
+
+
+<button class="btn btn-sm btn-danger ms-2"
+        @onclick="() => Delete(item.Id)">
+
+Delete
+
+</button>
+
+
+</td>
+
+
+</tr>
+
+}
+
+
+</tbody>
+
+
+</table>
+
+
+}
+
+
+</div>
+
+</div>
+
+
+
+
+
+@code {
+
+
+private List<FeedbackListItemDto> feedbacks = new();
+
+
+private FeedbackSearchDto search = new();
+
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadData();
+
+}
+
+
+
+
+
+
+
+private async Task LoadData()
+{
+
+    try
+    {
+
+        feedbacks =
+            await FeedbackService.GetAllAsync(search);
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+private void Create()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/feedbacks/create");
+
+}
+
+
+
+
+
+
+
+private void Edit(int id)
+{
+
+    Navigation.NavigateTo(
+        $"/admin-dashboard/feedbacks/edit/{id}");
+
+}
+
+
+
+
+
+
+
+private async Task Delete(int id)
+{
+
+    try
+    {
+
+        await FeedbackService.DeleteAsync(id);
+
+
+        Notification.Success(
+            "Feedback deleted successfully.");
+
+
+        await LoadData();
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+}

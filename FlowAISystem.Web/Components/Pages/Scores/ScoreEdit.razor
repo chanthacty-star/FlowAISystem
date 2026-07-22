@@ -1,0 +1,252 @@
+@page "/admin-dashboard/scores/edit/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Scores
+@using FlowAISystem.Shared.DTOs.Enrollments
+@using FlowAISystem.Web.Services
+
+@inject IScoreService ScoreService
+@inject IEnrollmentService EnrollmentService
+
+@inject NotificationService Notification
+@inject NavigationManager Navigation
+
+<PageTitle>
+    Edit Score
+</PageTitle>
+
+<h3 class="mb-4">
+    ✏️ Edit Score
+</h3>
+
+<div class="card shadow">
+
+    <div class="card-body">
+
+        <EditForm Model="@model"
+                  OnValidSubmit="Update">
+
+            <DataAnnotationsValidator />
+
+            <ValidationSummary />
+
+
+
+            <!-- Enrollment -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Enrollment
+
+                </label>
+
+                <InputSelect TValue="int"
+                             class="form-select"
+                             @bind-Value="model.EnrollmentId">
+
+                    <option value="0">
+
+                        Select Enrollment
+
+                    </option>
+
+                    @foreach (var enrollment in enrollments)
+                    {
+
+                        <option value="@enrollment.Id">
+
+                            @enrollment.StudentName
+                            -
+                            @enrollment.CourseName
+                            (
+                            @enrollment.ClassName
+                            )
+
+                        </option>
+
+                    }
+
+                </InputSelect>
+
+            </div>
+
+
+
+            <!-- Assessment -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Assessment Name
+
+                </label>
+
+                <InputText class="form-control"
+                           @bind-Value="model.AssessmentName" />
+
+            </div>
+
+
+
+            <!-- Marks -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Marks
+
+                </label>
+
+                <InputNumber class="form-control"
+                             @bind-Value="model.Marks" />
+
+            </div>
+
+
+
+            <!-- Max Marks -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Maximum Marks
+
+                </label>
+
+                <InputNumber class="form-control"
+                             @bind-Value="model.MaxMarks" />
+
+            </div>
+
+
+
+            <!-- Assessment Date -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Assessment Date
+
+                </label>
+
+                <InputDate class="form-control"
+                           @bind-Value="model.AssessmentDate" />
+
+            </div>
+
+
+
+            <button class="btn btn-primary me-2"
+                    type="submit">
+
+                Update
+
+            </button>
+
+
+
+            <button class="btn btn-secondary"
+                    type="button"
+                    @onclick="Cancel">
+
+                Cancel
+
+            </button>
+
+        </EditForm>
+
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+    private UpdateScoreDto model = new();
+
+
+
+    private List<EnrollmentListItemDto> enrollments = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+
+
+    private async Task LoadData()
+    {
+        try
+        {
+            enrollments =
+                await EnrollmentService.GetAllAsync(
+                    new EnrollmentSearchDto());
+
+            var score =
+                await ScoreService.GetByIdAsync(Id);
+
+            if (score == null)
+            {
+                Notification.Error("Score not found.");
+
+                Navigation.NavigateTo(
+                    "/admin-dashboard/scores");
+
+                return;
+            }
+
+            model.Id = score.Id;
+            model.EnrollmentId = score.EnrollmentId;
+            model.AssessmentName = score.AssessmentName;
+            model.Marks = score.Marks;
+            model.MaxMarks = score.MaxMarks;
+            model.AssessmentDate = score.AssessmentDate;
+        }
+        catch (Exception ex)
+        {
+            Notification.Error(ex.Message);
+        }
+    }
+
+
+
+    private async Task Update()
+    {
+        try
+        {
+            await ScoreService.UpdateAsync(model);
+
+            Notification.Success(
+                "Score updated successfully.");
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/scores");
+        }
+        catch (Exception ex)
+        {
+            Notification.Error(ex.Message);
+        }
+    }
+
+
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(
+            "/admin-dashboard/scores");
+    }
+
+}

@@ -1,0 +1,292 @@
+@page "/admin-dashboard/teachers/details/{Id:int}"
+
+
+@using FlowAISystem.Shared.DTOs.Teachers
+@using FlowAISystem.Application.Interfaces.Services
+
+
+@inject ITeacherService TeacherService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Teacher Details
+</PageTitle>
+
+
+
+
+@if (loading)
+{
+
+    <p>
+        Loading...
+    </p>
+
+}
+else if (teacher == null)
+{
+
+    <div class="alert alert-danger">
+
+        Teacher not found.
+
+    </div>
+
+}
+else
+{
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-header bg-primary text-white">
+
+            <h3>
+                👨‍🏫 Teacher Details
+            </h3>
+
+        </div>
+
+
+
+
+        <div class="card-body">
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Teacher Name
+                    </strong>
+
+                    <p>
+                        @teacher.TeacherName
+                    </p>
+
+                </div>
+
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Full Name
+                    </strong>
+
+                    <p>
+                        @teacher.FullName
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Email
+                    </strong>
+
+                    <p>
+                        @teacher.Email
+                    </p>
+
+                </div>
+
+
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Phone Number
+                    </strong>
+
+                    <p>
+                        @teacher.PhoneNumber
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Gender
+                    </strong>
+
+                    <p>
+                        @teacher.Gender
+                    </p>
+
+                </div>
+
+
+
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Department
+                    </strong>
+
+                    <p>
+                        @teacher.DepartmentName
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <div class="row mb-3">
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Date Of Birth
+                    </strong>
+
+                    <p>
+                        @teacher.DateOfBirth
+                    </p>
+
+                </div>
+
+
+
+
+
+                <div class="col-md-6">
+
+                    <strong>
+                        Hire Date
+                    </strong>
+
+                    <p>
+                        @teacher.HireDate
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+            <hr />
+
+
+
+
+
+            <a href="/admin-dashboard/teachers"
+               class="btn btn-secondary">
+
+                Back
+
+            </a>
+
+
+
+
+            <a href="/admin-dashboard/teachers/edit/@teacher.Id"
+               class="btn btn-warning ms-2">
+
+                Edit
+
+            </a>
+
+
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+
+
+@code {
+
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+
+    private TeacherDto? teacher;
+
+
+
+
+    private bool loading = true;
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        teacher =
+            await TeacherService
+                .GetByIdAsync(Id);
+
+
+
+        loading = false;
+
+
+    }
+
+
+}

@@ -1,0 +1,328 @@
+```razor
+@page "/admin-dashboard/semesters/edit/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Semesters
+@using FlowAISystem.Shared.DTOs.AcademicYears
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+@inject ISemesterService SemesterService
+@inject IAcademicYearService AcademicYearService
+@inject NotificationService Notification
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Edit Semester
+</PageTitle>
+
+
+<h3 class="mb-4">
+    ✏ Edit Semester
+</h3>
+
+
+@if (loading)
+{
+    <div class="text-center">
+
+        <div class="spinner-border text-primary"></div>
+
+        <p>
+            Loading semester...
+        </p>
+
+    </div>
+}
+else if (model == null)
+{
+    <div class="alert alert-danger">
+        Semester not found.
+    </div>
+}
+else
+{
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <EditForm Model="@model"
+                      OnValidSubmit="Update">
+
+                <DataAnnotationsValidator />
+
+                <ValidationSummary />
+
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Semester Name
+                    </label>
+
+                    <InputText class="form-control"
+                               @bind-Value="model.Name" />
+
+                </div>
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Semester Type
+                    </label>
+
+
+                    <InputSelect TValue="SemesterType"
+                                 class="form-select"
+                                 @bind-Value="model.SemesterType">
+
+                        @foreach(var type in Enum.GetValues<SemesterType>())
+                        {
+                            <option value="@type">
+                                @type
+                            </option>
+                        }
+
+                    </InputSelect>
+
+                </div>
+
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Academic Year
+                    </label>
+
+
+                    <InputSelect TValue="int"
+                                 class="form-select"
+                                 @bind-Value="model.AcademicYearId">
+
+
+                        @foreach(var year in academicYears)
+                        {
+                            <option value="@year.Id">
+                                @year.Name
+                            </option>
+                        }
+
+
+                    </InputSelect>
+
+                </div>
+
+
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label>
+                            Start Date
+                        </label>
+
+
+                        <InputDate class="form-control"
+                                   @bind-Value="model.StartDate" />
+
+                    </div>
+
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label>
+                            End Date
+                        </label>
+
+
+                        <InputDate class="form-control"
+                                   @bind-Value="model.EndDate" />
+
+                    </div>
+
+
+                </div>
+
+
+
+
+                <div class="form-check mb-3">
+
+
+                    <InputCheckbox class="form-check-input"
+                                   @bind-Value="model.IsCurrent" />
+
+
+                    <label class="form-check-label">
+
+                        Current Semester
+
+                    </label>
+
+
+                </div>
+
+
+
+
+                <button type="submit"
+                        class="btn btn-primary me-2">
+
+                    Update
+
+                </button>
+
+
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        @onclick="Cancel">
+
+                    Cancel
+
+                </button>
+
+
+            </EditForm>
+
+
+        </div>
+
+    </div>
+}
+
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+    private UpdateSemesterDto? model;
+
+
+    private List<AcademicYearListItemDto> academicYears = new();
+
+
+    private bool loading = true;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        try
+        {
+
+            academicYears =
+                await AcademicYearService
+                    .GetAllAsync(new());
+
+
+
+            var semester =
+                await SemesterService
+                    .GetByIdAsync(Id);
+
+
+
+            if(semester != null)
+            {
+
+                model = new UpdateSemesterDto
+                {
+                    Id = semester.Id,
+
+                    Name = semester.Name,
+
+                    SemesterType = semester.SemesterType,
+
+                    StartDate = semester.StartDate,
+
+                    EndDate = semester.EndDate,
+
+                    IsCurrent = semester.IsCurrent,
+
+                    AcademicYearId = semester.AcademicYearId
+                };
+
+            }
+
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(ex.Message);
+
+        }
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+
+
+
+    private async Task Update()
+    {
+
+        if(model == null)
+            return;
+
+
+
+        try
+        {
+
+            await SemesterService
+                .UpdateAsync(model);
+
+
+
+            Notification.Success(
+                "Semester updated successfully.");
+
+
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/semesters");
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(ex.Message);
+
+        }
+
+    }
+
+
+
+
+    private void Cancel()
+    {
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/semesters");
+
+    }
+
+}
+```

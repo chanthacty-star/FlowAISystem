@@ -1,0 +1,251 @@
+@page "/admin-dashboard/scores/create"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Scores
+@using FlowAISystem.Shared.DTOs.Enrollments
+@using FlowAISystem.Web.Services
+
+@inject IScoreService ScoreService
+@inject IEnrollmentService EnrollmentService
+
+@inject NotificationService Notification
+@inject NavigationManager Navigation
+
+<PageTitle>
+    Create Score
+</PageTitle>
+
+<h3 class="mb-4">
+    ➕ Create Score
+</h3>
+
+<div class="card shadow">
+
+    <div class="card-body">
+
+        <EditForm Model="@model"
+                  OnValidSubmit="Create">
+
+            <DataAnnotationsValidator />
+
+            <ValidationSummary />
+
+
+
+            <!-- Enrollment -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Enrollment
+
+                </label>
+
+                <InputSelect TValue="int"
+                             class="form-select"
+                             @bind-Value="model.EnrollmentId">
+
+                    <option value="0">
+
+                        Select Enrollment
+
+                    </option>
+
+                    @foreach (var enrollment in enrollments)
+                    {
+
+                        <option value="@enrollment.Id">
+
+                            @enrollment.StudentName
+                            -
+                            @enrollment.CourseName
+                            (
+                            @enrollment.ClassName
+                            )
+
+                        </option>
+
+                    }
+
+                </InputSelect>
+
+            </div>
+
+
+
+            <!-- Assessment -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Assessment Name
+
+                </label>
+
+                <InputText class="form-control"
+                           @bind-Value="model.AssessmentName" />
+
+            </div>
+
+
+
+            <!-- Marks -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Marks
+
+                </label>
+
+                <InputNumber class="form-control"
+                             @bind-Value="model.Marks" />
+
+            </div>
+
+
+
+            <!-- Max Marks -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Maximum Marks
+
+                </label>
+
+                <InputNumber class="form-control"
+                             @bind-Value="model.MaxMarks" />
+
+            </div>
+
+
+
+            <!-- Assessment Date -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Assessment Date
+
+                </label>
+
+                <InputDate class="form-control"
+                           @bind-Value="model.AssessmentDate" />
+
+            </div>
+
+
+
+            <button class="btn btn-primary me-2"
+                    type="submit">
+
+                Save
+
+            </button>
+
+
+
+            <button class="btn btn-secondary"
+                    type="button"
+                    @onclick="Cancel">
+
+                Cancel
+
+            </button>
+
+        </EditForm>
+
+    </div>
+
+</div>
+
+@code {
+
+    private CreateScoreDto model = new()
+    {
+        AssessmentDate =
+            DateOnly.FromDateTime(DateTime.Today),
+
+        MaxMarks = 100
+    };
+
+
+
+    private List<EnrollmentListItemDto> enrollments = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await LoadData();
+
+    }
+
+
+
+    private async Task LoadData()
+    {
+
+        try
+        {
+
+            enrollments =
+                await EnrollmentService.GetAllAsync(
+                    new EnrollmentSearchDto());
+
+        }
+        catch (Exception ex)
+        {
+
+            Notification.Error(
+                ex.Message);
+
+        }
+
+    }
+
+
+
+    private async Task Create()
+    {
+
+        try
+        {
+
+            await ScoreService.CreateAsync(model);
+
+            Notification.Success(
+                "Score created successfully.");
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/scores");
+
+        }
+        catch (Exception ex)
+        {
+
+            Notification.Error(
+                ex.Message);
+
+        }
+
+    }
+
+
+
+    private void Cancel()
+    {
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/scores");
+
+    }
+
+}

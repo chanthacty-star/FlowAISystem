@@ -1,0 +1,108 @@
+@implements IDisposable
+
+@using FlowAISystem.Web.Services
+@using FlowAISystem.Web.Components.Shared.Notifications
+
+@inject ConfirmationService ConfirmationService
+
+@if (showDialog)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background-color:rgba(0,0,0,.5);">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content shadow">
+
+                <div class="modal-header bg-danger text-white">
+
+                    <h5 class="modal-title">
+
+                        Confirm Action
+
+                    </h5>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <p class="mb-0">
+
+                        @message
+
+                    </p>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary"
+                            @onclick="Cancel">
+
+                        Cancel
+
+                    </button>
+
+                    <button class="btn btn-danger"
+                            @onclick="Confirm">
+
+                        Yes
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code{
+
+    private bool showDialog;
+
+    private string message = "";
+
+    private TaskCompletionSource<bool>? taskSource;
+
+    protected override void OnInitialized()
+    {
+        ConfirmationService.OnConfirm += ShowDialog;
+    }
+
+    private Task<bool> ShowDialog(string text)
+    {
+        message = text;
+
+        showDialog = true;
+
+        taskSource = new TaskCompletionSource<bool>();
+
+        InvokeAsync(StateHasChanged);
+
+        return taskSource.Task;
+    }
+
+    private void Confirm()
+    {
+        showDialog = false;
+
+        taskSource?.SetResult(true);
+    }
+
+    private void Cancel()
+    {
+        showDialog = false;
+
+        taskSource?.SetResult(false);
+    }
+
+    public void Dispose()
+    {
+        ConfirmationService.OnConfirm -= ShowDialog;
+    }
+
+}

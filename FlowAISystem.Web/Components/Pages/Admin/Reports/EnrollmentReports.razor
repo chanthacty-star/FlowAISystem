@@ -1,0 +1,172 @@
+@page "/admin-dashboard/reports/enrollments"
+
+@using FlowAISystem.Application.Interfaces.Services.Reports
+@using FlowAISystem.Shared.DTOs.Reports
+
+@inject IReportService ReportService
+
+
+<PageTitle>
+    Enrollment Reports
+</PageTitle>
+
+
+<h3>
+    Enrollment Reports
+</h3>
+
+
+
+<div class="card p-3 mb-3">
+
+    <button class="btn btn-primary"
+            @onclick="LoadReport">
+
+        Generate Enrollment Report
+
+    </button>
+
+</div>
+
+
+
+@if (loading)
+{
+    <p>
+        Loading enrollment report...
+    </p>
+}
+
+
+
+@if (reports.Any())
+{
+
+    <div class="card p-3">
+
+
+        <table class="table table-bordered">
+
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Semester
+                    </th>
+
+
+                    <th>
+                        Course
+                    </th>
+
+
+                    <th>
+                        Teacher
+                    </th>
+
+
+                    <th>
+                        Total Students
+                    </th>
+
+
+                </tr>
+
+            </thead>
+
+
+
+            <tbody>
+
+
+                @foreach(var item in reports)
+                {
+
+                    <tr>
+
+                        <td>
+                            @item.SemesterName
+                        </td>
+
+
+                        <td>
+                            @item.CourseName
+                        </td>
+
+
+                        <td>
+                            @item.TeacherName
+                        </td>
+
+
+                        <td>
+                            @item.TotalStudents
+                        </td>
+
+
+                    </tr>
+
+                }
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+}
+else if (!loading)
+{
+
+    <p class="text-muted">
+
+        No enrollment data available.
+
+    </p>
+
+}
+
+
+
+@code {
+
+
+    private bool loading;
+
+
+    private List<EnrollmentReportDto> reports
+        = new();
+
+
+
+    private async Task LoadReport()
+    {
+
+        try
+        {
+
+            loading = true;
+
+
+            reports =
+                await ReportService
+                .GetEnrollmentReportAsync(null);
+
+        }
+
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+
+}

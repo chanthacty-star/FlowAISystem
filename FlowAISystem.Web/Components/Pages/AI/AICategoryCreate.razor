@@ -1,0 +1,234 @@
+@page "/admin-dashboard/ai-categories/create"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.DTOs.AI.Category
+@using FlowAISystem.Application.Interfaces
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IAICategoryService CategoryService
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Create AI Category
+</PageTitle>
+
+
+
+<div class="container-fluid py-4">
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+
+        <div>
+
+            <h2 class="fw-bold">
+                🤖 Create AI Category
+            </h2>
+
+
+            <p class="text-muted">
+                Add a new category for AI Knowledge
+            </p>
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-header bg-primary text-white">
+
+
+            <h5 class="mb-0">
+
+                AI Category Information
+
+            </h5>
+
+
+        </div>
+
+
+
+
+        <div class="card-body">
+
+
+            <EditForm Model="model"
+                      OnValidSubmit="CreateCategory">
+
+
+                <DataAnnotationsValidator />
+
+
+                <ValidationSummary />
+
+
+
+
+                <!-- Category Name -->
+
+                <div class="mb-3">
+
+
+                    <label class="form-label">
+
+                        Category Name
+
+                    </label>
+
+
+
+                    <InputText class="form-control"
+                               placeholder="Example: Database"
+                               @bind-Value="model.Name" />
+
+
+
+                    <ValidationMessage For="@(() => model.Name)" />
+
+
+                </div>
+
+
+
+
+
+
+                <!-- Description -->
+
+                <div class="mb-3">
+
+
+                    <label class="form-label">
+
+                        Description
+
+                    </label>
+
+
+
+                    <InputTextArea class="form-control"
+                                   rows="5"
+                                   placeholder="Describe this category..."
+                                   @bind-Value="model.Description" />
+
+
+
+                    <ValidationMessage For="@(() => model.Description)" />
+
+
+                </div>
+
+
+
+
+
+
+
+                <div class="text-end">
+
+
+                    <a href="/admin-dashboard/ai-categories"
+                       class="btn btn-secondary me-2">
+
+
+                        Cancel
+
+
+                    </a>
+
+
+
+
+
+                    <button type="submit"
+                            class="btn btn-success"
+                            disabled="@isSaving">
+
+
+                        @if (isSaving)
+                        {
+
+                            <span>
+                                Saving...
+                            </span>
+
+                        }
+                        else
+                        {
+
+                            <span>
+                                💾 Save Category
+                            </span>
+
+                        }
+
+
+                    </button>
+
+
+                </div>
+
+
+
+            </EditForm>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+
+@code
+{
+
+    private CreateAICategoryDto model = new();
+
+
+    private bool isSaving = false;
+
+
+
+    private async Task CreateCategory()
+    {
+
+        if (isSaving)
+            return;
+
+
+
+        isSaving = true;
+
+
+
+        await CategoryService.CreateAsync(model);
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/ai-categories");
+
+    }
+
+}

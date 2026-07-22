@@ -1,0 +1,308 @@
+@page "/admin-dashboard/feedbacks/create"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Feedbacks
+@using FlowAISystem.Shared.DTOs.Enrollments
+@using FlowAISystem.Web.Services
+
+
+@inject IFeedbackService FeedbackService
+
+@inject IEnrollmentService EnrollmentService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Create Feedback
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    ⭐ Create Feedback
+</h3>
+
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Create">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Enrollment
+</label>
+
+
+<InputSelect class="form-select"
+             @bind-Value="model.EnrollmentId">
+
+
+<option value="0">
+    Select Enrollment
+</option>
+
+
+
+@foreach(var item in enrollments)
+{
+
+<option value="@item.Id">
+
+    @item.StudentName
+    -
+    @item.CourseName
+    -
+    @item.ClassName
+
+</option>
+
+}
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Rating
+</label>
+
+
+<InputSelect class="form-select"
+             @bind-Value="model.Rating">
+
+
+<option value="5">
+    ⭐⭐⭐⭐⭐
+</option>
+
+
+<option value="4">
+    ⭐⭐⭐⭐
+</option>
+
+
+<option value="3">
+    ⭐⭐⭐
+</option>
+
+
+<option value="2">
+    ⭐⭐
+</option>
+
+
+<option value="1">
+    ⭐
+</option>
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Comment
+</label>
+
+
+<InputTextArea class="form-control"
+               rows="5"
+               @bind-Value="model.Comment" />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Feedback Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.FeedbackDate" />
+
+
+</div>
+
+
+
+
+
+
+<button class="btn btn-primary me-2"
+        type="submit">
+
+Create
+
+</button>
+
+
+
+
+<button class="btn btn-secondary"
+        type="button"
+        @onclick="Cancel">
+
+Cancel
+
+</button>
+
+
+
+</EditForm>
+
+
+</div>
+
+</div>
+
+
+
+
+
+@code {
+
+
+private CreateFeedbackDto model = new()
+{
+    FeedbackDate = DateOnly.FromDateTime(
+        DateTime.Now)
+};
+
+
+
+private List<EnrollmentListItemDto> enrollments = new();
+
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadEnrollments();
+
+}
+
+
+
+
+
+
+
+private async Task LoadEnrollments()
+{
+
+    try
+    {
+
+        enrollments =
+            await EnrollmentService.GetAllAsync(
+                new EnrollmentSearchDto());
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+private async Task Create()
+{
+
+    try
+    {
+
+        await FeedbackService.CreateAsync(model);
+
+
+
+        Notification.Success(
+            "Feedback created successfully.");
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/feedbacks");
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+private void Cancel()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/feedbacks");
+
+}
+
+
+}

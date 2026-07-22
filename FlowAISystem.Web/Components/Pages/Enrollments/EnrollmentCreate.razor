@@ -1,0 +1,284 @@
+@page "/admin-dashboard/enrollments/create"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Enrollments
+@using FlowAISystem.Shared.DTOs.Students
+@using FlowAISystem.Shared.DTOs.CourseOfferings
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+@inject IEnrollmentService EnrollmentService
+@inject IStudentService StudentService
+@inject ICourseOfferingService CourseOfferingService
+
+@inject NotificationService Notification
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Create Enrollment
+</PageTitle>
+
+
+<h3 class="mb-4">
+    ➕ Create Enrollment
+</h3>
+
+
+<div class="card shadow">
+
+    <div class="card-body">
+
+
+        <EditForm Model="@model"
+                  OnValidSubmit="Save">
+
+
+            <DataAnnotationsValidator />
+
+            <ValidationSummary />
+
+
+            <!-- Student -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Student
+                </label>
+
+
+                <InputSelect class="form-select"
+                             @bind-Value="model.StudentId">
+
+
+                    <option value="0">
+                        Select Student
+                    </option>
+
+
+                    @foreach(var student in students)
+                    {
+
+                        <option value="@student.Id">
+
+                            @student.StudentNumber -
+                            @student.FullName
+
+                        </option>
+
+                    }
+
+                </InputSelect>
+
+            </div>
+
+
+
+            <!-- Course Offering -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Course Offering
+                </label>
+
+
+                <InputSelect class="form-select"
+                             @bind-Value="model.CourseOfferingId">
+
+
+                    <option value="0">
+                        Select Course Offering
+                    </option>
+
+
+                    @foreach(var offering in offerings)
+                    {
+
+                        <option value="@offering.Id">
+
+                            @offering.SubjectName
+                            |
+                            Class @offering.ClassName
+                            |
+                            @offering.TeacherName
+                            |
+                            @offering.SemesterName
+
+                        </option>
+
+                    }
+
+
+                </InputSelect>
+
+            </div>
+
+
+
+            <!-- Enrollment Date -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Enrollment Date
+                </label>
+
+
+                <InputDate class="form-control"
+                           @bind-Value="model.EnrollmentDate" />
+
+            </div>
+
+
+
+            <!-- Status -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Status
+                </label>
+
+
+                <InputSelect class="form-select"
+                             @bind-Value="model.Status">
+
+
+                    @foreach(var status in Enum.GetValues<EnrollmentStatus>())
+                    {
+
+                        <option value="@status">
+
+                            @status
+
+                        </option>
+
+                    }
+
+
+                </InputSelect>
+
+
+            </div>
+
+
+
+            <button type="submit"
+                    class="btn btn-primary me-2">
+
+                Save
+
+            </button>
+
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    @onclick="Cancel">
+
+                Cancel
+
+            </button>
+
+
+        </EditForm>
+
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+
+    private CreateEnrollmentDto model = new()
+    {
+        EnrollmentDate =
+            DateOnly.FromDateTime(DateTime.Today),
+
+        Status =
+            EnrollmentStatus.Active
+    };
+
+
+    private List<StudentListItemDto> students = new();
+
+    private List<CourseOfferingListItemDto> offerings = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+
+
+    private async Task LoadData()
+    {
+
+        try
+        {
+
+            students =
+                await StudentService.GetAllAsync(
+                    new StudentSearchDto());
+
+
+            offerings =
+                await CourseOfferingService.GetAllAsync(
+                    new CourseOfferingSearchDto());
+
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(ex.Message);
+
+        }
+
+    }
+
+
+
+    private async Task Save()
+    {
+
+        try
+        {
+
+            await EnrollmentService.CreateAsync(model);
+
+
+            Notification.Success(
+                "Enrollment created successfully.");
+
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/enrollments");
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(ex.Message);
+
+        }
+
+    }
+
+
+
+    private void Cancel()
+    {
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/enrollments");
+
+    }
+
+}

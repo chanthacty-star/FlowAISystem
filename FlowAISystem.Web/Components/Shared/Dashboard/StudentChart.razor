@@ -1,0 +1,86 @@
+@using ApexCharts
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Charts
+
+@inject IAdminDashboardService DashboardService
+
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-bar-chart-fill me-2"></i>
+            Student Registration by Department
+        </h5>
+
+
+        @if (loading)
+        {
+            <p class="text-muted">
+                Loading chart...
+            </p>
+        }
+        else if (!chartData.Any())
+        {
+            <p class="text-muted">
+                No student data available.
+            </p>
+        }
+        else
+        {
+            <ApexChart TItem="DepartmentStudentChartDto"
+                       Title="Students by Department"
+                       Height="320"
+                       Options="chartOptions">
+
+                <ApexPointSeries TItem="DepartmentStudentChartDto"
+                                 Items="chartData"
+                                 Name="Students"
+                                 SeriesType="SeriesType.Bar"
+                                 XValue="x => x.DepartmentName"
+                                 YValue="x => x.StudentCount" />
+
+            </ApexChart>
+        }
+
+    </div>
+
+</div>
+
+
+@code {
+
+    private bool loading = true;
+
+    private List<DepartmentStudentChartDto> chartData = [];
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        chartData =
+            await DashboardService.GetDepartmentStudentChartAsync();
+
+        loading = false;
+    }
+
+    private ApexChartOptions<DepartmentStudentChartDto> chartOptions = new()
+    {
+        Chart = new Chart
+        {
+            Toolbar = new Toolbar
+            {
+                Show = true
+            }
+        },
+
+        PlotOptions = new PlotOptions
+        {
+            Bar = new PlotOptionsBar
+            {
+                Horizontal = true
+            }
+        }
+    };
+
+}

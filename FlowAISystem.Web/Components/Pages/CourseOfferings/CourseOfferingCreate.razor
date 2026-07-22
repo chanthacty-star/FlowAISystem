@@ -1,0 +1,334 @@
+@page "/admin-dashboard/course-offerings/create"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.CourseOfferings
+@using FlowAISystem.Shared.DTOs.Courses
+@using FlowAISystem.Shared.DTOs.Teachers
+@using FlowAISystem.Shared.DTOs.Semesters
+@using FlowAISystem.Web.Services
+
+@inject ICourseOfferingService CourseOfferingService
+
+@inject ICourseService CourseService
+
+@inject ITeacherService TeacherService
+
+@inject ISemesterService SemesterService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Create Course Offering
+</PageTitle>
+
+
+<h3 class="mb-4">
+    ➕ Create Course Offering
+</h3>
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Create">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Class Name
+</label>
+
+
+<InputText class="form-control"
+           @bind-Value="model.ClassName" />
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Course
+</label>
+
+
+<InputSelect TValue="int"
+             class="form-select"
+             @bind-Value="model.SubjectId">
+
+
+<option value="0">
+    Select Course
+</option>
+
+
+@foreach(var course in courses)
+{
+
+<option value="@course.Id">
+
+    @course.Code - @course.Name
+
+</option>
+
+}
+
+
+</InputSelect>
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Teacher
+</label>
+
+
+<InputSelect TValue="int"
+             class="form-select"
+             @bind-Value="model.TeacherId">
+
+
+<option value="0">
+    Select Teacher
+</option>
+
+
+@foreach(var teacher in teachers)
+{
+
+<option value="@teacher.Id">
+
+    @teacher.TeacherName
+
+</option>
+
+}
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Semester
+</label>
+
+
+<InputSelect TValue="int"
+             class="form-select"
+             @bind-Value="model.SemesterId">
+
+
+<option value="0">
+    Select Semester
+</option>
+
+
+@foreach(var semester in semesters)
+{
+
+<option value="@semester.Id">
+
+    @semester.Name
+
+</option>
+
+}
+
+
+</InputSelect>
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Room
+</label>
+
+
+<InputText class="form-control"
+           @bind-Value="model.Room" />
+
+</div>
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Capacity
+</label>
+
+
+<InputNumber class="form-control"
+             @bind-Value="model.Capacity" />
+
+</div>
+
+
+
+
+<button class="btn btn-primary me-2"
+        type="submit">
+
+Create
+
+</button>
+
+
+
+<button class="btn btn-secondary"
+        type="button"
+        @onclick="Cancel">
+
+Cancel
+
+</button>
+
+
+
+</EditForm>
+
+
+</div>
+
+</div>
+
+
+
+
+@code {
+
+
+private CreateCourseOfferingDto model = new();
+
+
+
+private List<CourseListItemDto> courses = new();
+
+private List<TeacherListItemDto> teachers = new();
+
+private List<SemesterListItemDto> semesters = new();
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadData();
+
+}
+
+
+
+private async Task LoadData()
+{
+
+    try
+    {
+
+        courses =
+            await CourseService.GetAllAsync(
+                new CourseSearchDto());
+
+
+        teachers =
+            await TeacherService.GetAllAsync(
+                new TeacherSearchDto());
+
+
+        semesters =
+            await SemesterService.GetAllAsync(
+                new SemesterSearchDto());
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+private async Task Create()
+{
+
+    try
+    {
+
+        await CourseOfferingService
+            .CreateAsync(model);
+
+
+
+        Notification.Success(
+            "Course offering created successfully.");
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/course-offerings");
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+private void Cancel()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/course-offerings");
+
+}
+
+
+}

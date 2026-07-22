@@ -1,0 +1,210 @@
+@page "/admin-dashboard/reports/students"
+
+@using FlowAISystem.Application.Interfaces.Services.Reports
+@using FlowAISystem.Shared.DTOs.Reports
+
+@inject IReportService ReportService
+
+
+<PageTitle>
+    Student Reports
+</PageTitle>
+
+
+<h3>
+    Student Report
+</h3>
+
+
+<div class="card p-3 mb-3">
+
+    <label class="form-label">
+        Student Id
+    </label>
+
+
+    <InputNumber class="form-control"
+                 @bind-Value="studentId" />
+
+
+    <button class="btn btn-primary mt-3"
+            @onclick="LoadReport">
+
+        Generate Report
+
+    </button>
+
+</div>
+
+
+
+@if (loading)
+{
+    <p>
+        Loading...
+    </p>
+}
+
+
+
+@if (report != null)
+{
+
+    <div class="card p-4">
+
+        <h4>
+            Student Information
+        </h4>
+
+
+        <hr />
+
+
+        <p>
+            <strong>
+                Student:
+            </strong>
+
+            @report.StudentName
+
+        </p>
+
+
+
+        <p>
+            <strong>
+                Student Number:
+            </strong>
+
+            @report.StudentNumber
+
+        </p>
+
+
+
+        <h5 class="mt-4">
+            Courses
+        </h5>
+
+
+        <table class="table table-bordered">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Course
+                    </th>
+
+
+                    <th>
+                        Score
+                    </th>
+
+
+                    <th>
+                        Grade
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+                @foreach(var course in report.Courses)
+                {
+
+                    <tr>
+
+                        <td>
+                            @course.CourseName
+                        </td>
+
+
+                        <td>
+                            @course.Score
+                        </td>
+
+
+                        <td>
+                            @course.Grade
+                        </td>
+
+
+                    </tr>
+
+                }
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+}
+
+
+
+@if (report == null && !loading)
+{
+
+    <p class="text-muted">
+
+        No report available.
+
+    </p>
+
+}
+
+
+
+@code {
+
+
+    private int studentId;
+
+
+    private bool loading;
+
+
+    private StudentReportDto?
+        report;
+
+
+
+    private async Task LoadReport()
+    {
+
+        if(studentId <= 0)
+            return;
+
+
+        try
+        {
+
+            loading = true;
+
+
+            report =
+                await ReportService
+                .GetStudentReportAsync(studentId);
+
+        }
+
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+}

@@ -1,0 +1,395 @@
+@page "/admin-dashboard/announcements"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Announcements
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+
+@inject IAnnouncementService AnnouncementService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Announcement Management
+</PageTitle>
+
+
+
+
+<h3 class="mb-4">
+    📢 Announcement Management
+</h3>
+
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+
+
+
+<div class="row mb-3">
+
+
+<div class="col-md-5">
+
+<input class="form-control"
+       placeholder="Search title or content..."
+       @bind="search.SearchTerm"
+       @bind:event="oninput" />
+
+</div>
+
+
+
+
+
+<div class="col-md-3">
+
+
+<select class="form-select"
+        @bind="search.Audience">
+
+
+<option value="">
+    All Audience
+</option>
+
+
+<option value="@AnnouncementAudience.All">
+    All
+</option>
+
+
+<option value="@AnnouncementAudience.Students">
+    Students
+</option>
+
+
+<option value="@AnnouncementAudience.Teachers">
+    Teachers
+</option>
+
+
+<option value="@AnnouncementAudience.Staff">
+    Staff
+</option>
+
+
+</select>
+
+
+</div>
+
+
+
+
+
+<div class="col-md-4">
+
+
+<button class="btn btn-primary"
+        @onclick="LoadData">
+
+Search
+
+</button>
+
+
+
+<button class="btn btn-success ms-2"
+        @onclick="Create">
+
+➕ Create
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+@if(announcements.Count == 0)
+{
+
+<div class="alert alert-info">
+
+No announcements found.
+
+</div>
+
+}
+else
+{
+
+
+<table class="table table-striped">
+
+
+<thead>
+
+<tr>
+
+<th>
+Title
+</th>
+
+
+<th>
+Audience
+</th>
+
+
+<th>
+Created By
+</th>
+
+
+<th>
+Publish Date
+</th>
+
+
+<th>
+Expire Date
+</th>
+
+
+<th>
+Action
+</th>
+
+
+</tr>
+
+</thead>
+
+
+
+
+
+<tbody>
+
+
+@foreach(var item in announcements)
+{
+
+<tr>
+
+
+<td>
+@item.Title
+</td>
+
+
+
+<td>
+
+@item.Audience
+
+</td>
+
+
+
+<td>
+@item.CreatedByName
+</td>
+
+
+
+<td>
+@item.PublishDate.ToString("yyyy-MM-dd")
+</td>
+
+
+
+<td>
+
+@(item.ExpireDate?.ToString("yyyy-MM-dd")
+?? "-")
+
+</td>
+
+
+
+
+
+<td>
+
+
+<button class="btn btn-sm btn-warning"
+        @onclick="() => Edit(item.Id)">
+
+Edit
+
+</button>
+
+
+
+
+<button class="btn btn-sm btn-danger ms-2"
+        @onclick="() => Delete(item.Id)">
+
+Delete
+
+</button>
+
+
+</td>
+
+
+</tr>
+
+}
+
+
+</tbody>
+
+
+</table>
+
+
+}
+
+
+
+</div>
+
+</div>
+
+
+
+
+
+
+
+@code {
+
+
+private List<AnnouncementListItemDto> announcements = new();
+
+
+private AnnouncementSearchDto search = new();
+
+
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadData();
+
+}
+
+
+
+
+
+
+
+private async Task LoadData()
+{
+
+    try
+    {
+
+        announcements =
+            await AnnouncementService.GetAllAsync(search);
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+
+private void Create()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/announcements/create");
+
+}
+
+
+
+
+
+
+
+
+private void Edit(int id)
+{
+
+    Navigation.NavigateTo(
+        $"/admin-dashboard/announcements/edit/{id}");
+
+}
+
+
+
+
+
+
+
+
+private async Task Delete(int id)
+{
+
+    try
+    {
+
+        await AnnouncementService.DeleteAsync(id);
+
+
+
+        Notification.Success(
+            "Announcement deleted successfully.");
+
+
+
+        await LoadData();
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+}

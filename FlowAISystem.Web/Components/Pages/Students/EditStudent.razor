@@ -1,0 +1,505 @@
+@page "/admin-dashboard/students/edit/{Id:int}"
+
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Shared.DTOs.Students
+@using FlowAISystem.Application.Interfaces
+@using FlowAISystem.Domain.Entities
+@using FlowAISystem.Shared.Enums
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IStudentService StudentService
+
+@inject NavigationManager Navigation
+
+
+
+
+
+<PageTitle>
+    Edit Student
+</PageTitle>
+
+
+
+
+
+<div class="container-fluid py-4">
+
+
+    <h2 class="fw-bold mb-4">
+
+        ✏ Edit Student
+
+    </h2>
+
+
+
+
+
+@if (loading)
+{
+
+    <div class="text-center">
+
+
+        <div class="spinner-border"></div>
+
+
+        <p>
+            Loading student information...
+        </p>
+
+
+    </div>
+
+
+}
+else
+{
+
+
+    <div class="card shadow-sm">
+
+
+
+        <div class="card-header bg-warning">
+
+
+            <h5 class="mb-0">
+
+                Student Information
+
+            </h5>
+
+
+        </div>
+
+
+
+
+
+
+        <div class="card-body">
+
+
+
+            <EditForm Model="student"
+                      OnValidSubmit="UpdateStudent">
+
+
+                <DataAnnotationsValidator />
+
+                <ValidationSummary class="alert alert-danger" />
+
+
+
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            Student Number
+                        </label>
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.StudentNumber" />
+
+
+                        <ValidationMessage For="@(() => student.StudentNumber)" />
+
+
+                    </div>
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            Email
+                        </label>
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.Email" />
+
+
+                        <ValidationMessage For="@(() => student.Email)" />
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            First Name
+                        </label>
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.FirstName" />
+
+
+                    </div>
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            Last Name
+                        </label>
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.LastName" />
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            Phone Number
+                        </label>
+
+
+                        <InputText class="form-control"
+                                   @bind-Value="student.PhoneNumber" />
+
+
+                    </div>
+
+
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            Gender
+                        </label>
+
+
+                        <InputSelect class="form-select"
+                                     @bind-Value="student.Gender">
+
+
+                            @foreach(var gender in Enum.GetValues<Gender>())
+                            {
+
+                                <option value="@gender">
+
+                                    @gender
+
+                                </option>
+
+                            }
+
+
+                        </InputSelect>
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            Date Of Birth
+                        </label>
+
+
+                        <InputDate class="form-control"
+                                   @bind-Value="student.DateOfBirth" />
+
+
+                    </div>
+
+
+
+
+
+
+
+
+                    <div class="col-md-6 mb-3">
+
+
+                        <label class="form-label">
+                            Enrollment Date
+                        </label>
+
+
+                        <InputDate class="form-control"
+                                   @bind-Value="student.EnrollmentDate" />
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+                <div class="mb-4">
+
+
+                    <label class="form-label">
+                        Department
+                    </label>
+
+
+                    <InputSelect class="form-select"
+                                 @bind-Value="student.DepartmentId">
+
+
+
+                        <option value="0">
+                            -- Select Department --
+                        </option>
+
+
+
+                        @foreach(var department in departments)
+                        {
+
+                            <option value="@department.Id">
+
+                                @department.Name
+
+                            </option>
+
+                        }
+
+
+
+                    </InputSelect>
+
+
+
+                </div>
+
+
+
+
+
+
+
+                <button class="btn btn-primary"
+                        type="submit">
+
+
+                    💾 Save Changes
+
+
+                </button>
+
+
+
+
+
+
+                <a href="/admin-dashboard/students"
+                   class="btn btn-secondary ms-2">
+
+
+                    Cancel
+
+
+                </a>
+
+
+
+            </EditForm>
+
+
+
+        </div>
+
+
+    </div>
+
+
+}
+
+
+</div>
+
+
+
+
+
+
+
+
+@code
+{
+
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+
+    private bool loading = true;
+
+
+
+
+    private UpdateStudentDto student = new();
+
+
+
+
+    private List<Department> departments = [];
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        departments =
+            await StudentService
+                .GetDepartmentsAsync();
+
+
+
+
+        var dto =
+            await StudentService
+                .GetByIdAsync(Id);
+
+
+
+
+        if(dto != null)
+        {
+
+            student.Id = dto.Id;
+
+            student.StudentNumber = dto.StudentNumber;
+
+            student.FirstName = dto.FirstName;
+
+            student.LastName = dto.LastName;
+
+            student.Email = dto.Email;
+
+            student.PhoneNumber = dto.PhoneNumber;
+
+            student.Gender = dto.Gender;
+
+            student.DateOfBirth = dto.DateOfBirth;
+
+            student.EnrollmentDate = dto.EnrollmentDate;
+
+            student.DepartmentId = dto.DepartmentId;
+
+        }
+
+
+
+        loading = false;
+
+
+    }
+
+
+
+
+
+
+
+
+    private async Task UpdateStudent()
+    {
+
+
+        await StudentService
+            .UpdateAsync(student);
+
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/students");
+
+
+    }
+
+
+
+}

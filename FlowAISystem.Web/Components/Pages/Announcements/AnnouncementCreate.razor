@@ -1,0 +1,274 @@
+@page "/admin-dashboard/announcements/create"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Announcements
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+
+@inject IAnnouncementService AnnouncementService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Create Announcement
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    📢 Create Announcement
+</h3>
+
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<EditForm Model="@model"
+          OnValidSubmit="Create">
+
+
+<DataAnnotationsValidator />
+
+<ValidationSummary />
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Title
+</label>
+
+
+<InputText class="form-control"
+           @bind-Value="model.Title" />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Content
+</label>
+
+
+<InputTextArea class="form-control"
+               rows="6"
+               @bind-Value="model.Content" />
+
+</div>
+
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Audience
+</label>
+
+
+<InputSelect class="form-select"
+             @bind-Value="model.Audience">
+
+
+<option value="@AnnouncementAudience.All">
+    All
+</option>
+
+
+<option value="@AnnouncementAudience.Students">
+    Students
+</option>
+
+
+<option value="@AnnouncementAudience.Teachers">
+    Teachers
+</option>
+
+
+<option value="@AnnouncementAudience.Staff">
+    Staff
+</option>
+
+
+</InputSelect>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Publish Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.PublishDate" />
+
+</div>
+
+
+
+
+
+
+
+<div class="mb-3">
+
+<label class="form-label">
+    Expire Date
+</label>
+
+
+<InputDate class="form-control"
+           @bind-Value="model.ExpireDate" />
+
+</div>
+
+
+
+
+
+
+
+<button class="btn btn-primary me-2"
+        type="submit">
+
+Create
+
+</button>
+
+
+
+<button class="btn btn-secondary"
+        type="button"
+        @onclick="Cancel">
+
+Cancel
+
+</button>
+
+
+
+</EditForm>
+
+
+</div>
+
+</div>
+
+
+
+
+
+
+@code {
+
+
+private CreateAnnouncementDto model = new()
+{
+    PublishDate = DateTime.Now,
+
+    Audience = AnnouncementAudience.All
+};
+
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    // TODO:
+    // Replace with logged-in user id later
+    //
+    // Current temporary admin user
+
+    model.CreatedByUserId = 1;
+
+}
+
+
+
+
+
+
+
+
+private async Task Create()
+{
+
+    try
+    {
+
+        await AnnouncementService
+            .CreateAsync(model);
+
+
+
+        Notification.Success(
+            "Announcement created successfully.");
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/announcements");
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+
+
+private void Cancel()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/announcements");
+
+}
+
+
+}

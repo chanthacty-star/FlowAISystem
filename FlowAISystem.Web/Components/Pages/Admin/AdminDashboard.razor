@@ -1,0 +1,221 @@
+@page "/admin-dashboard"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Web.Components.Shared.Dashboard
+
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                <i class="bi bi-speedometer2 me-2"></i>
+
+                Admin Dashboard
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Welcome to FlowAISystem Administration
+
+            </p>
+
+        </div>
+
+        <button class="btn btn-outline-primary"
+                @onclick="RefreshDashboard">
+
+            <i class="bi bi-arrow-clockwise me-2"></i>
+
+            Refresh
+
+        </button>
+
+    </div>
+
+    <DashboardExportButtons />
+
+    <SummaryCards @key="refreshKey" />
+
+    <div class="row mt-4">
+
+        <div class="col-lg-6 mb-4">
+            <StudentChart @key="refreshKey" />
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <AIKnowledgeChart @key="refreshKey" />
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-lg-6 mb-4">
+            <RecentStudents @key="refreshKey" />
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <RecentAIKnowledge @key="refreshKey" />
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-lg-8 mb-4">
+            <RecentActivities @key="refreshKey" />
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <QuickActions />
+        </div>
+
+    </div>
+
+    <SystemStatus />
+
+</div>
+
+@code
+{
+    private Guid refreshKey = Guid.NewGuid();
+
+    private void RefreshDashboard()
+    {
+        refreshKey = Guid.NewGuid();
+    }
+}
+
+@* 
+@page "/admin"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Web.Components.Shared.Dashboard
+
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Admin Dashboard | FlowAISystem</PageTitle>
+
+<div class="admin-dashboard-layout py-4 px-2 px-md-4">
+    <div class="container-fluid">
+
+        <!-- ==================== HEADER SECTION ==================== -->
+        <header class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
+            <div>
+                <nav aria-label="breadcrumb" class="mb-1 d-none d-sm-block">
+                    <ol class="breadcrumb mb-0 small text-muted">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">System</a></li>
+                        <li class="breadcrumb-item active text-primary" aria-current="page">Dashboard</li>
+                    </ol>
+                </nav>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="header-icon-wrapper d-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-3 p-2 d-none d-md-flex" style="width: 42px; height: 42px;">
+                        <i class="bi bi-speedometer2 fs-4"></i>
+                    </div>
+                    <div>
+                        <h2 class="dashboard-title h3 mb-0">Admin Dashboard</h2>
+                        <p class="text-muted small mb-0">Welcome to FlowAISystem Administration</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 w-100 w-sm-auto justify-content-end">
+                <DashboardExportButtons />
+                
+                <button class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold" 
+                        @onclick="RefreshDashboard" 
+                        disabled="@isRefreshing">
+                    <i class="bi bi-arrow-clockwise @(isRefreshing ? "spin-animation" : "")"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ==================== SUMMARY SECTION ==================== -->
+        <!-- Note: This component likely renders your .dashboard-cards grid directly -->
+        <SummaryCards @key="refreshKey" />
+
+        <!-- ==================== CHARTS & ANALYTICS ==================== -->
+        <div class="row g-4 mt-1 mb-4">
+            <div class="col-xl-6">
+                <StudentChart @key="refreshKey" />
+            </div>
+            <div class="col-xl-6">
+                <AIKnowledgeChart @key="refreshKey" />
+            </div>
+        </div>
+
+        <!-- ==================== TABLES SECTION ==================== -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-6">
+                <RecentStudents @key="refreshKey" />
+            </div>
+            <div class="col-xl-6">
+                <RecentAIKnowledge @key="refreshKey" />
+            </div>
+        </div>
+
+        <!-- ==================== ACTIVITIES & ACTIONS ==================== -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-8">
+                <RecentActivities @key="refreshKey" />
+            </div>
+            <div class="col-xl-4">
+                <QuickActions />
+            </div>
+        </div>
+
+        <!-- ==================== SYSTEM STATUS ==================== -->
+        <div class="mt-4 pt-3 border-top border-light-subtle">
+            <SystemStatus />
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Premium touchpoints to align with your theme */
+    .admin-dashboard-layout {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .bg-primary-subtle {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+    }
+
+    /* Active Refresh Animation */
+    .spin-animation {
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+@code
+{
+    private Guid refreshKey = Guid.NewGuid();
+    private bool isRefreshing = false;
+
+    private async Task RefreshDashboard()
+    {
+        isRefreshing = true;
+        refreshKey = Guid.NewGuid();
+        
+        // Brief delay to make the refresh animation feel tactile/visible
+        await Task.Delay(400); 
+        isRefreshing = false;
+    }
+} *@

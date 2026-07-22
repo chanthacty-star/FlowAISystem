@@ -1,0 +1,215 @@
+@page "/admin-dashboard/reports/dashboard"
+
+@using FlowAISystem.Application.Interfaces.Services.Reports
+@using FlowAISystem.Shared.DTOs.Reports
+
+@inject IReportService ReportService
+
+
+<PageTitle>
+    Dashboard Reports
+</PageTitle>
+
+
+<h3>
+    Dashboard Reports
+</h3>
+
+
+
+<div class="card p-3 mb-3">
+
+
+    <button class="btn btn-primary"
+            @onclick="LoadReport">
+
+        Generate Dashboard Report
+
+    </button>
+
+
+</div>
+
+
+
+
+@if (loading)
+{
+    <p>
+        Loading dashboard report...
+    </p>
+}
+
+
+
+@if (report != null)
+{
+
+    <div class="row">
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card p-3 shadow-sm">
+
+                <h5>
+                    Total Students
+                </h5>
+
+                <h2>
+                    @report.TotalStudents
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card p-3 shadow-sm">
+
+                <h5>
+                    Total Teachers
+                </h5>
+
+                <h2>
+                    @report.TotalTeachers
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card p-3 shadow-sm">
+
+                <h5>
+                    Total Courses
+                </h5>
+
+                <h2>
+                    @report.TotalCourses
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card p-3 shadow-sm">
+
+                <h5>
+                    Total Enrollments
+                </h5>
+
+                <h2>
+                    @report.TotalEnrollments
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card p-3 shadow-sm">
+
+                <h5>
+                    Average Score
+                </h5>
+
+                <h2>
+                    @report.AverageScore %
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card p-3 shadow-sm">
+
+                <h5>
+                    Average Attendance
+                </h5>
+
+                <h2>
+                    @report.AverageAttendance %
+                </h2>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+}
+
+else if (!loading)
+{
+
+    <p class="text-muted">
+
+        No dashboard data available.
+
+    </p>
+
+}
+
+
+
+@code {
+
+
+    private bool loading;
+
+
+    private DashboardReportDto?
+        report;
+
+
+
+    private async Task LoadReport()
+    {
+
+        try
+        {
+
+            loading = true;
+
+
+            report =
+                await ReportService
+                .GetDashboardReportAsync();
+
+        }
+
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+}

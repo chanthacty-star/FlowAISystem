@@ -1,0 +1,339 @@
+@page "/admin-dashboard/attendances"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Attendances
+@using FlowAISystem.Shared.Enums
+
+
+@inject IAttendanceService AttendanceService
+
+@inject NavigationManager Navigation
+
+@inject NotificationService Notification
+
+
+
+<PageTitle>
+    Attendance List
+</PageTitle>
+
+
+<h3 class="mb-4">
+    📋 Attendance Management
+</h3>
+
+
+
+<div class="card shadow">
+
+<div class="card-body">
+
+
+<div class="row mb-3">
+
+
+<div class="col-md-4">
+
+<input class="form-control"
+       placeholder="Search student or course..."
+       @bind="search.SearchTerm" />
+
+</div>
+
+
+
+<div class="col-md-3">
+
+<input type="date"
+       class="form-control"
+       @bind="search.AttendanceDate" />
+
+</div>
+
+
+
+<div class="col-md-3">
+
+<button class="btn btn-primary"
+        @onclick="LoadData">
+
+Search
+
+</button>
+
+
+<button class="btn btn-success ms-2"
+        @onclick="Create">
+
++ Create
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+@if(attendances == null)
+{
+
+<p>
+    Loading...
+</p>
+
+}
+else
+{
+
+
+<table class="table table-bordered table-hover">
+
+
+<thead class="table-light">
+
+<tr>
+
+<th>
+Student
+</th>
+
+
+<th>
+Course
+</th>
+
+
+<th>
+Class
+</th>
+
+
+<th>
+Date
+</th>
+
+
+<th>
+Status
+</th>
+
+
+<th>
+Action
+</th>
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody>
+
+
+@foreach(var item in attendances)
+{
+
+<tr>
+
+<td>
+@item.StudentName
+</td>
+
+
+<td>
+@item.CourseName
+</td>
+
+
+<td>
+@item.ClassName
+</td>
+
+
+<td>
+@item.AttendanceDate
+</td>
+
+
+<td>
+
+
+@if(item.Status == AttendanceStatus.Present)
+{
+<span class="badge bg-success">
+Present
+</span>
+}
+else if(item.Status == AttendanceStatus.Absent)
+{
+<span class="badge bg-danger">
+Absent
+</span>
+}
+else if(item.Status == AttendanceStatus.Late)
+{
+<span class="badge bg-warning text-dark">
+Late
+</span>
+}
+else
+{
+<span class="badge bg-secondary">
+Excused
+</span>
+}
+
+
+</td>
+
+
+
+<td>
+
+<button class="btn btn-sm btn-warning me-2"
+        @onclick="() => Edit(item.Id)">
+Edit
+</button>
+
+
+
+<button class="btn btn-sm btn-danger"
+        @onclick="() => Delete(item.Id)">
+Delete
+</button>
+
+
+</td>
+
+
+</tr>
+
+}
+
+
+</tbody>
+
+
+</table>
+
+
+}
+
+
+
+</div>
+
+</div>
+
+
+
+
+
+@code {
+
+
+private List<AttendanceListItemDto> attendances = new();
+
+
+
+private AttendanceSearchDto search = new();
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    await LoadData();
+
+}
+
+
+
+
+
+private async Task LoadData()
+{
+
+    try
+    {
+
+        attendances =
+            await AttendanceService
+            .GetAllAsync(search);
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+
+
+
+private void Create()
+{
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/attendances/create");
+
+}
+
+
+
+
+
+private void Edit(int id)
+{
+
+    Navigation.NavigateTo(
+        $"/admin-dashboard/attendances/edit/{id}");
+
+}
+
+
+
+
+
+private async Task Delete(int id)
+{
+
+    try
+    {
+
+        await AttendanceService.DeleteAsync(id);
+
+
+        Notification.Success(
+            "Attendance deleted successfully.");
+
+
+        await LoadData();
+
+    }
+    catch(Exception ex)
+    {
+
+        Notification.Error(
+            ex.Message);
+
+    }
+
+}
+
+
+}

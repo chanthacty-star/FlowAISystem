@@ -1,0 +1,92 @@
+/* Sidebar Container */
+.nav-scrollable {
+    background-color: #1e222d;
+    height: calc(100vh - 3.5rem);
+    overflow-y: auto;
+}
+
+    /* Custom Scrollbar for Tall Menus */
+    .nav-scrollable::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .nav-scrollable::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+    }
+
+/* Section Header Dividers */
+.nav-section-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08rem;
+    color: #6c788e;
+    padding: 0.5rem 1.25rem 0.25rem;
+}
+
+/* Navigation Links Base Styling */
+.nav-item ::deep .nav-link,
+.nav-group-btn {
+    color: #a0aec0;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+/* Icon Alignment */
+.nav-icon {
+    font-size: 1.1rem;
+    margin-right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+}
+
+/* Hover States */
+.nav-item ::deep .nav-link:hover,
+.nav-group-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Active Link State */
+.nav-item ::deep a.active {
+    color: #ffffff !important;
+    background-color: #3182ce !important; /* Accent Blue */
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+    font-weight: 600;
+}
+
+/* Sub-menu Styles for Nested Reports */
+.nav-sub-menu {
+    border-left: 2px solid rgba(255, 255, 255, 0.08);
+    margin-left: 1.25rem;
+    margin-top: 0.3rem;
+    padding-left: 0.5rem;
+}
+
+.sub-link {
+    font-size: 0.85rem !important;
+    padding: 0.45rem 0.75rem !important;
+}
+
+/* Accordion Chevron Rotation */
+.chevron {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.nav-group-btn:not(.collapsed) .chevron {
+    transform: rotate(90deg);
+}

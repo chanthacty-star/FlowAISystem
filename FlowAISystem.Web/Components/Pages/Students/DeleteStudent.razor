@@ -1,0 +1,378 @@
+@page "/admin-dashboard/students/delete/{Id:int}"
+
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Shared.DTOs.Students
+@using FlowAISystem.Application.Interfaces
+
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+@inject IStudentService StudentService
+
+@inject NavigationManager Navigation
+
+
+
+
+
+<PageTitle>
+    Delete Student
+</PageTitle>
+
+
+
+
+
+<div class="container-fluid py-4">
+
+
+
+    <h2 class="fw-bold mb-4">
+
+        🗑 Delete Student
+
+    </h2>
+
+
+
+
+
+
+@if (loading)
+{
+
+    <div class="text-center">
+
+
+        <div class="spinner-border"></div>
+
+
+        <p>
+            Loading student information...
+        </p>
+
+
+    </div>
+
+
+}
+else if(student == null)
+{
+
+
+    <div class="alert alert-danger">
+
+        Student not found.
+
+    </div>
+
+
+}
+else
+{
+
+
+    <div class="card shadow-sm border-danger">
+
+
+
+        <div class="card-header bg-danger text-white">
+
+
+            <h5 class="mb-0">
+
+                Confirm Delete Student
+
+            </h5>
+
+
+        </div>
+
+
+
+
+
+
+        <div class="card-body">
+
+
+
+
+
+            <div class="alert alert-warning">
+
+
+                <strong>
+                    Warning!
+                </strong>
+
+
+                <br />
+
+
+                Are you sure you want to permanently delete this student?
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <table class="table table-bordered">
+
+
+
+                <tr>
+
+                    <th style="width:200px">
+
+                        Student Number
+
+                    </th>
+
+
+                    <td>
+                        @student.StudentNumber
+                    </td>
+
+
+                </tr>
+
+
+
+
+
+
+                <tr>
+
+                    <th>
+
+                        Full Name
+
+                    </th>
+
+
+                    <td>
+
+                        @student.FullName
+
+                    </td>
+
+
+                </tr>
+
+
+
+
+
+
+
+                <tr>
+
+                    <th>
+
+                        Email
+
+                    </th>
+
+
+                    <td>
+
+                        @student.Email
+
+                    </td>
+
+
+                </tr>
+
+
+
+
+
+
+
+                <tr>
+
+                    <th>
+
+                        Phone Number
+
+                    </th>
+
+
+                    <td>
+
+                        @student.PhoneNumber
+
+                    </td>
+
+
+                </tr>
+
+
+
+
+
+
+
+
+                <tr>
+
+                    <th>
+
+                        Department
+
+                    </th>
+
+
+                    <td>
+
+
+                        <span class="badge bg-info">
+
+                            @student.DepartmentName
+
+                        </span>
+
+
+                    </td>
+
+
+                </tr>
+
+
+
+            </table>
+
+
+
+
+
+
+
+            <div class="text-end">
+
+
+
+                <button class="btn btn-danger"
+                        @onclick="DeleteStudentData">
+
+
+                    🗑 Delete Student
+
+
+                </button>
+
+
+
+
+
+                <a href="/admin-dashboard/students"
+                   class="btn btn-secondary ms-2">
+
+
+                    Cancel
+
+
+                </a>
+
+
+
+            </div>
+
+
+
+
+
+        </div>
+
+
+    </div>
+
+
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+@code
+{
+
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+
+
+    private StudentDto? student;
+
+
+
+
+    private bool loading = true;
+
+
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        student =
+            await StudentService
+                .GetByIdAsync(Id);
+
+
+
+        loading = false;
+
+
+    }
+
+
+
+
+
+
+
+    private async Task DeleteStudentData()
+    {
+
+
+        await StudentService
+            .DeleteAsync(Id);
+
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/students");
+
+
+    }
+
+
+
+}

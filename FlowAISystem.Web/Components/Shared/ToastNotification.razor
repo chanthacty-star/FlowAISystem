@@ -1,0 +1,53 @@
+@if (Visible)
+{
+    <div class="position-fixed top-0 end-0 p-3"
+         style="z-index:9999">
+
+        <div class="toast show">
+
+            <div class="toast-header">
+
+                <strong class="me-auto">
+
+                    @Title
+
+                </strong>
+
+                <button class="btn-close"
+                        @onclick="Close">
+
+                </button>
+
+            </div>
+
+            <div class="toast-body">
+
+                @Message
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code{
+
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Success";
+
+    [Parameter]
+    public string Message { get; set; } = "";
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+}

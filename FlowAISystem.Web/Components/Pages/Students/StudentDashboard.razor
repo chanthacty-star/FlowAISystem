@@ -1,0 +1,183 @@
+@page "/student-dashboard"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@attribute [Authorize(Roles = "Student")]
+
+@inject IStudentService StudentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>
+    Student Dashboard
+</PageTitle>
+
+<h3 class="mb-4">
+    🎓 Student Dashboard
+</h3>
+
+@if (dashboard == null)
+{
+    <div class="alert alert-info">
+        Loading dashboard...
+    </div>
+}
+else
+{
+    <div class="alert alert-success">
+        Welcome,
+        <strong>@dashboard.FirstName @dashboard.LastName</strong>
+    </div>
+
+    <div class="row">
+
+        <!-- Student Information -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow">
+
+                <div class="card-body text-center">
+
+                    @if (string.IsNullOrEmpty(dashboard.ProfileImage))
+                    {
+                        <img src="/images/default-user.png"
+                             class="rounded-circle mb-3"
+                             width="120"
+                             height="120" />
+                    }
+                    else
+                    {
+                        <img src="@dashboard.ProfileImage"
+                             class="rounded-circle mb-3"
+                             width="120"
+                             height="120" />
+                    }
+
+                    <h5>@dashboard.FirstName @dashboard.LastName</h5>
+
+                    <p class="text-muted">
+                        @dashboard.DepartmentName
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Information -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h5>Student Information</h5>
+
+                    <hr />
+
+                    <p>
+                        <strong>Student Number:</strong>
+                        @dashboard.StudentNumber
+                    </p>
+
+                    <p>
+                        <strong>Department:</strong>
+                        @dashboard.DepartmentName
+                    </p>
+
+                    <p>
+                        <strong>Enrollment:</strong>
+                        @dashboard.EnrollmentDate
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Academic Summary -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h5>Academic Summary</h5>
+
+                    <hr />
+
+                    <p>Current Subjects : 0</p>
+
+                    <p>Current GPA : 0.00</p>
+
+                    <p>Attendance : 100%</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <br />
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <h5>Quick Actions</h5>
+
+            <hr />
+
+            <a class="btn btn-primary me-2"
+               href="/student-dashboard/student-profile">
+                My Profile
+            </a>
+
+            <button class="btn btn-success me-2">
+                My Subjects
+            </button>
+
+            <button class="btn btn-warning">
+                My Grades
+            </button>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private StudentDashboardDto? dashboard;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState =
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+        var userIdClaim =
+            user.FindFirst("UserId")
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)
+            ?? user.FindFirst("sub");
+
+        if (userIdClaim == null)
+            return;
+
+        dashboard =
+            await StudentService.GetDashboardAsync(
+                int.Parse(userIdClaim.Value));
+    }
+
+}

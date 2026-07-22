@@ -1,0 +1,428 @@
+@page "/admin-dashboard/teachers/edit/{Id:int}"
+
+
+@using FlowAISystem.Shared.DTOs.Teachers
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Domain.Entities
+@using FlowAISystem.Shared.Enums
+
+
+@inject ITeacherService TeacherService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    Edit Teacher
+</PageTitle>
+
+
+
+
+<h3 class="mb-4">
+    ✏️ Edit Teacher
+</h3>
+
+
+
+
+@if (loading)
+{
+
+    <p>
+        Loading...
+    </p>
+
+}
+else
+{
+
+<EditForm Model="teacher"
+          OnValidSubmit="UpdateTeacher">
+
+
+    <DataAnnotationsValidator />
+
+    <ValidationSummary />
+
+
+
+    <div class="row">
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                Teacher Name
+            </label>
+
+
+            <InputText class="form-control"
+                       @bind-Value="teacher.TeacherName" />
+
+        </div>
+
+
+
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                Email
+            </label>
+
+
+            <InputText class="form-control"
+                       @bind-Value="teacher.Email" />
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+    <div class="row">
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                First Name
+            </label>
+
+
+            <InputText class="form-control"
+                       @bind-Value="teacher.FirstName" />
+
+        </div>
+
+
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                Last Name
+            </label>
+
+
+            <InputText class="form-control"
+                       @bind-Value="teacher.LastName" />
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+    <div class="row">
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                Phone Number
+            </label>
+
+
+            <InputText class="form-control"
+                       @bind-Value="teacher.PhoneNumber" />
+
+        </div>
+
+
+
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                Gender
+            </label>
+
+
+            <InputSelect class="form-select"
+                         @bind-Value="teacher.Gender">
+
+
+                @foreach(var gender in Enum.GetValues<Gender>())
+                {
+
+                    <option value="@gender">
+
+                        @gender
+
+                    </option>
+
+                }
+
+
+            </InputSelect>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+    <div class="row">
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                Date of Birth
+            </label>
+
+
+            <InputDate class="form-control"
+                       @bind-Value="teacher.DateOfBirth" />
+
+
+        </div>
+
+
+
+
+
+
+        <div class="col-md-6 mb-3">
+
+
+            <label class="form-label">
+                Hire Date
+            </label>
+
+
+            <InputDate class="form-control"
+                       @bind-Value="teacher.HireDate" />
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+    <div class="mb-4">
+
+
+        <label class="form-label">
+            Department
+        </label>
+
+
+
+        <InputSelect class="form-select"
+                     @bind-Value="teacher.DepartmentId">
+
+
+            @foreach(var department in departments)
+            {
+
+                <option value="@department.Id">
+
+                    @department.Name
+
+                </option>
+
+            }
+
+
+        </InputSelect>
+
+
+    </div>
+
+
+
+
+
+
+
+    <button class="btn btn-primary"
+            type="submit">
+
+        Save Changes
+
+    </button>
+
+
+
+
+    <a href="/admin-dashboard/teachers"
+       class="btn btn-secondary ms-2">
+
+        Cancel
+
+    </a>
+
+
+
+</EditForm>
+
+}
+
+
+
+
+
+@code {
+
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+
+
+
+    private UpdateTeacherDto teacher = new();
+
+
+
+
+    private List<Department> departments = [];
+
+
+
+
+    private bool loading = true;
+
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        departments =
+            await TeacherService
+                .GetDepartmentsAsync();
+
+
+
+
+        var data =
+            await TeacherService
+                .GetByIdAsync(Id);
+
+
+
+
+        if(data == null)
+        {
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/teachers");
+
+            return;
+
+        }
+
+
+
+
+
+
+
+        teacher.Id = data.Id;
+
+
+        teacher.TeacherName =
+            data.TeacherName;
+
+
+        teacher.FirstName = teacher.FirstName;
+
+        teacher.LastName = teacher.LastName;
+
+        teacher.Email =
+            data.Email;
+
+
+        teacher.PhoneNumber =
+            data.PhoneNumber;
+
+
+        teacher.Gender =
+            data.Gender;
+
+
+        teacher.DateOfBirth =
+            data.DateOfBirth;
+
+
+        teacher.HireDate =
+            data.HireDate;
+
+
+        teacher.DepartmentId =
+            data.DepartmentId;
+
+
+
+
+
+        loading = false;
+
+
+    }
+
+
+
+
+
+
+
+    private async Task UpdateTeacher()
+    {
+
+
+        await TeacherService
+            .UpdateAsync(teacher);
+
+
+
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/teachers");
+
+
+    }
+
+
+}

@@ -1,0 +1,223 @@
+@page "/admin-dashboard/departments/edit/{Id:int}"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Shared.DTOs.Departments
+@using FlowAISystem.Application.Interfaces.Services
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IDepartmentService DepartmentService
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Department</PageTitle>
+
+<h3 class="mb-4">
+    Edit Department
+</h3>
+
+@if (loading)
+{
+    <div class="text-center">
+
+        <div class="spinner-border text-primary"></div>
+
+        <p class="mt-2">
+            Loading department...
+        </p>
+
+    </div>
+}
+else if (department == null)
+{
+    <div class="alert alert-danger">
+
+        Department not found.
+
+    </div>
+
+    <a href="/admin-dashboard/departments"
+       class="btn btn-secondary">
+
+        Back
+
+    </a>
+}
+else
+{
+
+    <EditForm Model="department"
+              OnValidSubmit="UpdateDepartment">
+
+        <DataAnnotationsValidator />
+
+        <ValidationSummary class="alert alert-danger" />
+
+        <div class="card shadow">
+
+            <div class="card-header bg-warning">
+
+                <h5 class="mb-0">
+
+                    Edit Department
+
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                <!-- Department Name -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Department Name
+
+                    </label>
+
+                    <InputText class="form-control"
+                               @bind-Value="department.Name" />
+
+                    <ValidationMessage For="@(() => department.Name)"
+                                       class="text-danger" />
+
+                </div>
+
+                <!-- Department Code -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Department Code
+
+                    </label>
+
+                    <InputText class="form-control"
+                               @bind-Value="department.Code" />
+
+                    <ValidationMessage For="@(() => department.Code)"
+                                       class="text-danger" />
+
+                </div>
+
+                <!-- Description -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Description
+
+                    </label>
+
+                    <InputTextArea class="form-control"
+                                   rows="5"
+                                   @bind-Value="department.Description" />
+
+                    <ValidationMessage For="@(() => department.Description)"
+                                       class="text-danger" />
+
+                </div>
+
+            </div>
+
+            <div class="card-footer">
+
+                <button class="btn btn-warning"
+                        type="submit"
+                        disabled="@isSaving">
+
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Updating...</span>
+                    }
+                    else
+                    {
+                        <span>Update Department</span>
+                    }
+
+                </button>
+
+                <a href="/admin-dashboard/departments"
+                   class="btn btn-secondary ms-2">
+
+                    Cancel
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </EditForm>
+
+}
+
+@code
+{
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private UpdateDepartmentDto? department;
+
+    private bool loading = true;
+
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var dto = await DepartmentService.GetByIdAsync(Id);
+
+        if (dto != null)
+        {
+
+            department = new UpdateDepartmentDto
+            {
+
+                Id = dto.Id,
+
+                Name = dto.Name,
+
+                Code = dto.Code,
+
+                Description = dto.Description
+
+            };
+
+        }
+
+        loading = false;
+
+    }
+
+    private async Task UpdateDepartment()
+    {
+
+        if (department == null)
+            return;
+
+        isSaving = true;
+
+        try
+        {
+
+            await DepartmentService.UpdateAsync(department);
+
+            Navigation.NavigateTo("/admin-dashboard/departments");
+
+        }
+        finally
+        {
+
+            isSaving = false;
+
+        }
+
+    }
+
+}

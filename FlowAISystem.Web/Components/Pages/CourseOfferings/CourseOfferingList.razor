@@ -1,0 +1,344 @@
+@page "/admin-dashboard/course-offerings"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Web.Services
+
+@inject ICourseOfferingService CourseOfferingService
+
+@inject NotificationService Notification
+
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Course Offerings
+</PageTitle>
+
+
+<h3 class="mb-4">
+    📚 Course Offerings
+</h3>
+
+
+<div class="card shadow">
+
+    <div class="card-body">
+
+
+        <div class="d-flex justify-content-between mb-3">
+
+
+            <InputText class="form-control w-50"
+                       placeholder="Search class, subject, teacher..."
+                       @bind-Value="search.SearchTerm"
+                       @oninput="Search" />
+
+
+            <button class="btn btn-primary"
+                    @onclick="Create">
+
+                + Create Offering
+
+            </button>
+
+
+        </div>
+
+
+
+        @if (loading)
+        {
+
+            <div class="text-center">
+
+                <div class="spinner-border text-primary"></div>
+
+                <p>
+                    Loading course offerings...
+                </p>
+
+            </div>
+
+        }
+        else
+        {
+
+            <table class="table table-bordered table-hover">
+
+
+                <thead class="table-dark">
+
+                    <tr>
+
+                        <th>
+                            Class
+                        </th>
+
+
+                        <th>
+                            Subject
+                        </th>
+
+
+                        <th>
+                            Teacher
+                        </th>
+
+
+                        <th>
+                            Semester
+                        </th>
+
+
+                        <th>
+                            Room
+                        </th>
+
+
+                        <th>
+                            Capacity
+                        </th>
+
+
+                        <th width="180">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    @if (offerings.Count == 0)
+                    {
+
+                        <tr>
+
+                            <td colspan="7"
+                                class="text-center">
+
+                                No course offerings found.
+
+                            </td>
+
+                        </tr>
+
+                    }
+                    else
+                    {
+
+
+                        @foreach (var item in offerings)
+                        {
+
+                            <tr>
+
+
+                                <td>
+                                    @item.ClassName
+                                </td>
+
+
+                                <td>
+                                    @item.SubjectName
+                                </td>
+
+
+                                <td>
+                                    @item.TeacherName
+                                </td>
+
+
+                                <td>
+                                    @item.SemesterName
+                                </td>
+
+
+                                <td>
+                                    @(item.Room ?? "-")
+                                </td>
+
+
+                                <td>
+                                    @item.Capacity
+                                </td>
+
+
+                                <td>
+
+
+                                    <button class="btn btn-sm btn-warning me-2"
+                                            @onclick="() => Edit(item.Id)">
+
+                                        Edit
+
+                                    </button>
+
+
+
+                                    <button class="btn btn-sm btn-danger"
+                                            @onclick="() => Delete(item.Id)">
+
+                                        Delete
+
+                                    </button>
+
+
+                                </td>
+
+
+                            </tr>
+
+                        }
+
+                    }
+
+
+                </tbody>
+
+
+            </table>
+
+        }
+
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+
+    private List<CourseOfferingListItemDto> offerings = new();
+
+
+    private CourseOfferingSearchDto search = new();
+
+
+    private bool loading = true;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await LoadData();
+
+    }
+
+
+
+
+    private async Task LoadData()
+    {
+
+        try
+        {
+
+            loading = true;
+
+
+            offerings =
+                await CourseOfferingService
+                    .GetAllAsync(search);
+
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(
+                ex.Message);
+
+        }
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+
+
+
+    private async Task Search(
+        ChangeEventArgs e)
+    {
+
+        search.SearchTerm =
+            e.Value?.ToString() ?? string.Empty;
+
+
+        await LoadData();
+
+    }
+
+
+
+
+
+    private void Create()
+    {
+
+        Navigation.NavigateTo(
+            "/admin-dashboard/course-offerings/create");
+
+    }
+
+
+
+
+
+    private void Edit(
+        int id)
+    {
+
+        Navigation.NavigateTo(
+            $"/admin-dashboard/course-offerings/edit/{id}");
+
+    }
+
+
+
+
+
+    private async Task Delete(
+        int id)
+    {
+
+        try
+        {
+
+            await CourseOfferingService
+                .DeleteAsync(id);
+
+
+
+            Notification.Success(
+                "Course offering deleted successfully.");
+
+
+
+            await LoadData();
+
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(
+                ex.Message);
+
+        }
+
+    }
+
+
+}

@@ -1,0 +1,141 @@
+@page "/admin-dashboard/users/details/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Users
+@using Microsoft.AspNetCore.Authorization
+
+
+@attribute [Authorize(Roles="Admin")]
+
+
+@inject IUserService UserService
+
+@inject NavigationManager Navigation
+
+
+
+<PageTitle>
+    User Details
+</PageTitle>
+
+
+
+<h3 class="mb-4">
+    👤 User Details
+</h3>
+
+
+
+@if(user == null)
+{
+    <p>
+        Loading...
+    </p>
+}
+else
+{
+
+<div class="card">
+
+<div class="card-body">
+
+
+<h5 class="card-title">
+    @user.Username
+</h5>
+
+
+
+<hr />
+
+
+
+<p>
+<strong>
+Email:
+</strong>
+
+@user.Email
+
+</p>
+
+
+
+
+<p>
+<strong>
+Role:
+</strong>
+
+@user.RoleName
+
+</p>
+
+
+
+
+
+<p>
+<strong>
+Status:
+</strong>
+
+
+@if(user.IsActive)
+{
+    <span class="badge bg-success">
+        Active
+    </span>
+}
+else
+{
+    <span class="badge bg-danger">
+        Disabled
+    </span>
+}
+
+
+</p>
+
+
+
+<a href="/admin-dashboard/users"
+class="btn btn-secondary">
+
+Back
+
+</a>
+
+
+
+</div>
+
+</div>
+
+}
+
+
+
+
+@code {
+
+
+[Parameter]
+public int Id { get; set; }
+
+
+
+private UserDto? user;
+
+
+
+
+protected override async Task OnInitializedAsync()
+{
+
+    user =
+        await UserService.GetByIdAsync(Id);
+
+}
+
+}

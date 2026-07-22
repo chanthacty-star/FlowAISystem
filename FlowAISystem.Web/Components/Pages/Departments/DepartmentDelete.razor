@@ -1,0 +1,176 @@
+@page "/admin-dashboard/departments/delete/{Id:int}"
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Shared.DTOs.Departments
+@using FlowAISystem.Application.Interfaces.Services
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IDepartmentService DepartmentService
+@inject NavigationManager Navigation
+
+<PageTitle>Delete Department</PageTitle>
+
+<h3 class="mb-4">
+    Delete Department
+</h3>
+
+@if (loading)
+{
+    <div class="text-center">
+
+        <div class="spinner-border text-primary"></div>
+
+        <p class="mt-2">
+            Loading...
+        </p>
+
+    </div>
+}
+else if (department == null)
+{
+    <div class="alert alert-danger">
+
+        Department not found.
+
+    </div>
+
+    <a href="/admin-dashboard/departments"
+       class="btn btn-secondary">
+
+        Back
+
+    </a>
+}
+else
+{
+
+    <div class="card border-danger shadow">
+
+        <div class="card-header bg-danger text-white">
+
+            <h5 class="mb-0">
+
+                Delete Department
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="alert alert-warning">
+
+                <strong>Warning!</strong>
+
+                <br />
+
+                Are you sure you want to delete this department?
+
+            </div>
+
+            <table class="table table-bordered">
+
+                <tr>
+
+                    <th width="220">
+
+                        Department Name
+
+                    </th>
+
+                    <td>
+
+                        @department.Name
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Department Code
+
+                    </th>
+
+                    <td>
+
+                        @department.Code
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Description
+
+                    </th>
+
+                    <td>
+
+                        @department.Description
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+        <div class="card-footer">
+
+            <button class="btn btn-danger"
+                    @onclick="DeleteDepartment">
+
+                Delete
+
+            </button>
+
+            <a href="/admin-dashboard/departments"
+               class="btn btn-secondary ms-2">
+
+                Cancel
+
+            </a>
+
+        </div>
+
+    </div>
+
+}
+
+@code
+{
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private DepartmentDto? department;
+
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        department = await DepartmentService.GetByIdAsync(Id);
+
+        loading = false;
+
+    }
+
+    private async Task DeleteDepartment()
+    {
+
+        await DepartmentService.DeleteAsync(Id);
+
+        Navigation.NavigateTo("/admin-dashboard/departments");
+
+    }
+
+}

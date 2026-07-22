@@ -1,0 +1,122 @@
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Dashboard
+
+@inject IAdminDashboardService DashboardService
+
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <h5 class="fw-bold mb-0">
+
+                <i class="bi bi-robot me-2"></i>
+
+                Recent AI Knowledge
+
+            </h5>
+
+
+            <span class="badge bg-success">
+                Latest 5
+            </span>
+
+        </div>
+
+
+
+        @if (loading)
+        {
+            <p class="text-muted">
+                Loading knowledge...
+            </p>
+        }
+        else if (!items.Any())
+        {
+            <p class="text-muted">
+                No AI knowledge found.
+            </p>
+        }
+        else
+        {
+
+            <div class="table-responsive">
+
+                <table class="table table-hover">
+
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>
+                                Question
+                            </th>
+
+                            <th>
+                                Created
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var item in items)
+                        {
+
+                            <tr>
+
+                                <td>
+                                    <i class="bi bi-chat-left-text me-2"></i>
+                                    @item.Question
+                                </td>
+
+
+                                <td>
+                                    @item.CreatedAt.ToString("MMM dd, yyyy")
+                                </td>
+
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+        }
+
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+    private bool loading = true;
+
+    private List<RecentAIKnowledgeDto> items = [];
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        items =
+            await DashboardService.GetRecentAIKnowledgeAsync();
+
+        loading = false;
+    }
+
+}

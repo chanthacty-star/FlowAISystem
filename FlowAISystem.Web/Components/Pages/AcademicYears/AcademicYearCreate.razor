@@ -1,0 +1,198 @@
+@page "/admin-dashboard/academic-years/create"
+
+@using FlowAISystem.Shared.DTOs.AcademicYears
+@using FlowAISystem.Application.Interfaces.Services
+
+@inject IAcademicYearService AcademicYearService
+@inject NavigationManager Navigation
+
+<PageTitle>
+    Create Academic Year
+</PageTitle>
+
+<h3 class="mb-4">
+    ➕ Create Academic Year
+</h3>
+
+<div class="card shadow">
+
+    <div class="card-body">
+
+        <EditForm Model="model"
+                  OnValidSubmit="Save">
+
+            <DataAnnotationsValidator />
+
+            <ValidationSummary />
+
+            <!-- Name -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Academic Year Name
+
+                </label>
+
+                <InputText class="form-control"
+                           @bind-Value="model.Name" />
+
+                <ValidationMessage For="@(() => model.Name)" />
+
+            </div>
+
+
+
+            <!-- Start Date -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    Start Date
+
+                </label>
+
+                <InputDate class="form-control"
+                           @bind-Value="model.StartDate" />
+
+                <ValidationMessage For="@(() => model.StartDate)" />
+
+            </div>
+
+
+
+            <!-- End Date -->
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    End Date
+
+                </label>
+
+                <InputDate class="form-control"
+                           @bind-Value="model.EndDate" />
+
+                <ValidationMessage For="@(() => model.EndDate)" />
+
+            </div>
+
+
+
+            <!-- Current Academic Year -->
+
+            <div class="form-check mb-3">
+
+                <InputCheckbox class="form-check-input"
+                               @bind-Value="model.IsCurrent" />
+
+                <label class="form-check-label">
+
+                    Set as Current Academic Year
+
+                </label>
+
+            </div>
+
+
+
+            @if (!string.IsNullOrWhiteSpace(message))
+            {
+                <div class="alert alert-danger">
+
+                    @message
+
+                </div>
+            }
+
+
+
+            <button class="btn btn-primary me-2"
+                    type="submit"
+                    disabled="@saving">
+
+                @if (saving)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span>Saving...</span>
+                }
+                else
+                {
+                    <span>💾 Save</span>
+                }
+
+            </button>
+
+
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    @onclick="Cancel"
+                    disabled="@saving">
+
+                ↩ Cancel
+
+            </button>
+
+        </EditForm>
+
+    </div>
+
+</div>
+
+@code {
+
+    private CreateAcademicYearDto model = new();
+
+    private string message = "";
+
+    private bool saving = false;
+
+
+
+    private async Task Save()
+    {
+        message = "";
+
+        saving = true;
+
+        try
+        {
+            model.Name = model.Name.Trim();
+
+            if (model.EndDate <= model.StartDate)
+            {
+                message =
+                    "End Date must be later than Start Date.";
+
+                return;
+            }
+
+            await AcademicYearService.CreateAsync(model);
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/academic-years");
+        }
+        catch (Exception ex)
+        {
+            message =
+                $"Unable to save Academic Year. {ex.Message}";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(
+            "/admin-dashboard/academic-years");
+    }
+
+}

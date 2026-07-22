@@ -1,0 +1,436 @@
+@page "/admin-dashboard/courses"
+
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Courses
+@using FlowAISystem.Shared.DTOs.Departments
+@using FlowAISystem.Shared.DTOs.Semesters
+@using FlowAISystem.Shared.DTOs.Teachers
+
+@inject ICourseService CourseService
+@inject IDepartmentService DepartmentService
+@inject ITeacherService TeacherService
+@inject ISemesterService SemesterService
+
+@inject NotificationService Notification
+@inject NavigationManager Navigation
+
+<PageTitle>
+    Courses
+</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    
+    <h3>
+        📚 Course Management
+    </h3>
+
+
+    <button class="btn btn-primary" @onclick="CreateCourse">
+
+        + Create Course
+
+    </button>
+    
+
+</div>
+
+<div class="card shadow mb-4">
+
+    
+    <div class="card-body">
+
+
+        <div class="row g-3">
+
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    Search
+                </label>
+
+
+                <input class="form-control" placeholder="Code or name..." @bind="search.SearchTerm" />
+
+            </div>
+
+
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    Department
+                </label>
+
+
+                <select class="form-select" @bind="search.DepartmentId">
+
+
+                    <option value="">
+                        All Departments
+                    </option>
+
+
+                    @foreach (var item in departments)
+                    {
+
+                        <option value="@item.Id">
+
+                            @item.Name
+
+                        </option>
+
+                    }
+
+
+                </select>
+
+            </div>
+
+
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    Teacher
+                </label>
+
+
+                <select class="form-select" @bind="search.TeacherId">
+
+
+                    <option value="">
+                        All Teachers
+                    </option>
+
+
+                    @foreach (var item in teachers)
+                    {
+
+                        <option value="@item.Id">
+
+                            @item.TeacherName
+
+                        </option>
+
+                    }
+
+
+                </select>
+
+            </div>
+
+
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    Semester
+                </label>
+
+
+                <select class="form-select" @bind="search.SemesterId">
+
+
+                    <option value="">
+                        All Semesters
+                    </option>
+
+
+                    @foreach (var item in semesters)
+                    {
+
+                        <option value="@item.Id">
+
+                            @item.Name
+
+                        </option>
+
+                    }
+
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="mt-3">
+
+            <button class="btn btn-success" @onclick="LoadCourses">
+
+                🔍 Search
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+    
+
+</div>
+
+@if (loading)
+{
+
+
+< div class= "text-center" >
+
+    < div class= "spinner-border text-primary" ></ div >
+
+    < p >
+        Loading courses...
+    </ p >
+
+</ div >
+
+
+}
+else
+{
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Code
+                        </th>
+
+                        <th>
+                            Name
+                        </th>
+
+                        <th>
+                            Credits
+                        </th>
+
+                        <th>
+                            Department
+                        </th>
+
+                        <th>
+                            Teacher
+                        </th>
+
+                        <th>
+                            Semester
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var course in courses)
+                    {
+
+                        <tr>
+
+                            <td>
+                                @course.Code
+                            </td>
+
+                            <td>
+                                @course.Name
+                            </td>
+
+                            <td>
+                                @course.Credits
+                            </td>
+
+                            <td>
+                                @course.DepartmentName
+                            </td>
+
+                            <td>
+                                @course.TeacherName
+                            </td>
+
+                            <td>
+                                @course.SemesterName
+                            </td>
+
+                            <td>
+
+                                <button class="btn btn-sm btn-warning me-2" @onclick="() => EditCourse(course.Id)">
+
+                                    
+                                    Edit
+                                    
+
+                                </button>
+
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteCourse(course.Id)">
+
+                                    
+                                    Delete
+                                    
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+}
+
+@code {
+
+    private List<CourseListItemDto> courses = new();
+
+    private List<DepartmentListItemDto> departments = new();
+
+    private List<TeacherListItemDto> teachers = new();
+
+    private List<SemesterListItemDto> semesters = new();
+
+    private CourseSearchDto search = new();
+
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+    await LoadFilters();
+
+            await LoadCourses();
+
+
+    }
+
+    private async Task LoadFilters()
+    {
+
+        departments =
+            await DepartmentService
+                .GetAllAsync(
+                    new DepartmentSearchDto());
+
+
+        teachers =
+            await TeacherService
+                .GetAllAsync(
+                    new TeacherSearchDto());
+
+
+        semesters =
+            await SemesterService
+                .GetAllAsync(
+                    new SemesterSearchDto());
+
+    }
+
+    private async Task LoadCourses()
+    {
+
+
+    try
+            {
+
+                loading = true;
+
+
+                courses =
+                    await CourseService
+                        .GetAllAsync(search);
+
+
+            }
+            catch (Exception ex)
+            {
+
+                Notification.Error(
+                    ex.Message);
+
+            }
+            finally
+            {
+
+                loading = false;
+
+            }
+
+
+    }
+
+    private void CreateCourse()
+    {
+
+
+    Navigation.NavigateTo(
+        "/admin-dashboard/courses/create");
+
+
+    }
+
+    private void EditCourse(int id)
+    {
+
+
+    Navigation.NavigateTo(
+        $"/admin-dashboard/courses/edit/{id}");
+
+
+    }
+
+        private async Task DeleteCourse(int id)
+        {
+
+
+    try
+            {
+
+                await CourseService
+                    .DeleteAsync(id);
+
+
+
+                Notification.Success(
+                    "Course deleted successfully.");
+
+
+                await LoadCourses();
+
+            }
+            catch (Exception ex)
+            {
+
+                Notification.Error(
+                    ex.Message);
+
+            }
+
+
+    }
+
+}

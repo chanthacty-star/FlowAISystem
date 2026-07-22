@@ -1,0 +1,260 @@
+@page "/admin-dashboard/academic-years/edit/{Id:int}"
+
+@using FlowAISystem.Shared.DTOs.AcademicYears
+@using FlowAISystem.Application.Interfaces.Services
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject IAcademicYearService AcademicYearService
+@inject NavigationManager Navigation
+
+<PageTitle>
+    Edit Academic Year
+</PageTitle>
+
+<h3 class="mb-4">
+    ✏️ Edit Academic Year
+</h3>
+
+@if (loading)
+{
+    <div class="text-center my-5">
+
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">
+                Loading...
+            </span>
+        </div>
+
+        <p class="mt-2">
+            Loading Academic Year...
+        </p>
+
+    </div>
+}
+else if (model == null)
+{
+    <div class="alert alert-danger">
+
+        Academic Year not found.
+
+    </div>
+
+    <button class="btn btn-secondary"
+            @onclick="Cancel">
+
+        Back
+
+    </button>
+}
+else
+{
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <EditForm Model="model"
+                      OnValidSubmit="Save">
+
+                <DataAnnotationsValidator />
+
+                <ValidationSummary />
+
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="alert alert-danger">
+
+                        @message
+
+                    </div>
+                }
+
+                <!-- Academic Year Name -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Academic Year Name
+
+                    </label>
+
+                    <InputText class="form-control"
+                               @bind-Value="model.Name" />
+
+                </div>
+
+                <!-- Start Date -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Start Date
+
+                    </label>
+
+                    <InputDate class="form-control"
+                               @bind-Value="model.StartDate" />
+
+                </div>
+
+                <!-- End Date -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        End Date
+
+                    </label>
+
+                    <InputDate class="form-control"
+                               @bind-Value="model.EndDate" />
+
+                </div>
+
+                <!-- Current Academic Year -->
+
+                <div class="form-check mb-4">
+
+                    <InputCheckbox class="form-check-input"
+                                   @bind-Value="model.IsCurrent" />
+
+                    <label class="form-check-label">
+
+                        Set as Current Academic Year
+
+                    </label>
+
+                </div>
+
+                <!-- Buttons -->
+
+                <button class="btn btn-success me-2"
+                        type="submit"
+                        disabled="@saving">
+
+                    @if (saving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+
+                        <span>
+                            Saving...
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            💾 Save Changes
+                        </span>
+                    }
+
+                </button>
+
+                <button class="btn btn-secondary"
+                        type="button"
+                        disabled="@saving"
+                        @onclick="Cancel">
+
+                    Cancel
+
+                </button>
+
+            </EditForm>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private UpdateAcademicYearDto? model;
+
+    private bool loading = true;
+
+    private bool saving = false;
+
+    private string message = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var dto =
+                await AcademicYearService.GetByIdAsync(Id);
+
+            if (dto != null)
+            {
+                model = new UpdateAcademicYearDto
+                {
+                    Id = dto.Id,
+                    Name = dto.Name,
+                    StartDate = dto.StartDate,
+                    EndDate = dto.EndDate,
+                    IsCurrent = dto.IsCurrent
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task Save()
+    {
+        if (model == null)
+            return;
+
+        message = "";
+
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            message =
+                "Academic Year Name is required.";
+
+            return;
+        }
+
+        if (model.EndDate <= model.StartDate)
+        {
+            message =
+                "End Date must be after Start Date.";
+
+            return;
+        }
+
+        try
+        {
+            saving = true;
+
+            await AcademicYearService.UpdateAsync(model);
+
+            Navigation.NavigateTo(
+                "/admin-dashboard/academic-years");
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(
+            "/admin-dashboard/academic-years");
+    }
+
+}

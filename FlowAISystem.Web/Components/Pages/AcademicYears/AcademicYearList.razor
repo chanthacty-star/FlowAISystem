@@ -1,0 +1,485 @@
+@page "/admin-dashboard/academic-years"
+
+@using FlowAISystem.Shared.DTOs.AcademicYears
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Web.Services
+
+@inject NotificationService Notification
+@inject ConfirmationService Confirmation
+@inject IAcademicYearService AcademicYearService
+@inject NavigationManager Navigation
+
+
+<PageTitle>
+    Academic Years
+</PageTitle>
+
+
+<h3 class="mb-4">
+    📅 Academic Year Management
+</h3>
+
+
+<div class="card shadow">
+
+
+    <!-- Header -->
+
+    <div class="card-header">
+
+        <div class="row align-items-center">
+
+
+            <!-- Search -->
+
+            <div class="col-md-4">
+
+                <input class="form-control"
+                       placeholder="Search Academic Year..."
+                       value="@search.SearchTerm"
+                       @oninput="SearchChanged" />
+
+            </div>
+
+
+
+            <!-- Filter -->
+
+            <div class="col-md-3">
+
+                <select class="form-select"
+                        value="@currentFilter"
+                        @onchange="FilterChanged">
+
+                    <option value="">
+                        All
+                    </option>
+
+
+                    <option value="true">
+                        Current Only
+                    </option>
+
+
+                    <option value="false">
+                        Inactive
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- Create -->
+
+            <div class="col-md-5 text-end">
+
+
+                <button class="btn btn-primary"
+                        @onclick="Create">
+
+                    + Academic Year
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <!-- Body -->
+
+
+    <div class="card-body">
+
+
+        @if (loading)
+        {
+
+            <div class="text-center">
+
+                <div class="spinner-border text-primary"></div>
+
+                <p class="mt-2">
+                    Loading academic years...
+                </p>
+
+            </div>
+
+        }
+        else if (!academicYears.Any())
+        {
+
+            <div class="alert alert-info">
+
+                No Academic Years Found.
+
+            </div>
+
+        }
+        else
+        {
+
+            <table class="table table-hover table-bordered align-middle">
+
+
+                <thead class="table-dark">
+
+                    <tr>
+
+                        <th>
+                            Name
+                        </th>
+
+
+                        <th>
+                            Start Date
+                        </th>
+
+
+                        <th>
+                            End Date
+                        </th>
+
+
+                        <th>
+                            Current
+                        </th>
+
+
+                        <th>
+                            Semesters
+                        </th>
+
+
+                        <th width="300">
+                            Actions
+                        </th>
+
+
+                    </tr>
+
+
+                </thead>
+
+
+
+                <tbody>
+
+
+                    @foreach(var item in academicYears)
+                    {
+
+                        <tr>
+
+
+                            <td>
+                                @item.Name
+                            </td>
+
+
+                            <td>
+                                @item.StartDate
+                            </td>
+
+
+                            <td>
+                                @item.EndDate
+                            </td>
+
+
+
+                            <td>
+
+                                @if(item.IsCurrent)
+                                {
+
+                                    <span class="badge bg-success">
+                                        Current
+                                    </span>
+
+                                }
+                                else
+                                {
+
+                                    <span class="badge bg-secondary">
+                                        Inactive
+                                    </span>
+
+                                }
+
+                            </td>
+
+
+
+                            <td>
+                                @item.SemesterCount
+                            </td>
+
+
+
+                            <td>
+
+
+                                <button class="btn btn-warning btn-sm me-2"
+                                        @onclick="() => Edit(item.Id)">
+
+                                    ✏ Edit
+
+                                </button>
+
+
+
+                                <button class="btn btn-danger btn-sm me-2"
+                                        @onclick="() => Delete(item)">
+
+                                    🗑 Delete
+
+                                </button>
+
+
+
+                                @if(item.IsCurrent)
+                                {
+
+                                    <button class="btn btn-success btn-sm"
+                                            disabled>
+
+                                        ⭐ Current
+
+                                    </button>
+
+                                }
+                                else
+                                {
+
+                                    <button class="btn btn-info btn-sm"
+                                            @onclick="() => SetCurrent(item.Id)">
+
+                                        ⭐ Set Current
+
+                                    </button>
+
+                                }
+
+
+                            </td>
+
+
+                        </tr>
+
+                    }
+
+
+                </tbody>
+
+
+            </table>
+
+        }
+
+
+    </div>
+
+
+</div>
+
+
+
+
+@code {
+
+
+    private List<AcademicYearListItemDto> academicYears = new();
+
+
+    private AcademicYearSearchDto search = new();
+
+
+    private bool loading = true;
+
+
+    private string currentFilter = "";
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+
+
+
+    private async Task LoadData()
+    {
+
+        try
+        {
+
+            loading = true;
+
+
+            search.IsCurrent =
+                string.IsNullOrWhiteSpace(currentFilter)
+                ? null
+                : bool.Parse(currentFilter);
+
+
+
+            academicYears =
+                await AcademicYearService
+                .GetAllAsync(search);
+
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(ex.Message);
+
+        }
+        finally
+        {
+
+            loading = false;
+
+        }
+
+    }
+
+
+
+
+    private void Create()
+    {
+        Navigation.NavigateTo(
+            "/admin-dashboard/academic-years/create");
+    }
+
+
+
+
+    private void Edit(int id)
+    {
+        Navigation.NavigateTo(
+            $"/admin-dashboard/academic-years/edit/{id}");
+    }
+
+
+
+
+    private async Task Delete(
+        AcademicYearListItemDto item)
+    {
+
+        bool confirm =
+            await Confirmation
+            .ConfirmAsync(
+                $"Delete academic year '{item.Name}'?");
+
+
+        if(!confirm)
+            return;
+
+
+
+        try
+        {
+
+            await AcademicYearService
+                .DeleteAsync(item.Id);
+
+
+
+            Notification.Success(
+                "Academic Year deleted successfully.");
+
+
+            await LoadData();
+
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(
+                ex.Message);
+
+        }
+
+    }
+
+
+
+
+
+    private async Task SetCurrent(int id)
+    {
+
+        try
+        {
+
+            await AcademicYearService
+                .SetCurrentAsync(id);
+
+
+
+            Notification.Success(
+                "Current Academic Year updated.");
+
+
+
+            await LoadData();
+
+
+        }
+        catch(Exception ex)
+        {
+
+            Notification.Error(
+                ex.Message);
+
+        }
+
+    }
+
+
+
+
+
+    private async Task SearchChanged(ChangeEventArgs e)
+    {
+
+        search.SearchTerm =
+            e.Value?.ToString() ?? "";
+
+
+        await LoadData();
+
+    }
+
+
+
+
+
+    private async Task FilterChanged(ChangeEventArgs e)
+    {
+
+        currentFilter =
+            e.Value?.ToString() ?? "";
+
+
+        await LoadData();
+
+    }
+
+}
