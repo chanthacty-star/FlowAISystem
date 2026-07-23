@@ -87,6 +87,7 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 
 builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IStudentAIService, StudentAIService>();// student AI service
 // Couse ofering 
 builder.Services.AddScoped<
     ICourseOfferingRepository,
