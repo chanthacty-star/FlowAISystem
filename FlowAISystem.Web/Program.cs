@@ -15,6 +15,7 @@ using FlowAISystem.Infrastructure.Export.Excel;
 using FlowAISystem.Application;
 using FlowAISystem.Infrastructure;
 using ApexCharts;
+using MudBlazor.Services; // Mud
 
 using FlowAISystem.Application.Interfaces.Repositories;
 using FlowAISystem.Application.Security;
@@ -133,6 +134,10 @@ provider.GetRequiredService<JwtAuthenticationStateProvider>());
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// MudBlazor
+builder.Services.AddMudServices();
+
 builder.Services.AddApexCharts();// chat regiseter
 //Service Notifications // Notification Framework
 builder.Services.AddScoped<NotificationService>();

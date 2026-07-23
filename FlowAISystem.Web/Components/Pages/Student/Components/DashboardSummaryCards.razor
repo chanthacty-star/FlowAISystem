@@ -1,0 +1,153 @@
+@namespace FlowAISystem.Web.Components.Pages.Student
+
+@using FlowAISystem.Shared.DTOs.Students
+
+@if (Dashboard != null)
+{
+    <div class="row">
+
+        <!-- Current Subjects -->
+
+        <div class="col-xl-3 col-md-6 mb-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Current Subjects
+                            </div>
+
+                            <h2 class="fw-bold mt-2">
+                                @Dashboard.CurrentSubjects
+                            </h2>
+
+                        </div>
+
+                        <div class="display-5">
+                            📚
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- GPA -->
+
+        <div class="col-xl-3 col-md-6 mb-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Current GPA
+                            </div>
+
+                            <h2 class="fw-bold mt-2">
+                                @Dashboard.CurrentGPA.ToString("0.00")
+                            </h2>
+
+                        </div>
+
+                        <div class="display-5">
+                            📊
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Attendance -->
+
+        <div class="col-xl-3 col-md-6 mb-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Attendance
+                            </div>
+
+                            <h2 class="fw-bold mt-2">
+                                @Dashboard.AttendancePercentage.ToString("0")%
+                            </h2>
+
+                        </div>
+
+                        <div class="display-5">
+                            ✅
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Announcements -->
+
+        <div class="col-xl-3 col-md-6 mb-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Announcements
+                            </div>
+
+                            <h2 class="fw-bold mt-2">
+                                @Dashboard.AnnouncementCount
+                            </h2>
+
+                        </div>
+
+                        <div class="display-5">
+                            📢
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code{
+
+    [Parameter]
+    public StudentDashboardDto? Dashboard { get; set; }
+
+}

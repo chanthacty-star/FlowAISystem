@@ -1,0 +1,239 @@
+@page "/student/subjects"
+
+@using System.Security.Claims
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+
+@attribute [Authorize(Roles = "Student")]
+
+
+@inject IStudentService StudentService
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+
+<PageTitle>
+    My Subjects
+</PageTitle>
+
+
+
+@if (subjects == null)
+{
+    <div class="text-center py-5">
+
+        <div class="spinner-border text-primary">
+        </div>
+
+        <p class="mt-3">
+            Loading subjects...
+        </p>
+
+    </div>
+}
+else
+{
+
+    <div class="container-fluid py-4">
+
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <h2 class="fw-bold">
+                    📚 My Subjects
+                </h2>
+
+                <p class="text-muted">
+                    Current enrolled subjects
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="card shadow-sm border-0">
+
+
+            <div class="card-body">
+
+
+                @if (!subjects.Any())
+                {
+
+                    <div class="text-center text-muted">
+
+                        No subjects found.
+
+                    </div>
+
+                }
+                else
+                {
+
+                    <div class="table-responsive">
+
+
+                        <table class="table table-hover">
+
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Code
+                                    </th>
+
+
+                                    <th>
+                                        Subject
+                                    </th>
+
+
+                                    <th>
+                                        Credits
+                                    </th>
+
+
+                                    <th>
+                                        Teacher
+                                    </th>
+
+
+                                    <th>
+                                        Semester
+                                    </th>
+
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+
+                            <tbody>
+
+
+                                @foreach(var subject in subjects)
+                                {
+
+                                    <tr>
+
+                                        <td>
+                                            @subject.SubjectCode
+                                        </td>
+
+
+                                        <td>
+                                            @subject.SubjectName
+                                        </td>
+
+
+                                        <td>
+                                            @subject.Credits
+                                        </td>
+
+
+                                        <td>
+                                            @subject.TeacherName
+                                        </td>
+
+
+                                        <td>
+                                            @subject.SemesterName
+                                        </td>
+
+
+                                        <td>
+
+                                            <span class="badge bg-success">
+
+                                                @subject.Status
+
+                                            </span>
+
+                                        </td>
+
+
+                                    </tr>
+
+                                }
+
+
+                            </tbody>
+
+
+                        </table>
+
+
+                    </div>
+
+                }
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+@code {
+
+    private List<StudentSubjectDto>? subjects;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+        var user =
+            authState.User;
+
+
+
+        var claim =
+            user.FindFirst("UserId")
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)
+            ?? user.FindFirst("sub");
+
+
+
+        if (claim == null)
+            return;
+
+
+
+        var userId =
+            int.Parse(claim.Value);
+
+
+
+        subjects =
+            await StudentService.GetSubjectsAsync(userId);
+
+    }
+
+}

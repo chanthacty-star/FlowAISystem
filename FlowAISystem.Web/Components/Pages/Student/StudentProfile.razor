@@ -1,0 +1,396 @@
+@page "/student/profile"
+
+@using System.Security.Claims
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+
+@attribute [Authorize(Roles = "Student")]
+
+
+@inject IStudentService StudentService
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+
+<PageTitle>
+    Student Profile
+</PageTitle>
+
+
+
+@if (student == null)
+{
+    <div class="container py-5">
+
+        <div class="text-center">
+
+            <div class="spinner-border text-primary"
+                 role="status">
+            </div>
+
+
+            <p class="mt-3">
+                Loading profile...
+            </p>
+
+        </div>
+
+    </div>
+}
+else
+{
+
+    <div class="container py-4">
+
+
+        <!-- Header -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+
+            <div class="card-body">
+
+
+                <h2 class="fw-bold">
+                    👤 Student Profile
+                </h2>
+
+
+                <p class="text-muted mb-0">
+                    Personal and academic information
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+
+        <div class="row">
+
+
+            <!-- Profile Card -->
+
+            <div class="col-lg-4 mb-4">
+
+
+                <div class="card shadow-sm border-0 h-100">
+
+
+                    <div class="card-body text-center">
+
+
+                        @if (!string.IsNullOrEmpty(student.ProfileImage))
+                        {
+
+                            <img src="@student.ProfileImage"
+                                 class="rounded-circle mb-3"
+                                 width="120"
+                                 height="120" />
+
+                        }
+                        else
+                        {
+
+                            <div class="display-1 mb-3">
+                                👨‍🎓
+                            </div>
+
+                        }
+
+
+
+                        <h4 class="fw-bold">
+
+                            @student.FirstName
+                            @student.LastName
+
+                        </h4>
+
+
+
+                        <p class="text-muted">
+
+                            @student.StudentNumber
+
+                        </p>
+
+
+
+                        @if (student.AccountActive)
+                        {
+
+                            <span class="badge bg-success">
+                                Active Account
+                            </span>
+
+                        }
+                        else
+                        {
+
+                            <span class="badge bg-danger">
+                                Inactive Account
+                            </span>
+
+                        }
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+
+            <!-- Information -->
+
+            <div class="col-lg-8 mb-4">
+
+
+                <div class="card shadow-sm border-0">
+
+
+                    <div class="card-body">
+
+
+                        <h5 class="fw-bold mb-4">
+                            Personal Information
+                        </h5>
+
+
+
+                        <div class="row">
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    Email
+                                </label>
+
+                                <div class="fw-semibold">
+                                    @student.Email
+                                </div>
+
+                            </div>
+
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    Phone
+                                </label>
+
+                                <div class="fw-semibold">
+                                    @student.PhoneNumber
+                                </div>
+
+                            </div>
+
+
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    Gender
+                                </label>
+
+                                <div class="fw-semibold">
+                                    @student.Gender
+                                </div>
+
+                            </div>
+
+
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    Date Of Birth
+                                </label>
+
+                                <div class="fw-semibold">
+                                    @student.DateOfBirth
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+
+
+                        <hr />
+
+
+
+                        <h5 class="fw-bold mb-4">
+                            Academic Information
+                        </h5>
+
+
+
+
+                        <div class="row">
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    Department
+                                </label>
+
+                                <div class="fw-semibold">
+                                    @student.DepartmentName
+                                </div>
+
+                            </div>
+
+
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    Enrollment Date
+                                </label>
+
+                                <div class="fw-semibold">
+                                    @student.EnrollmentDate
+                                </div>
+
+                            </div>
+
+
+
+                        </div>
+
+
+
+
+                        <hr />
+
+
+
+                        <h5 class="fw-bold mb-4">
+                            Account Information
+                        </h5>
+
+
+
+
+                        <div class="row">
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    Username
+                                </label>
+
+
+                                <div class="fw-semibold">
+                                    @student.Username
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+                                    User ID
+                                </label>
+
+
+                                <div class="fw-semibold">
+                                    @student.UserId
+                                </div>
+
+
+                            </div>
+
+
+                        </div>
+
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+
+
+@code {
+
+    private StudentProfileDto? student;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+
+        var user =
+            authState.User;
+
+
+
+        var userIdClaim =
+            user.FindFirst("UserId")
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)
+            ?? user.FindFirst("sub");
+
+
+
+        if (userIdClaim == null)
+            return;
+
+
+
+        var userId =
+            int.Parse(userIdClaim.Value);
+
+
+
+        student =
+            await StudentService.GetProfileAsync(userId);
+
+    }
+
+}

@@ -1,6 +1,6 @@
 using FlowAISystem.Domain.Entities;
 using FlowAISystem.Shared.DTOs.Students;
-
+using FlowAISystem.Shared.DTOs.Announcements;
 namespace FlowAISystem.Application.Interfaces.Repositories;
 
 public interface IStudentRepository
@@ -52,16 +52,58 @@ public interface IStudentRepository
     Task DeleteAsync(
         int id);
 
-    // user
+    //// user
+    ////Task<Student?> GetByUserIdAsync(int userId);
     //Task<Student?> GetByUserIdAsync(int userId);
+
+    // addd new 
+    // ==================================================
+    // Student Dashboard
+    // ==================================================
+
     Task<Student?> GetByUserIdAsync(int userId);
 
-    // Updat photo
+    Task<List<StudentSubjectSummaryDto>> GetRecentSubjectsAsync(
+        int userId);
+    // ==================================================
+    // Student Announcements Page
+    // ==================================================
+    //Task<List<AnnouncementDto>> GetAnnouncementsAsync(
+    //    int userId);
+
+    Task<List<StudentAnnouncementSummaryDto>> GetRecentAnnouncementsAsync(
+        int userId,
+        int count = 5);
+    // ==================================================
+    // Student Grades
+    // ==================================================
+
+    Task<List<StudentGradeDto>> GetGradesAsync(
+        int userId);
+
+    // ==================================================
+    // Student Attendance
+    // ==================================================
+
+    Task<List<StudentAttendanceDto>> GetAttendanceAsync(
+        int userId);
+    // ==================================================
+    // Student Feedback
+    // ==================================================
+
+    Task<List<StudentFeedbackDto>> GetFeedbackAsync(
+        int userId);
+
+    // ==================================================
+    // Update Profile Image
+    // ==================================================
+
     Task UpdateProfileImageAsync(
     int userId,
     string imagePath);
 
-
+    Task<List<StudentSubjectDto>> GetSubjectsAsync(
+    int userId);
     // ==================================================
     // Departments
     // ==================================================
@@ -88,4 +130,7 @@ public interface IStudentRepository
 
     Task<StudentListItemDto?> FindByNameAsync(
         string name);
+
+
+
 }

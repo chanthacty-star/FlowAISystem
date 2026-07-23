@@ -17,8 +17,17 @@ public class AnnouncementService : IAnnouncementService
         _repository = repository;
     }
 
+    public async Task<List<AnnouncementDto>> GetActiveAnnouncementsAsync()
+    {
+        return await _repository.GetActiveAnnouncementsAsync();
+    }
 
-
+    //public async Task<List<AnnouncementDto>>
+    //GetActiveAnnouncementsAsync()
+    //    {
+    //        return await _repository
+    //            .GetActiveAnnouncementsAsync();
+    //    }
 
 
     public async Task<List<AnnouncementListItemDto>> GetAllAsync(

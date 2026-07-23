@@ -1,0 +1,119 @@
+@namespace FlowAISystem.Web.Components.Pages.Student.Components
+
+@using FlowAISystem.Shared.DTOs.Students
+
+
+@if (Subjects != null && Subjects.Any())
+{
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-0">
+
+            <h5 class="fw-bold mb-0">
+                📚 Recent Subjects
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Code
+                            </th>
+
+                            <th>
+                                Subject
+                            </th>
+
+                            <th>
+                                Teacher
+                            </th>
+
+                            <th>
+                                Credits
+                            </th>
+
+                            <th>
+                                Semester
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var subject in Subjects)
+                        {
+                            <tr>
+
+                                <td>
+                                    @subject.SubjectCode
+                                </td>
+
+
+                                <td>
+                                    @subject.SubjectName
+                                </td>
+
+
+                                <td>
+                                    @subject.TeacherName
+                                </td>
+
+
+                                <td>
+                                    @subject.Credits
+                                </td>
+
+
+                                <td>
+                                    @subject.SemesterName
+                                </td>
+
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body text-center text-muted">
+
+            No recent subjects available.
+
+        </div>
+
+    </div>
+}
+
+
+
+@code {
+
+    [Parameter]
+    public List<StudentSubjectSummaryDto>? Subjects { get; set; }
+
+}

@@ -1,0 +1,217 @@
+@page "/student-dashboard"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@attribute [Authorize(Roles = "Student")]
+
+@inject IStudentService StudentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<PageTitle>
+    Student Dashboard
+</PageTitle>
+
+
+@if (dashboard == null)
+{
+    <div class="container py-5">
+
+        <div class="text-center">
+
+            <div class="spinner-border text-primary"
+                 role="status">
+            </div>
+
+
+            <p class="mt-3">
+                Loading Student Dashboard...
+            </p>
+
+
+        </div>
+
+    </div>
+}
+else
+{
+
+    <div class="container-fluid py-4">
+
+
+        <!-- ========================================= -->
+        <!-- Welcome Banner -->
+        <!-- ========================================= -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <h2 class="fw-bold">
+
+                    👋 Welcome,
+                    @dashboard.FirstName @dashboard.LastName
+
+                </h2>
+
+
+                <div class="text-muted">
+
+                    @dashboard.DepartmentName
+
+                    &nbsp;|&nbsp;
+
+                    Student No:
+
+                    <strong>
+                        @dashboard.StudentNumber
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ========================================= -->
+        <!-- Summary Cards -->
+        <!-- ========================================= -->
+
+
+        <DashboardSummaryCards
+            Dashboard="dashboard" />
+
+
+
+
+        <!-- ========================================= -->
+        <!-- Profile + Recent Subjects -->
+        <!-- ========================================= -->
+
+
+        <div class="row mt-4">
+
+
+            <!-- Student Profile -->
+
+            <div class="col-lg-4 mb-4">
+
+                <StudentProfileCard
+                    Student="studentProfile" />
+
+            </div>
+
+
+
+
+            <!-- Recent Subjects -->
+
+            <div class="col-lg-8 mb-4">
+
+                <RecentSubjectsCard
+                    Subjects="dashboard.RecentSubjects" />
+
+            </div>
+
+
+        </div>
+
+
+
+
+
+        <!-- ========================================= -->
+        <!-- Announcements + Quick Actions -->
+        <!-- ========================================= -->
+
+
+        <div class="row">
+
+
+            <!-- Recent Announcements -->
+
+            <div class="col-lg-8 mb-4">
+
+                <RecentAnnouncementsCard
+                    Announcements="dashboard.RecentAnnouncements" />
+
+            </div>
+
+
+
+
+            <!-- Quick Actions -->
+
+            <div class="col-lg-4 mb-4">
+
+                <QuickActionsCard />
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+@code {
+
+    private StudentProfileDto? studentProfile;
+
+    private StudentDashboardDto? dashboard;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+
+        var user =
+            authState.User;
+
+
+
+        var userIdClaim =
+            user.FindFirst("UserId")
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)
+            ?? user.FindFirst("sub");
+
+
+
+        if (userIdClaim == null)
+            return;
+
+
+
+        var userId =
+            int.Parse(userIdClaim.Value);
+
+
+
+        dashboard =
+            await StudentService.GetDashboardAsync(userId);
+
+
+
+        studentProfile =
+            await StudentService.GetProfileAsync(userId);
+
+    }
+
+}

@@ -400,4 +400,298 @@ public class StudentRepository : IStudentRepository
 
         await _context.SaveChangesAsync();
     }
+    //student subject 
+    public async Task<List<StudentSubjectDto>> GetSubjectsAsync(
+    int userId)
+    {
+        return await _context.Enrollments
+
+            .AsNoTracking()
+
+            .Where(e =>
+                e.Student != null &&
+                e.Student.UserId == userId)
+
+            .Select(e => new StudentSubjectDto
+            {
+                SubjectId =
+                    e.CourseOffering!.Subject!.Id,
+
+
+                SubjectCode =
+                    e.CourseOffering.Subject.Code,
+
+
+                SubjectName =
+                    e.CourseOffering.Subject.Name,
+
+
+                Credits =
+                    e.CourseOffering.Subject.Credits,
+
+
+                TeacherName =
+                    e.CourseOffering.Teacher != null
+                    ? e.CourseOffering.Teacher.Name.FirstName
+                        + " "
+                        + e.CourseOffering.Teacher.Name.LastName
+                    : string.Empty,
+
+
+                SemesterName =
+                    e.CourseOffering.Semester != null
+                    ? e.CourseOffering.Semester.Name
+                    : string.Empty,
+
+
+                Status =
+                    e.Status.ToString()
+
+            })
+
+            .ToListAsync();
+    }
+    // student recent subject 
+
+    public async Task<List<StudentSubjectSummaryDto>> GetRecentSubjectsAsync(int userId)
+    {
+        return await _context.Enrollments
+
+            .AsNoTracking()
+
+            .Where(e => e.Student != null &&
+                        e.Student.UserId == userId)
+
+            .Select(e => new StudentSubjectSummaryDto
+            {
+                SubjectId = e.CourseOffering!.SubjectId,
+
+                SubjectCode = e.CourseOffering.Subject!.Code,
+
+                SubjectName = e.CourseOffering.Subject.Name,
+
+                Credits = e.CourseOffering.Subject.Credits,
+
+                TeacherName =
+                    e.CourseOffering.Teacher == null
+                        ? ""
+                        : e.CourseOffering.Teacher.Name.FirstName + " "
+                        + e.CourseOffering.Teacher.Name.LastName,
+
+                SemesterName =
+                    e.CourseOffering.Semester!.Name
+            })
+
+            .ToListAsync();
+    }
+    //student grade
+    public async Task<List<StudentGradeDto>> GetGradesAsync(
+    int userId)
+    {
+        return await _context.Scores
+
+            .AsNoTracking()
+
+            .Where(s =>
+                s.Enrollment != null &&
+                s.Enrollment.Student != null &&
+                s.Enrollment.Student.UserId == userId)
+
+            .Select(s => new StudentGradeDto
+            {
+                SubjectId =
+                    s.Enrollment!
+                     .CourseOffering!
+                     .Subject!
+                     .Id,
+
+
+                SubjectCode =
+                    s.Enrollment
+                     .CourseOffering!
+                     .Subject!
+                     .Code,
+
+
+                SubjectName =
+                    s.Enrollment
+                     .CourseOffering!
+                     .Subject!
+                     .Name,
+
+
+                SemesterName =
+                    s.Enrollment
+                     .CourseOffering!
+                     .Semester!
+                     .Name,
+
+
+                AssessmentName =
+                    s.AssessmentName,
+
+
+                Marks =
+                    s.Marks,
+
+
+                MaxMarks =
+                    s.MaxMarks
+            })
+
+            .ToListAsync();
+    }
+
+    //student attendace
+    public async Task<List<StudentAttendanceDto>> GetAttendanceAsync(
+    int userId)
+    {
+        return await _context.Attendances
+
+            .AsNoTracking()
+
+            .Where(a =>
+                a.Enrollment != null &&
+                a.Enrollment.Student != null &&
+                a.Enrollment.Student.UserId == userId)
+
+            .Select(a => new StudentAttendanceDto
+            {
+                AttendanceId =
+                    a.Id,
+
+
+                SubjectId =
+                    a.Enrollment!
+                     .CourseOffering!
+                     .Subject!
+                     .Id,
+
+
+                SubjectCode =
+                    a.Enrollment
+                     .CourseOffering!
+                     .Subject!
+                     .Code,
+
+
+                SubjectName =
+                    a.Enrollment
+                     .CourseOffering!
+                     .Subject!
+                     .Name,
+
+
+                AttendanceDate =
+                    a.AttendanceDate,
+
+
+                Status =
+                    a.Status.ToString(),
+
+
+                Remark =
+                    a.Remark
+            })
+
+            .OrderByDescending(a => a.AttendanceDate)
+
+            .ToListAsync();
+    }
+    //student feedbacke
+    public async Task<List<StudentFeedbackDto>> GetFeedbackAsync(
+    int userId)
+    {
+        return await _context.Feedbacks
+
+            .AsNoTracking()
+
+            .Where(f =>
+                f.Enrollment != null &&
+                f.Enrollment.Student != null &&
+                f.Enrollment.Student.UserId == userId)
+
+            .Select(f => new StudentFeedbackDto
+            {
+                Id = f.Id,
+
+
+                SubjectCode =
+                    f.Enrollment!
+                     .CourseOffering!
+                     .Subject!
+                     .Code,
+
+
+                SubjectName =
+                    f.Enrollment
+                     .CourseOffering!
+                     .Subject!
+                     .Name,
+
+
+                Comment =
+                    f.Comment,
+
+
+                CreatedDate =
+                    DateOnly.FromDateTime(
+                        f.CreatedAt),
+
+
+                TeacherName =
+                    f.Enrollment
+                     .CourseOffering!
+                     .Teacher != null
+                    ?
+                    f.Enrollment
+                     .CourseOffering
+                     .Teacher
+                     .Name
+                     .FirstName
+                     +
+                     " "
+                     +
+                     f.Enrollment
+                     .CourseOffering
+                     .Teacher
+                     .Name
+                     .LastName
+                    :
+                    string.Empty
+
+            })
+
+            .OrderByDescending(f => f.CreatedDate)
+
+            .ToListAsync();
+    }
+    public async Task<List<StudentAnnouncementSummaryDto>>
+    GetRecentAnnouncementsAsync(
+      int userId,
+      int count = 5)
+    {
+        return await _context.Announcements
+
+            .AsNoTracking()
+
+            .Where(a =>
+                a.PublishDate <= DateTime.UtcNow &&
+                (a.ExpireDate == null || a.ExpireDate >= DateTime.UtcNow))
+
+            .OrderByDescending(a => a.PublishDate)
+
+            .Take(count)
+
+            .Select(a => new StudentAnnouncementSummaryDto
+            {
+                Id = a.Id,
+
+                Title = a.Title,
+
+                PublishDate = a.PublishDate
+            })
+
+            .ToListAsync();
+    }
 }

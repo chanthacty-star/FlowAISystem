@@ -1,0 +1,345 @@
+@page "/student/grades"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@attribute [Authorize(Roles = "Student")]
+
+
+@inject IStudentService StudentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<PageTitle>
+    My Grades
+</PageTitle>
+
+
+@if (grades == null)
+{
+    <div class="container py-5">
+
+        <div class="text-center">
+
+            <div class="spinner-border text-primary">
+            </div>
+
+
+            <p class="mt-3">
+                Loading grades...
+            </p>
+
+        </div>
+
+    </div>
+}
+else
+{
+
+    <div class="container-fluid py-4">
+
+
+        <!-- Header -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <h2 class="fw-bold">
+                    📚 My Grades
+                </h2>
+
+                <p class="text-muted mb-0">
+                    View your assessment results and performance.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Summary -->
+
+        <div class="row mb-4">
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+                        <small class="text-muted">
+                            Total Assessments
+                        </small>
+
+                        <h2 class="fw-bold mt-2">
+                            @grades.Count
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+                        <small class="text-muted">
+                            Average Score
+                        </small>
+
+
+                        <h2 class="fw-bold mt-2">
+
+                            @AveragePercentage.ToString("0.00")%
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+                        <small class="text-muted">
+                            Grade Count
+                        </small>
+
+
+                        <h2 class="fw-bold mt-2">
+
+                            @grades
+                                .Select(x => x.LetterGrade)
+                                .Distinct()
+                                .Count()
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+
+        <!-- Grade Table -->
+
+
+        <div class="card shadow-sm border-0">
+
+
+            <div class="card-body">
+
+
+                <h5 class="fw-bold mb-3">
+                    Assessment Results
+                </h5>
+
+
+
+                <div class="table-responsive">
+
+
+                    <table class="table table-hover">
+
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>
+                                    Subject
+                                </th>
+
+
+                                <th>
+                                    Semester
+                                </th>
+
+
+                                <th>
+                                    Assessment
+                                </th>
+
+
+                                <th>
+                                    Marks
+                                </th>
+
+
+                                <th>
+                                    Percentage
+                                </th>
+
+
+                                <th>
+                                    Grade
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            @foreach(var grade in grades)
+                            {
+
+                                <tr>
+
+                                    <td>
+
+                                        <strong>
+                                            @grade.SubjectCode
+                                        </strong>
+
+                                        <br />
+
+                                        <small>
+                                            @grade.SubjectName
+                                        </small>
+
+                                    </td>
+
+
+                                    <td>
+                                        @grade.SemesterName
+                                    </td>
+
+
+                                    <td>
+                                        @grade.AssessmentName
+                                    </td>
+
+
+                                    <td>
+
+                                        @grade.Marks
+                                        /
+                                        @grade.MaxMarks
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @grade.Percentage
+                                            .ToString("0.00")%
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="badge bg-primary">
+
+                                            @grade.LetterGrade
+
+                                        </span>
+
+                                    </td>
+
+
+                                </tr>
+
+                            }
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+@code {
+
+
+    private List<StudentGradeDto>? grades;
+
+
+
+    private decimal AveragePercentage =>
+        grades == null || grades.Count == 0
+        ? 0
+        : grades.Average(x => x.Percentage);
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+        var user =
+            authState.User;
+
+
+
+        var userIdClaim =
+            user.FindFirst("UserId")
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)
+            ?? user.FindFirst("sub");
+
+
+
+        if (userIdClaim == null)
+            return;
+
+
+
+        var userId =
+            int.Parse(userIdClaim.Value);
+
+
+
+        grades =
+            await StudentService
+                .GetGradesAsync(userId);
+
+    }
+
+}

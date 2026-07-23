@@ -35,4 +35,5 @@ public interface IAnnouncementRepository
         string title,
         int? ignoreId = null);
 
+    Task<List<AnnouncementDto>> GetActiveAnnouncementsAsync();
 }

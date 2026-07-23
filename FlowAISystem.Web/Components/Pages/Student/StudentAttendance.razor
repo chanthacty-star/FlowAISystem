@@ -1,0 +1,371 @@
+@page "/student/attendance"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Students
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+
+@attribute [Authorize(Roles = "Student")]
+
+
+@inject IStudentService StudentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+
+<PageTitle>
+    My Attendance
+</PageTitle>
+
+
+@if (attendance == null)
+{
+    <div class="container py-5">
+
+        <div class="text-center">
+
+            <div class="spinner-border text-primary"
+                 role="status">
+            </div>
+
+
+            <p class="mt-3">
+                Loading attendance...
+            </p>
+
+        </div>
+
+    </div>
+}
+else
+{
+
+    <div class="container-fluid py-4">
+
+
+        <!-- Header -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <h2 class="fw-bold">
+                    ✅ My Attendance
+                </h2>
+
+
+                <p class="text-muted mb-0">
+                    Track your attendance records and performance.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+
+        <!-- Summary Cards -->
+
+        <div class="row mb-4">
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+
+                        <small class="text-muted">
+                            Total Classes
+                        </small>
+
+
+                        <h2 class="fw-bold mt-2">
+
+                            @attendance.Count
+
+                        </h2>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+
+                        <small class="text-muted">
+                            Present
+                        </small>
+
+
+                        <h2 class="fw-bold mt-2 text-success">
+
+                            @PresentCount
+
+                        </h2>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-body">
+
+
+                        <small class="text-muted">
+                            Attendance Rate
+                        </small>
+
+
+                        <h2 class="fw-bold mt-2">
+
+                            @AttendancePercentage.ToString("0.00")%
+
+                        </h2>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+        <!-- Attendance Table -->
+
+
+        <div class="card shadow-sm border-0">
+
+
+            <div class="card-body">
+
+
+                <h5 class="fw-bold mb-3">
+                    Attendance History
+                </h5>
+
+
+
+                <div class="table-responsive">
+
+
+                    <table class="table table-hover">
+
+
+                        <thead class="table-light">
+
+
+                            <tr>
+
+                                <th>
+                                    Subject
+                                </th>
+
+
+                                <th>
+                                    Date
+                                </th>
+
+
+                                <th>
+                                    Status
+                                </th>
+
+
+                                <th>
+                                    Remark
+                                </th>
+
+
+                            </tr>
+
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            @foreach(var item in attendance)
+                            {
+
+                                <tr>
+
+
+                                    <td>
+
+                                        <strong>
+                                            @item.SubjectCode
+                                        </strong>
+
+                                        <br />
+
+                                        <small>
+                                            @item.SubjectName
+                                        </small>
+
+
+                                    </td>
+
+
+
+                                    <td>
+
+                                        @item.AttendanceDate
+
+                                    </td>
+
+
+
+
+                                    <td>
+
+
+                                        @if(item.Status == "Present")
+                                        {
+                                            <span class="badge bg-success">
+                                                Present
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                @item.Status
+                                            </span>
+                                        }
+
+
+                                    </td>
+
+
+
+                                    <td>
+
+                                        @item.Remark
+
+                                    </td>
+
+
+                                </tr>
+
+                            }
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+    </div>
+
+}
+
+
+
+
+@code {
+
+
+    private List<StudentAttendanceDto>? attendance;
+
+
+
+    private int PresentCount =>
+        attendance?
+        .Count(x => x.Status == "Present")
+        ?? 0;
+
+
+
+    private decimal AttendancePercentage =>
+        attendance == null || attendance.Count == 0
+        ? 0
+        :
+        (decimal)PresentCount /
+        attendance.Count *
+        100;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+
+        var user =
+            authState.User;
+
+
+
+        var userIdClaim =
+            user.FindFirst("UserId")
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)
+            ?? user.FindFirst("sub");
+
+
+
+        if (userIdClaim == null)
+            return;
+
+
+
+        var userId =
+            int.Parse(userIdClaim.Value);
+
+
+
+        attendance =
+            await StudentService
+                .GetAttendanceAsync(userId);
+
+    }
+
+}

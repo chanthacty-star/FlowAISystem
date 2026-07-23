@@ -1,0 +1,200 @@
+@namespace FlowAISystem.Web.Components.Pages.Student
+
+@using FlowAISystem.Shared.DTOs.Students
+
+
+@if (Student != null)
+{
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row align-items-center">
+
+
+                <!-- Profile Image -->
+
+                <div class="col-md-3 text-center mb-3 mb-md-0">
+
+
+                    @if (!string.IsNullOrEmpty(Student.ProfileImage))
+                    {
+                        <img src="@Student.ProfileImage"
+                             class="rounded-circle shadow"
+                             style="width:120px;height:120px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-primary text-white 
+                                    d-flex align-items-center justify-content-center mx-auto shadow"
+                             style="width:120px;height:120px;font-size:45px;">
+
+                            @GetInitials()
+
+                        </div>
+                    }
+
+
+                </div>
+
+
+
+                <!-- Student Information -->
+
+                <div class="col-md-9">
+
+
+                    <h3 class="fw-bold mb-2">
+
+                        @GetFullName()
+
+                    </h3>
+
+
+                    <span class="badge bg-success mb-3">
+
+                        @(Student.AccountActive ? "Active Account" : "Inactive Account")
+
+                    </span>
+
+
+
+                    <div class="row">
+
+
+                        <div class="col-md-6 mb-2">
+
+                            <span class="text-muted">
+                                Student Number:
+                            </span>
+
+                            <strong>
+                                @Student.StudentNumber
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+
+                            <span class="text-muted">
+                                Username:
+                            </span>
+
+                            <strong>
+                                @Student.Username
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+
+                            <span class="text-muted">
+                                Email:
+                            </span>
+
+                            <strong>
+                                @Student.Email
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+
+                            <span class="text-muted">
+                                Phone:
+                            </span>
+
+                            <strong>
+                                @Student.PhoneNumber
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+
+                            <span class="text-muted">
+                                Department:
+                            </span>
+
+                            <strong>
+                                @Student.DepartmentName
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+
+                            <span class="text-muted">
+                                Enrollment:
+                            </span>
+
+                            <strong>
+                                @Student.EnrollmentDate.ToString("dd MMM yyyy")
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+}
+
+
+
+@code {
+
+
+    [Parameter]
+    public StudentProfileDto? Student { get; set; }
+
+
+
+    private string GetFullName()
+    {
+        return $"{Student?.FirstName} {Student?.LastName}";
+    }
+
+
+
+    private string GetInitials()
+    {
+        if (Student == null)
+            return "?";
+
+
+        var first =
+            Student.FirstName.Length > 0
+            ? Student.FirstName[0]
+            : '?';
+
+
+        var last =
+            Student.LastName.Length > 0
+            ? Student.LastName[0]
+            : '?';
+
+
+        return $"{first}{last}".ToUpper();
+    }
+
+}

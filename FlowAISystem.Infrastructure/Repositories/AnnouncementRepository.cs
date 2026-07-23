@@ -20,7 +20,44 @@ public class AnnouncementRepository : IAnnouncementRepository
     }
 
 
+    public async Task<List<AnnouncementDto>>
+GetActiveAnnouncementsAsync()
+    {
+        return await _context.Announcements
 
+            .AsNoTracking()
+
+            .Where(a =>
+                a.PublishDate <= DateTime.UtcNow &&
+                (a.ExpireDate == null ||
+                 a.ExpireDate >= DateTime.UtcNow))
+
+            .OrderByDescending(a => a.PublishDate)
+
+            .Select(a => new AnnouncementDto
+            {
+                Id = a.Id,
+
+                Title = a.Title,
+
+                Content = a.Content,
+
+                PublishDate = a.PublishDate,
+
+                ExpireDate = a.ExpireDate,
+
+                Audience = a.Audience,
+
+                CreatedByUserId = a.CreatedByUserId,
+
+                CreatedByName =
+                    a.CreatedByUser != null
+                    ? a.CreatedByUser.Username
+                    : string.Empty
+            })
+
+            .ToListAsync();
+    }
 
 
 

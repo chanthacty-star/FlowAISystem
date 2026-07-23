@@ -2,7 +2,7 @@ using FlowAISystem.Domain.ValueObjects;
 using FlowAISystem.Shared.Enums;
 using FlowAISystem.Application.Interfaces.Services;
 using FlowAISystem.Application.Interfaces.Repositories;
-
+using FlowAISystem.Shared.DTOs.Announcements;
 using FlowAISystem.Domain.Entities;
 
 using FlowAISystem.Shared.DTOs.Students;
@@ -149,16 +149,29 @@ public class StudentService : IStudentService
         return await _repository.GetDepartmentsAsync();
     }
 
+    // ==================================================
     // Student Dashboard
-    public async Task<StudentDashboardDto?> GetDashboardAsync(int userId)
+    // ==================================================
+
+    public async Task<StudentDashboardDto?> GetDashboardAsync(
+        int userId)
     {
-        var student = await _repository.GetByUserIdAsync(userId);
+        var student =
+            await _repository.GetByUserIdAsync(userId);
 
         if (student == null)
             return null;
 
+        var recentSubjects =
+            await _repository.GetRecentSubjectsAsync(userId);
+
+        var recentAnnouncements =
+            await _repository.GetRecentAnnouncementsAsync(userId);
+
         return new StudentDashboardDto
         {
+            // Student Information
+
             StudentNumber = student.StudentNumber,
 
             FirstName = student.Name.FirstName,
@@ -173,9 +186,39 @@ public class StudentService : IStudentService
 
             Username = student.User?.Username ?? "",
 
-            AccountActive = student.User?.IsActive ?? false
+            AccountActive = student.User?.IsActive ?? false,
+
+            // Dashboard Summary
+
+            CurrentSubjects = recentSubjects.Count,
+
+            // TODO:
+            // Replace with ScoreService later
+            CurrentGPA = 0.00m,
+
+            // TODO:
+            // Replace with AttendanceService later
+            AttendancePercentage = 0.00m,
+
+            AnnouncementCount = recentAnnouncements.Count,
+
+            // Dashboard Lists
+
+            RecentSubjects = recentSubjects,
+
+            RecentAnnouncements = recentAnnouncements
         };
     }
+    // ==================================================
+    // Student Announcements
+    // ==================================================
+
+    //public async Task<List<AnnouncementDto>> GetAnnouncementsAsync(
+    //    int userId)
+    //{
+    //    return await _repository
+    //        .GetAnnouncementsAsync(userId);
+    //}
     // ==================================================
     // Student Profile
     // ==================================================
@@ -276,6 +319,59 @@ public class StudentService : IStudentService
 
 
         await _repository.UpdateEntityAsync(student);
+    }
+
+    // ==================================================
+    // Student Subjects
+    // ==================================================
+
+    public async Task<List<StudentSubjectDto>> GetSubjectsAsync(
+        int userId)
+    {
+        return await _repository.GetSubjectsAsync(userId);
+    }
+    // ==================================================
+    // Recent Subjects
+    // ==================================================
+
+    public async Task<List<StudentSubjectSummaryDto>> GetRecentSubjectsAsync(
+        int userId)
+    {
+        return await _repository.GetRecentSubjectsAsync(userId);
+    }
+    //student grede
+
+    public async Task<List<StudentGradeDto>> GetGradesAsync(
+    int userId)
+    {
+        return await _repository.GetGradesAsync(userId);
+    }
+    // ==================================================
+    // Student Attendance
+    // ==================================================
+
+    public async Task<List<StudentAttendanceDto>> GetAttendanceAsync(
+        int userId)
+    {
+        return await _repository.GetAttendanceAsync(userId);
+    }
+    //student feedback
+    public async Task<List<StudentFeedbackDto>> GetFeedbackAsync(
+    int userId)
+    {
+        return await _repository.GetFeedbackAsync(userId);
+    }
+    // ==================================================
+    // Recent Announcements
+    // ==================================================
+
+    public async Task<List<StudentAnnouncementSummaryDto>> GetRecentAnnouncementsAsync(
+        int userId,
+        int count = 5)
+    {
+        return await _repository.GetRecentAnnouncementsAsync(
+            userId,
+            count);
     }
 }
 
