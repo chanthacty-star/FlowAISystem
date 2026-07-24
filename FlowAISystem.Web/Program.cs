@@ -6,6 +6,9 @@ using FlowAISystem.Application.AI;
 using FlowAISystem.Application.AI.Interfaces;
 using FlowAISystem.Application.AI.Services;
 using FlowAISystem.Application.AI.Handlers;
+// st ai
+using FlowAISystem.Application.AI.Student.Interfaces;
+using FlowAISystem.Application.AI.Student.Services;
 
 using FlowAISystem.Application.Interfaces.Services.Reports;
 using FlowAISystem.Application.Services.Reports;
@@ -126,6 +129,13 @@ builder.Services.AddScoped<IGeneralAIHandler, GeneralAIHandler>(); // general
 builder.Services.AddScoped<IReportAIHandler, ReportAIHandler>(); // report
 builder.Services.AddScoped<AIConversationMemory>();// memory
 builder.Services.AddScoped<AIConversationContext>(); // 
+// AI Assistance for students
+builder.Services.AddScoped<IStudentAIService, StudentAIService>();
+
+builder.Services.AddScoped<IStudentIntentDetector, StudentIntentDetector>();
+
+builder.Services.AddScoped<IKeywordExtractor, KeywordExtractor>();
+
 // Blazor Authentication
 builder.Services.AddScoped<TokenStorage>();
 builder.Services.AddScoped<JwtAuthenticationStateProvider>();

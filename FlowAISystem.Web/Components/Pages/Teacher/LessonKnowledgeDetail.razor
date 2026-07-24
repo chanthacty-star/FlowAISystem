@@ -28,7 +28,9 @@ else
     <div class="container-fluid py-4">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
-                <h2 class="fw-bold">📖 Edit Lesson Knowledge</h2>
+                <h2 class="fw-bold">
+                    📖 Lesson Knowledge Detail
+                </h2>
                 <p class="text-muted mb-0">This lesson will be available for Student AI Assistant.</p>
             </div>
         </div>
@@ -43,14 +45,100 @@ else
 
         <div class="card shadow-sm">
             <div class="card-body">
-                <label class="fw-bold mb-1">Lesson Title</label>
-                <input class="form-control mb-3" @bind="lesson.Title" />
+                <label class="fw-bold mb-1">
+                    Lesson Title
+                </label>
 
-                <label class="fw-bold mb-1">Lesson Content</label>
-                <textarea class="form-control mb-3" rows="12" @bind="lesson.Content"></textarea>
+                <input class="form-control mb-3"
+                       @bind="lesson.Title" />
 
-                <label class="fw-bold mb-1">AI Keywords</label>
-                <input class="form-control mb-3" placeholder="example: array, sorting, algorithm" @bind="lesson.Keywords" />
+
+
+                <label class="fw-bold mb-1">
+                    Description
+                </label>
+
+                <textarea class="form-control mb-3"
+                          rows="3"
+                          @bind="lesson.Description">
+                </textarea>
+
+
+
+
+                <label class="fw-bold mb-1">
+                    Lesson Content
+                </label>
+
+                <textarea class="form-control mb-3"
+                          rows="12"
+                          @bind="lesson.Content">
+                </textarea>
+
+
+
+
+
+                <label class="fw-bold mb-1">
+                    AI Category
+                </label>
+
+                <input class="form-control mb-3"
+                       placeholder="Example: Data Structure"
+                       @bind="lesson.Category" />
+
+
+
+
+
+                <label class="fw-bold mb-1">
+                    AI Keywords
+                </label>
+
+                <input class="form-control mb-3"
+                       placeholder="Example: binary search, array, algorithm"
+                       @bind="lesson.Keywords" />
+
+
+
+
+
+                <label class="fw-bold mb-1">
+                    Reference URL
+                </label>
+
+                <input class="form-control mb-3"
+                       @bind="lesson.ReferenceUrl" />
+
+
+
+
+
+                <label class="fw-bold mb-1">
+                    Attachment Path
+                </label>
+
+                <input class="form-control mb-3"
+                       @bind="lesson.AttachmentPath" />
+
+
+
+
+
+                <div class="form-check mb-3">
+
+                    <input class="form-check-input"
+                           type="checkbox"
+                           @bind="lesson.IsActive" />
+
+
+                    <label class="form-check-label">
+
+                        Available for Student AI Assistant
+
+                    </label>
+
+                </div>
 
                 <div class="d-flex gap-2">
                     <button class="btn btn-primary" disabled="@isSaving" @onclick="UpdateLesson">
@@ -69,6 +157,9 @@ else
         </div>
     </div>
 }
+
+
+<label class="fw-bold mb-1">Lesson Title</label>
 
 @if (showDeleteModal)
 {
@@ -144,9 +235,31 @@ else
             var dto = new UpdateLessonKnowledgeDto
             {
                 Id = lesson.Id,
+
                 Title = lesson.Title,
+
+                Description = lesson.Description,
+
                 Content = lesson.Content,
-                Keywords = lesson.Keywords
+
+
+                Keywords = lesson.Keywords,
+
+                Category = lesson.Category,
+
+
+                TeacherId = lesson.TeacherId,
+
+
+                CourseOfferingId = lesson.CourseOfferingId,
+
+
+                ReferenceUrl = lesson.ReferenceUrl,
+
+                AttachmentPath = lesson.AttachmentPath,
+
+
+                IsActive = lesson.IsActive
             };
 
             await LessonKnowledgeService.UpdateAsync(dto);

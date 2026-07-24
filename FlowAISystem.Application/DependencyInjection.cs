@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using FlowAISystem.Application.Interfaces.Services;
 using FlowAISystem.Application.Services;
-
+using FlowAISystem.Application.AI.Student.Services;
 using FlowAISystem.Application.Interfaces.Services.Reports;
 using FlowAISystem.Application.Services.Reports;
 
@@ -65,6 +65,10 @@ public static class DependencyInjection
         services.AddScoped<ILessonKnowledgeService, LessonKnowledgeService>();
 
         services.AddScoped<IStudentAIService, StudentAIService>();
+
+        //services.AddScoped<IStudentIntentDetector, StudentIntentDetector>();
+
+        //services.AddScoped<IKeywordExtractor, KeywordExtractor>();
 
         return services;
 

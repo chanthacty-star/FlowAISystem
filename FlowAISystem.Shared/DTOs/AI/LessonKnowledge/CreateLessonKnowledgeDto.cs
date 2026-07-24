@@ -46,5 +46,6 @@ public class CreateLessonKnowledgeDto
     // Status
     // ==================================================
 
-    public bool IsPublished { get; set; } = true;
+    public bool IsActive { get; set; }
+    = true;
 }

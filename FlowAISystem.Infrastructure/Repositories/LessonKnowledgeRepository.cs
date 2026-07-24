@@ -74,23 +74,45 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
             .Select(x => new LessonKnowledgeDto
             {
                 Id = x.Id,
+
                 Title = x.Title,
-                Description = null,
+
+                Description = x.Description,
+
                 Content = x.Content,
+
+
                 Keywords = x.Keywords,
-                Category = string.Empty,
+
+                Category = x.Category,
+
+
                 TeacherId = x.TeacherId,
+
                 TeacherName = x.Teacher != null
                     ? x.Teacher.Username
                     : string.Empty,
+
+
                 CourseOfferingId = x.CourseOfferingId ?? 0,
-                CourseName = x.CourseOffering != null && x.CourseOffering.Subject != null
+
+
+                CourseName = x.CourseOffering != null &&
+                             x.CourseOffering.Subject != null
                     ? x.CourseOffering.Subject.Name
                     : string.Empty,
-                ReferenceUrl = null,
-                AttachmentPath = null,
+
+
+                ReferenceUrl = x.ReferenceUrl,
+
+                AttachmentPath = x.AttachmentPath,
+
+
                 IsActive = x.IsActive,
+
+
                 CreatedAt = x.CreatedAt,
+
                 UpdatedAt = x.UpdatedAt
             })
             .FirstOrDefaultAsync();
@@ -104,11 +126,29 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
         var entity = new LessonKnowledge
         {
             Title = dto.Title,
+
+            Description = dto.Description,
+
             Content = dto.Content,
+
+
             Keywords = dto.Keywords,
+
+            Category = dto.Category,
+
+
             TeacherId = dto.TeacherId,
+
             CourseOfferingId = dto.CourseOfferingId,
-            IsActive = true,
+
+
+            ReferenceUrl = dto.ReferenceUrl,
+
+            AttachmentPath = dto.AttachmentPath,
+
+
+            IsActive = dto.IsActive,
+
             CreatedAt = DateTime.UtcNow
         };
 
@@ -128,8 +168,28 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
             return;
 
         entity.Title = dto.Title;
+
+        entity.Description = dto.Description;
+
         entity.Content = dto.Content;
+
+
         entity.Keywords = dto.Keywords;
+
+        entity.Category = dto.Category;
+
+
+        entity.CourseOfferingId = dto.CourseOfferingId;
+
+
+        entity.ReferenceUrl = dto.ReferenceUrl;
+
+        entity.AttachmentPath = dto.AttachmentPath;
+
+
+        entity.IsActive = dto.IsActive;
+
+
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -171,16 +231,27 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
                 x.IsActive &&
                 (
                     x.Title.Contains(keyword) ||
+                    x.Description.Contains(keyword) ||
                     x.Content.Contains(keyword) ||
-                    x.Keywords.Contains(keyword)
+                    x.Keywords.Contains(keyword) ||
+                    x.Category.Contains(keyword)
                 ))
             .Select(x => new LessonKnowledgeDto
             {
                 Id = x.Id,
+
                 Title = x.Title,
+
+                Description = x.Description,
+
                 Content = x.Content,
+
                 Keywords = x.Keywords,
+
+                Category = x.Category,
+
                 IsActive = x.IsActive,
+
                 CreatedAt = x.CreatedAt
             })
             .ToListAsync();

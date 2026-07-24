@@ -1,0 +1,383 @@
+@page "/teacher/lesson-knowledge/edit/{id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
+@using Microsoft.AspNetCore.Authorization
+
+
+@attribute [Authorize(Roles="Teacher")]
+
+
+@inject ILessonKnowledgeService LessonKnowledgeService
+
+@inject NavigationManager NavigationManager
+
+
+
+<PageTitle>
+    Edit Lesson Knowledge
+</PageTitle>
+
+
+
+<div class="container py-4">
+
+
+    <div class="card shadow-sm border-0">
+
+
+        <div class="card-body">
+
+
+            <h2 class="fw-bold mb-4">
+
+                ✏️ Edit Lesson Knowledge
+
+            </h2>
+
+
+
+            @if(!string.IsNullOrEmpty(message))
+            {
+
+                <div class="alert alert-info">
+
+                    @message
+
+                </div>
+
+            }
+
+
+
+            @if(isLoading)
+            {
+
+                <div class="text-center">
+
+                    <div class="spinner-border text-primary">
+                    </div>
+
+                </div>
+
+            }
+
+            else
+            {
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+                        Title
+                    </label>
+
+                    <input class="form-control"
+                           @bind="lesson.Title" />
+
+                </div>
+
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+                        Description
+                    </label>
+
+                    <textarea class="form-control"
+                              rows="3"
+                              @bind="lesson.Description">
+                    </textarea>
+
+                </div>
+
+
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+                        Lesson Content
+                    </label>
+
+                    <textarea class="form-control"
+                              rows="8"
+                              @bind="lesson.Content">
+                    </textarea>
+
+                </div>
+
+
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+                        AI Keywords
+                    </label>
+
+                    <input class="form-control"
+                           @bind="lesson.Keywords" />
+
+                </div>
+
+
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+                        Category
+                    </label>
+
+                    <input class="form-control"
+                           @bind="lesson.Category" />
+
+                </div>
+
+
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+                        Reference URL
+                    </label>
+
+                    <input class="form-control"
+                           @bind="lesson.ReferenceUrl" />
+
+                </div>
+
+
+
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+                        Attachment Path
+                    </label>
+
+                    <input class="form-control"
+                           @bind="lesson.AttachmentPath" />
+
+                </div>
+
+
+
+
+
+                <div class="form-check mb-3">
+
+
+                    <input class="form-check-input"
+                           type="checkbox"
+                           @bind="lesson.IsActive" />
+
+
+                    <label class="form-check-label">
+
+                        Active (Available for Student AI)
+
+                    </label>
+
+
+                </div>
+
+
+
+
+
+                <button class="btn btn-primary"
+                        disabled="@isSaving"
+                        @onclick="SaveLesson">
+
+
+                    @(isSaving
+                        ? "Saving..."
+                        : "💾 Save Changes")
+
+
+                </button>
+
+
+
+                <button class="btn btn-secondary ms-2"
+                        @onclick="Back">
+
+
+                    Cancel
+
+
+                </button>
+
+
+            }
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+@code {
+
+
+    [Parameter]
+    public int id { get; set; }
+
+
+
+    private bool isLoading = true;
+
+    private bool isSaving;
+
+
+    private string message = string.Empty;
+
+
+
+    private UpdateLessonKnowledgeDto lesson =
+        new();
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var data =
+            await LessonKnowledgeService
+                .GetByIdAsync(id);
+
+
+
+        if(data == null)
+        {
+
+            message =
+                "Lesson not found.";
+
+            return;
+
+        }
+
+
+
+        lesson.Id =
+            data.Id;
+
+
+        lesson.Title =
+            data.Title;
+
+
+        lesson.Description =
+            data.Description;
+
+
+        lesson.Content =
+            data.Content;
+
+
+        lesson.Keywords =
+            data.Keywords;
+
+
+        lesson.Category =
+            data.Category;
+
+
+        lesson.CourseOfferingId =
+            data.CourseOfferingId;
+
+
+        lesson.ReferenceUrl =
+            data.ReferenceUrl;
+
+
+        lesson.AttachmentPath =
+            data.AttachmentPath;
+
+
+        lesson.IsActive =
+            data.IsActive;
+
+
+
+        isLoading = false;
+
+    }
+
+
+
+
+
+
+
+    private async Task SaveLesson()
+    {
+
+        isSaving = true;
+
+
+        try
+        {
+
+            await LessonKnowledgeService
+                .UpdateAsync(lesson);
+
+
+
+            message =
+                "Lesson updated successfully.";
+
+
+
+            await Task.Delay(500);
+
+
+
+            NavigationManager.NavigateTo(
+                "/teacher/lesson-knowledge");
+
+        }
+
+        finally
+        {
+
+            isSaving = false;
+
+        }
+
+    }
+
+
+
+
+
+
+    private void Back()
+    {
+
+        NavigationManager.NavigateTo(
+            "/teacher/lesson-knowledge");
+
+    }
+
+}

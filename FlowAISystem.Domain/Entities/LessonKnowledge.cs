@@ -4,12 +4,16 @@ namespace FlowAISystem.Domain.Entities;
 
 public class LessonKnowledge : BaseEntity
 {
-
-    // Lesson information
+    // ==================================================
+    // Lesson Information
+    // ==================================================
 
     public string Title { get; set; }
         = string.Empty;
 
+
+    public string Description { get; set; }
+        = string.Empty;
 
 
     public string Content { get; set; }
@@ -17,14 +21,22 @@ public class LessonKnowledge : BaseEntity
 
 
 
-    // Keywords for AI searching
+    // ==================================================
+    // AI Knowledge
+    // ==================================================
 
     public string Keywords { get; set; }
         = string.Empty;
 
 
+    public string Category { get; set; }
+        = string.Empty;
 
-    // Teacher owner
+
+
+    // ==================================================
+    // Teacher Owner
+    // ==================================================
 
     public int TeacherId { get; set; }
 
@@ -33,7 +45,9 @@ public class LessonKnowledge : BaseEntity
 
 
 
-    // Subject relation
+    // ==================================================
+    // Subject Relation
+    // ==================================================
 
     public int? CourseOfferingId { get; set; }
 
@@ -42,9 +56,21 @@ public class LessonKnowledge : BaseEntity
 
 
 
+    // ==================================================
+    // Learning Material
+    // ==================================================
+
+    public string? ReferenceUrl { get; set; }
+
+
+    public string? AttachmentPath { get; set; }
+
+
+
+    // ==================================================
     // Status
+    // ==================================================
 
     public bool IsActive { get; set; }
         = true;
-
 }
