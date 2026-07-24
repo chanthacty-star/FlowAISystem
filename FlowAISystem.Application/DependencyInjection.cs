@@ -5,6 +5,9 @@ using FlowAISystem.Application.AI.Student.Services;
 using FlowAISystem.Application.Interfaces.Services.Reports;
 using FlowAISystem.Application.Services.Reports;
 
+using FlowAISystem.Application.AI.Student.Interfaces;
+using FlowAISystem.Application.AI.Student.Services; // or wherever your formatter implementation class is located
+
 namespace FlowAISystem.Application;
 
 
@@ -65,6 +68,9 @@ public static class DependencyInjection
         services.AddScoped<ILessonKnowledgeService, LessonKnowledgeService>();
 
         services.AddScoped<IStudentAIService, StudentAIService>();
+
+        services.AddScoped<IStudentAIResponseFormatter, StudentAIResponseFormatter>(); // fomat
+        services.AddScoped<ILessonRankingService, LessonRankingService>();
 
         //services.AddScoped<IStudentIntentDetector, StudentIntentDetector>();
 

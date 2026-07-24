@@ -1,0 +1,316 @@
+@page "/student/ai-chat-test"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.AI
+@using FlowAISystem.Web.Components.Pages.Student.AI.Components
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Student")]
+
+@inject IStudentAIService StudentAIService
+
+<PageTitle>Student AI Assistant</PageTitle>
+
+<div class="student-ai">
+
+    <!-- ========================================= -->
+    <!-- Header -->
+    <!-- ========================================= -->
+
+    <div class="ai-header">
+
+        <div>
+            <h2>
+                🤖 FlowAI Student Assistant
+            </h2>
+
+            <p>
+                Your personal AI learning assistant.
+                Ask questions about lessons, algorithms,
+                programming, GPA, attendance and more.
+            </p>
+        </div>
+
+    </div>
+
+
+
+    <div class="row g-4">
+
+        <!-- ========================================= -->
+        <!-- Chat -->
+        <!-- ========================================= -->
+
+        <div class="col-lg-8">
+
+            <div class="chat-card">
+
+                <div class="chat-header">
+
+                    💬 Conversation
+
+                </div>
+
+
+                <div class="chat-body">
+
+                    @if (!chats.Any())
+                    {
+                        <div class="empty-chat">
+
+                            <h4>
+                                👋 Welcome!
+                            </h4>
+
+                            <p>
+                                Ask your teacher's lessons or academic questions.
+                            </p>
+
+                        </div>
+                    }
+
+
+                    @foreach (var chat in chats)
+                    {
+                        <AIMessageBubble
+
+                            IsStudent="@chat.IsStudent"
+
+                            Message="@chat.Message"
+
+                            Response="@chat.Response" />
+                    }
+
+
+                    @if (isLoading)
+                    {
+                        <div class="thinking">
+
+                            🤖 FlowAI is thinking...
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ========================================= -->
+        <!-- Sidebar -->
+        <!-- ========================================= -->
+
+        <div class="col-lg-4">
+
+            <div class="sidebar-card">
+
+                <h5>
+
+                    📚 Learning Context
+
+                </h5>
+
+                <hr />
+
+                <p class="text-muted">
+
+                    Current Topic
+
+                </p>
+
+                <strong>
+
+                    Waiting for question...
+
+                </strong>
+
+                <hr />
+
+                <p>
+
+                    Available Knowledge
+
+                </p>
+
+                <ul>
+
+                    <li>Teacher Lessons</li>
+
+                    <li>Subjects</li>
+
+                    <li>Grades</li>
+
+                    <li>Attendance</li>
+
+                    <li>Course Materials</li>
+
+                </ul>
+
+            </div>
+
+
+
+            <div class="sidebar-card mt-4">
+
+                <h5>
+
+                    💡 Suggested Questions
+
+                </h5>
+
+                <hr />
+
+                <button
+                    class="btn btn-outline-primary suggestion-btn"
+                    @onclick='() => SetQuestion("Explain Binary Search")'>
+
+                    Explain Binary Search
+
+                </button>
+
+
+                <button
+                    class="btn btn-outline-primary suggestion-btn"
+                    @onclick='() => SetQuestion("Explain OOP")'>
+
+                    Explain OOP
+
+                </button>
+
+
+                <button
+                    class="btn btn-outline-primary suggestion-btn"
+                    @onclick='() => SetQuestion("What is Database Normalization?")'>
+
+                    Database Normalization
+
+                </button>
+
+
+                <button
+                    class="btn btn-outline-primary suggestion-btn"
+                    @onclick='() => SetQuestion("Quiz me about algorithms")'>
+
+                    Quiz me about Algorithms
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+<!-- ========================================= -->
+    <!-- Input -->
+    <!-- ========================================= -->
+
+    <!-- ========================================= -->
+    <!-- Input Card (Compact Version) -->
+    <!-- ========================================= -->
+    <div class="ai-input">
+        <div class="ai-input-box">
+            <textarea
+                class="form-control"
+                rows="1"
+                placeholder="Ask FlowAI anything..."
+                @bind="question">
+            </textarea>
+
+            <div class="ai-input-actions">
+                <span class="ai-input-hint">
+                    Type your question and click Ask
+                </span>
+
+                <button
+                    class="btn ai-send-btn"
+                    disabled="@isLoading"
+                    @onclick="AskAI">
+                    @(isLoading ? "Thinking..." : "🚀 Ask")
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@code
+{
+
+    private string question = string.Empty;
+
+    private bool isLoading;
+
+    private List<ChatMessage> chats = new();
+
+
+
+    private async Task AskAI()
+    {
+        if (string.IsNullOrWhiteSpace(question))
+            return;
+
+        var currentQuestion = question;
+
+        question = string.Empty;
+
+        chats.Add(new ChatMessage
+        {
+            IsStudent = true,
+            Message = currentQuestion
+        });
+
+        isLoading = true;
+
+        StateHasChanged();
+
+        try
+        {
+            var response =
+                await StudentAIService.AskAsync(
+                    new StudentAIRequestDto
+                    {
+                        Question = currentQuestion
+                    });
+
+            chats.Add(new ChatMessage
+            {
+                IsStudent = false,
+                Message = response.Answer,
+                Response = response
+            });
+        }
+        finally
+        {
+            isLoading = false;
+
+            StateHasChanged();
+        }
+    }
+
+
+
+    private void SetQuestion(string text)
+    {
+        question = text;
+    }
+
+
+
+    private class ChatMessage
+    {
+        public bool IsStudent { get; set; }
+
+        public string Message { get; set; } = string.Empty;
+
+        public StudentAIResponseDto? Response { get; set; }
+    }
+
+}

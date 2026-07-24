@@ -1,0 +1,21 @@
+<div class="ai-avatar @(IsStudent ? "student" : "assistant")">
+
+    @if (IsStudent)
+    {
+        <span class="avatar-icon">👨‍🎓</span>
+        <small>You</small>
+    }
+    else
+    {
+        <span class="avatar-icon">🤖</span>
+        <small>FlowAI</small>
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public bool IsStudent { get; set; }
+
+}

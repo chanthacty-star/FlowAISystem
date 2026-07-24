@@ -1,0 +1,334 @@
+/* ==========================================================
+   FlowAI Student Assistant - Stylesheet
+   ========================================================== */
+
+:root {
+    --ai-bg-page: #f6f8fc;
+    --ai-bg-card: #ffffff;
+    --ai-bg-chat: #f8fafc;
+    --ai-border: #e2e8f0;
+    --ai-primary: #0d6efd;
+    --ai-primary-hover: #0b5ed7;
+    --ai-text-main: #1e293b;
+    --ai-text-muted: #64748b;
+    --ai-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
+    --ai-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.05);
+    --ai-radius-lg: 18px;
+    --ai-radius-md: 12px;
+    --ai-radius-sm: 8px;
+    --ai-transition: all 0.2s ease-in-out;
+}
+
+/* ==========================================================
+   Page Layout
+   ========================================================== */
+
+.student-ai-page {
+    background-color: var(--ai-bg-page);
+    min-height: 100vh;
+    padding: 24px;
+    color: var(--ai-text-main);
+}
+
+/* ==========================================================
+   Header
+   ========================================================== */
+
+.ai-header {
+    background: var(--ai-bg-card);
+    border-radius: var(--ai-radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    box-shadow: var(--ai-shadow-md);
+}
+
+.ai-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--ai-text-main);
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+}
+
+.ai-subtitle {
+    color: var(--ai-text-muted);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* ==========================================================
+   Main Chat Card & Container
+   ========================================================== */
+
+.ai-card {
+    border: 1px solid var(--ai-border);
+    border-radius: var(--ai-radius-lg);
+    overflow: hidden;
+    background: var(--ai-bg-card);
+    box-shadow: var(--ai-shadow-md);
+}
+
+.ai-chat {
+    display: flex;
+    flex-direction: column;
+    height: 720px;
+}
+
+/* ==========================================================
+   Messages Area
+   ========================================================== */
+
+.ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    background-color: var(--ai-bg-chat);
+    scroll-behavior: smooth;
+    
+    /* Modern Firefox scrollbar support */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+/* WebKit Scrollbar (Chrome, Safari, Edge) */
+.ai-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-messages::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+}
+
+.ai-messages::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+.ai-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* ==========================================================
+   Input Area
+   ========================================================== */
+
+/* ==========================================================
+   Input Area - Compact & Sleek
+   ========================================================== */
+
+.ai-input {
+    background: var(--ai-bg-card);
+    border-top: 1px solid var(--ai-border);
+    padding: 10px 14px; /* Reduced outer padding */
+}
+
+/* Compact floating wrapper */
+.ai-input-box {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid var(--ai-border);
+    border-radius: 12px;
+    padding: 8px 12px; /* Slimmer inner padding */
+    transition: var(--ai-transition);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.ai-input-box:focus-within {
+    border-color: var(--ai-primary);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+}
+
+/* Small, auto-fitting textarea */
+.ai-input textarea {
+    width: 100%;
+    resize: none;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0;
+    margin-bottom: 6px;
+    font-size: 0.88rem; /* Smaller text size */
+    line-height: 1.4;
+    color: var(--ai-text-main);
+    background: transparent;
+    min-height: 38px; /* Significantly reduced height */
+    max-height: 100px;
+}
+
+.ai-input textarea::placeholder {
+    color: #94a3b8;
+    font-size: 0.88rem;
+}
+
+/* Slim action bar */
+.ai-input-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.ai-input-hint {
+    font-size: 0.72rem; /* Small hint text */
+    color: var(--ai-text-muted);
+}
+
+/* Compact send button */
+.ai-send-btn {
+    border-radius: 8px;
+    padding: 5px 14px; /* Smaller button padding */
+    font-size: 0.80rem; /* Compact font size */
+    font-weight: 600;
+    transition: var(--ai-transition);
+}
+
+.ai-send-btn:not(:disabled) {
+    background: var(--ai-primary);
+    color: #ffffff;
+}
+
+.ai-send-btn:not(:disabled):hover {
+    background: var(--ai-primary-hover);
+}
+
+.ai-send-btn:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    border-color: transparent;
+    cursor: not-allowed;
+}
+/* ========= */
+/* ==========================================================
+   Sidebar & Cards
+   ========================================================== */
+
+.ai-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ai-side-card {
+    background: var(--ai-bg-card);
+    border-radius: var(--ai-radius-lg);
+    padding: 20px;
+    border: 1px solid var(--ai-border);
+    box-shadow: var(--ai-shadow-sm);
+}
+
+.ai-side-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ai-text-main);
+    margin-bottom: 16px;
+}
+
+/* ==========================================================
+   Interactive Buttons
+   ========================================================== */
+
+.ai-suggestion {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 10px;
+    border-radius: var(--ai-radius-md);
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid var(--ai-border);
+    background: var(--ai-bg-card);
+    color: var(--ai-text-main);
+    transition: var(--ai-transition);
+}
+
+.ai-suggestion:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: var(--ai-shadow-sm);
+}
+
+.ai-suggestion:active {
+    transform: translateY(0);
+}
+
+.ai-send-btn {
+    border-radius: var(--ai-radius-md);
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: var(--ai-transition);
+}
+
+.ai-send-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+}
+
+/* ==========================================================
+   Welcome State
+   ========================================================== */
+
+.ai-welcome {
+    text-align: center;
+    color: var(--ai-text-muted);
+    padding: 80px 20px;
+}
+
+.ai-welcome-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    display: inline-block;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05));
+}
+
+.ai-welcome h3 {
+    color: var(--ai-text-main);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ai-welcome p {
+    max-width: 480px;
+    margin: 0 auto;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* ==========================================================
+   Responsive Design
+   ========================================================== */
+
+@media (max-width: 992px) {
+    .ai-chat {
+        height: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .student-ai-page {
+        padding: 12px;
+    }
+
+    .ai-header {
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+
+    .ai-title {
+        font-size: 1.4rem;
+    }
+
+    .ai-chat {
+        height: 520px;
+    }
+
+    .ai-messages {
+        padding: 16px;
+    }
+
+    .ai-input {
+        padding: 14px;
+    }
+}
