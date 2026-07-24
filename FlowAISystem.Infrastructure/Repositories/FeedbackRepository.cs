@@ -29,9 +29,10 @@ public class FeedbackRepository : IFeedbackRepository
     {
 
         var query =
-            _context.Feedbacks
+         _context.Feedbacks
+             .AsNoTracking()
 
-            .Include(f => f.Enrollment!)
+             .Include(f => f.Enrollment!)
                 .ThenInclude(e => e.Student)
 
             .Include(f => f.Enrollment!)
@@ -140,54 +141,72 @@ public class FeedbackRepository : IFeedbackRepository
 
 
 
-        return await query
+        var result =
+        await query
 
-            .OrderByDescending(f =>
-                f.FeedbackDate)
+        .OrderByDescending(f =>
+            f.FeedbackDate)
 
-
-            .Select(f => new FeedbackListItemDto
-            {
-
-                Id = f.Id,
-
-
-                StudentName =
-                    f.Enrollment!
-                    .Student!
-                    .Name
-                    .ToString(),
+        .Select(f => new FeedbackListItemDto
+        {
+            Id = f.Id,
 
 
-                CourseName =
-                    f.Enrollment!
-                    .CourseOffering!
-                    .Subject!
-                    .Name,
+            StudentName =
+                f.Enrollment != null &&
+                f.Enrollment.Student != null
+                ?
+                f.Enrollment.Student.Name.FirstName
+                + " "
+                +
+                f.Enrollment.Student.Name.LastName
+                :
+                "Unknown Student",
 
 
-                TeacherName =
-                    f.Enrollment!
-                    .CourseOffering!
-                    .Teacher!
-                    .TeacherName,
+
+            CourseName =
+                f.Enrollment != null &&
+                f.Enrollment.CourseOffering != null &&
+                f.Enrollment.CourseOffering.Subject != null
+                ?
+                f.Enrollment.CourseOffering.Subject.Name
+                :
+                "Unknown Course",
 
 
-                Rating =
-                    f.Rating,
+
+            TeacherName =
+                f.Enrollment != null &&
+                f.Enrollment.CourseOffering != null &&
+                f.Enrollment.CourseOffering.Teacher != null
+                ?
+                f.Enrollment.CourseOffering.Teacher.TeacherName
+                :
+                "Unknown Teacher",
 
 
-                Comment =
-                    f.Comment,
+
+            Rating = f.Rating,
 
 
-                FeedbackDate =
-                    f.FeedbackDate
+            Comment = f.Comment,
 
 
-            })
+            FeedbackDate = f.FeedbackDate
 
-            .ToListAsync();
+        })
+
+        .ToListAsync();
+
+
+
+            Console.WriteLine(
+                $"Feedback returned: {result.Count}"
+            );
+
+
+            return result;
 
     }
 

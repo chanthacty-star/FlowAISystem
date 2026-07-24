@@ -1,0 +1,396 @@
+@page "/teacher/lesson-knowledge"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+
+@attribute [Authorize(Roles="Teacher")]
+
+
+@inject ILessonKnowledgeService LessonKnowledgeService
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+
+<PageTitle>
+    Teacher Lesson Knowledge
+</PageTitle>
+
+
+
+<div class="container-fluid py-4">
+
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <h2 class="fw-bold">
+                📚 Lesson Knowledge Management
+            </h2>
+
+            <p class="text-muted">
+                Create lessons that Student AI Assistant can learn from.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+
+    <!-- Create Lesson -->
+
+    <div class="card shadow-sm mb-4">
+
+
+        <div class="card-body">
+
+
+            <h5 class="fw-bold">
+                Add New Lesson
+            </h5>
+            
+             <!-- Create Message -->
+            @if(!string.IsNullOrEmpty(message))
+            {
+
+                <div class="alert alert-info">
+
+                    @message
+
+                </div>
+
+            }
+
+
+
+            <input class="form-control mb-3"
+                   placeholder="Lesson title"
+                   @bind="newLesson.Title" />
+
+
+
+            <textarea class="form-control mb-3"
+                      rows="5"
+                      placeholder="Lesson content"
+                      @bind="newLesson.Content">
+            </textarea>
+
+
+
+            <input class="form-control mb-3"
+                   placeholder="AI Keywords (example: loop, array, sorting)"
+                   @bind="newLesson.Keywords" />
+
+
+
+            <button class="btn btn-primary"
+                    disabled="@isSaving"
+                    @onclick="CreateLesson">
+
+
+                @(isSaving
+                    ? "Saving..."
+                    : "💾 Save Lesson")
+
+
+            </button>
+
+
+        </div>
+
+    </div>
+
+
+
+
+
+    <!-- Lesson List -->
+
+
+    <div class="row">
+
+
+        @if (lessons == null)
+        {
+
+            <div class="text-center">
+
+                <div class="spinner-border text-primary">
+                </div>
+
+            </div>
+
+        }
+
+        else if (!lessons.Any())
+        {
+
+            <div class="alert alert-info">
+
+                No lesson knowledge created yet.
+
+            </div>
+
+        }
+
+        else
+        {
+
+            @foreach(var lesson in lessons)
+            {
+
+                <div class="col-lg-6 mb-4">
+
+
+                    <div class="card shadow-sm h-100">
+
+
+                        <div class="card-body">
+
+
+                            @* <h5 class="fw-bold">
+
+                                📖 @lesson.Title
+
+                            </h5> *@
+                            <h5 class="fw-bold">
+
+                                <a href="/teacher/lesson-knowledge/@lesson.Id"
+                                   class="text-decoration-none">
+
+                                    📖 @lesson.Title
+
+                                </a>
+
+                            </h5>
+
+
+
+                            <p class="text-muted">
+
+                                Keywords:
+
+                                @lesson.KeywordCount
+
+                            </p>
+
+
+
+                            <p>
+
+                                Content size:
+
+                                @lesson.ContentLength chars
+
+                            </p>
+
+
+
+                            <small class="text-muted">
+
+                                Created:
+
+                                @lesson.CreatedAt
+                               
+                            </small>
+
+                            <br />
+
+                            <span class="badge bg-success">
+
+                                Active
+
+                            </span>
+
+
+
+                            <hr />
+
+
+
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => DeleteLesson(lesson.Id)">
+
+                                🗑 Delete
+
+                            </button>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+            }
+
+        }
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+@code {
+
+    private bool isSaving;
+
+    private string message = string.Empty;
+
+    private int teacherId;
+
+
+    private List<LessonKnowledgeListItemDto>? lessons;
+
+
+
+    private CreateLessonKnowledgeDto newLesson =
+        new();
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+
+        var user =
+            authState.User;
+
+
+
+        var claim =
+            user.FindFirst("UserId")
+            ??
+            user.FindFirst(ClaimTypes.NameIdentifier)
+            ??
+            user.FindFirst("sub");
+
+
+
+        if(claim == null)
+            return;
+
+
+
+        teacherId =
+            int.Parse(claim.Value);
+
+
+
+        await LoadLessons();
+
+    }
+
+
+
+
+
+    private async Task LoadLessons()
+    {
+
+        lessons =
+            await LessonKnowledgeService
+                .GetByTeacherAsync(teacherId);
+
+    }
+
+
+
+
+
+
+    private async Task CreateLesson()
+    {
+
+        if(string.IsNullOrWhiteSpace(newLesson.Title))
+        {
+            message = "Lesson title is required.";
+            return;
+        }
+
+
+        if(string.IsNullOrWhiteSpace(newLesson.Content))
+        {
+            message = "Lesson content is required.";
+            return;
+        }
+
+
+
+        isSaving = true;
+
+
+        try
+        {
+
+            newLesson.TeacherId =
+                teacherId;
+
+
+
+            await LessonKnowledgeService
+                .CreateAsync(newLesson);
+
+
+
+            message =
+                "Lesson created successfully.";
+
+
+
+            newLesson =
+                new CreateLessonKnowledgeDto();
+
+
+
+            await LoadLessons();
+
+        }
+
+        finally
+        {
+
+            isSaving = false;
+
+        }
+
+    }
+
+
+    private async Task DeleteLesson(int id)
+    {
+
+        await LessonKnowledgeService
+            .DeleteAsync(id);
+
+
+        message =
+            "Lesson deleted successfully.";
+
+
+        await LoadLessons();
+
+    }
+
+
+}

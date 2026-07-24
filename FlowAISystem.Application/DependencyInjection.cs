@@ -61,6 +61,11 @@ public static class DependencyInjection
         // Reports
         services.AddScoped<IReportService, ReportService>();
 
+        //teacher part
+        services.AddScoped<ILessonKnowledgeService, LessonKnowledgeService>();
+
+        services.AddScoped<IStudentAIService, StudentAIService>();
+
         return services;
 
     }

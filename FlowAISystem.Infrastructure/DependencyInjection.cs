@@ -40,7 +40,8 @@ public static class DependencyInjection
 
         // Reports
         services.AddScoped<IReportRepository, ReportRepository>();
-
+        // teaver part knowledge
+        services.AddScoped<ILessonKnowledgeRepository, LessonKnowledgeRepository>();
 
         return services;
     }

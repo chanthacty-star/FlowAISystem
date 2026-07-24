@@ -22,4 +22,6 @@ public class StudentAIResponseDto
 
     // Confidence score
     public decimal Confidence { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
+

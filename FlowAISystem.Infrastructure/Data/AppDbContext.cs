@@ -42,13 +42,14 @@ public class AppDbContext : DbContext
 
     public DbSet<TrainingData> TrainingData => Set<TrainingData>();
 
- 
+
 
 
 
 
     // AI System
-
+    public DbSet<LessonKnowledge> LessonKnowledges
+    => Set<LessonKnowledge>();// teacher part
     public DbSet<AIKnowledge> AIKnowledge => Set<AIKnowledge>();
 
     public DbSet<AICategory> AICategories => Set<AICategory>();
