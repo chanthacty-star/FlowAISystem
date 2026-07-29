@@ -1,17 +1,20 @@
 <div class="ai-avatar @(IsStudent ? "student" : "assistant")">
 
-    @if (IsStudent)
+    @if(IsStudent)
     {
-        <span class="avatar-icon">👨‍🎓</span>
-        <small>You</small>
+        <span>
+            👨‍🎓
+        </span>
     }
     else
     {
-        <span class="avatar-icon">🤖</span>
-        <small>FlowAI</small>
+        <span>
+            🤖
+        </span>
     }
 
 </div>
+
 
 @code {
 

@@ -1,4 +1,4 @@
-@* @page "/login"
+@page "/login"
 
 @rendermode InteractiveServer
 
@@ -147,7 +147,7 @@
         else if (result.Role == "Student")
         {
 
-            Navigation.NavigateTo("/student-dashboard");
+            Navigation.NavigateTo("/student");
 
         }
         else
@@ -159,9 +159,9 @@
 
     }
 
-} *@
+}
 
-
+@* 
 @page "/login"
 @rendermode InteractiveServer
 
@@ -351,4 +351,4 @@
             isLoading = false;
         }
     }
-}
+} *@

@@ -1,0 +1,45 @@
+.confidence-badge {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    padding:5px 12px;
+
+    border-radius:20px;
+
+    font-size:.75rem;
+
+    font-weight:600;
+
+}
+
+
+
+.high {
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+}
+
+
+
+.medium {
+
+    background:#fef9c3;
+
+    color:#a16207;
+
+}
+
+
+
+.low {
+
+    background:#fee2e2;
+
+    color:#b91c1c;
+
+}

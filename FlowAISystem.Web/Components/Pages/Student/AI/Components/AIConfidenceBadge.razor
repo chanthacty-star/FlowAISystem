@@ -1,0 +1,40 @@
+<span class="confidence-badge @GetColor()">
+
+    ⭐ Confidence:
+
+    @Percentage%
+
+</span>
+
+
+
+@code {
+
+
+[Parameter]
+public decimal Confidence { get; set; }
+
+
+
+private int Percentage =>
+    (int)(Confidence * 100);
+
+
+
+private string GetColor()
+{
+
+    if(Percentage >= 80)
+        return "high";
+
+
+    if(Percentage >= 50)
+        return "medium";
+
+
+    return "low";
+
+}
+
+
+}

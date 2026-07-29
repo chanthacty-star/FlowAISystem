@@ -1,21 +1,27 @@
 @using FlowAISystem.Shared.DTOs.AI
+@using FlowAISystem.Application.AI.Interfaces
+
+@inject IMarkdownService MarkdownService
+@inject IJSRuntime JS
+
+
 
 <div class="d-flex mb-4 @(IsStudent ? "justify-content-end" : "justify-content-start")">
 
+
     <div class="ai-message-card shadow-sm">
+
 
         <!-- Header -->
 
         <div class="d-flex align-items-center mb-3">
 
-            @* <div class="ai-avatar me-2">
 
-                @(IsStudent ? "👨‍🎓" : "🤖")
-
-            </div> *@
             <AIAvatar IsStudent="@IsStudent" />
 
-            <div>
+
+            <div class="ms-2">
+
 
                 <div class="fw-bold">
 
@@ -25,123 +31,248 @@
 
                 </div>
 
+
                 @if (!IsStudent && Response != null)
                 {
+
                     <small class="text-muted">
 
                         @Response.CreatedAt.ToLocalTime()
 
                     </small>
+
                 }
+
 
             </div>
 
+
         </div>
+
+
+
 
 
         <!-- Message -->
 
         <div class="ai-message-content">
 
-            @foreach (var line in Message.Split('\n'))
+
+            @if(IsStudent)
             {
-                if (line.StartsWith("📘"))
-                {
-                    <h4 class="text-primary fw-bold">
 
-                        @line
+                @((MarkupString)HtmlMessage)
 
-                    </h4>
-                }
-                else if (line.StartsWith("🔎"))
-                {
-                    <h5 class="mt-3">
-
-                        @line
-
-                    </h5>
-                }
-                else if (line.StartsWith("📌"))
-                {
-                    <h5 class="mt-3">
-
-                        @line
-
-                    </h5>
-                }
-                else if (line.StartsWith("💡"))
-                {
-                    <h5 class="mt-3">
-
-                        @line
-
-                    </h5>
-                }
-                else
-                {
-                    <p class="mb-2">
-
-                        @line
-
-                    </p>
-                }
             }
+            else
+            {
+                <div @ref="messageContainer"
+                     class="ai-rendered-content">
+
+                    @((MarkupString)DisplayedHtml)
+
+                </div>
+
+            }
+
 
         </div>
 
 
-        @if (!IsStudent && Response != null)
+
+
+
+
+
+        @if(!IsStudent && Response != null)
         {
 
             <hr />
 
-            <div class="d-flex flex-wrap gap-2">
 
-                <span class="badge bg-primary">
+            <div class="ai-metadata">
 
-                    📚 @Response.Source
 
-                </span>
+                <AISourceBadge
+                    Source="@Response.Source" />
 
-                <span class="badge bg-success">
 
-                    🎯 @(Response.Confidence * 100)%
+                <AIConfidenceBadge
+                    Confidence="@Response.Confidence" />
 
-                </span>
 
-            </div>
 
-            @if (Response.LessonId.HasValue)
-            {
+                @if(Response.LessonId.HasValue)
+                {
 
-                <div class="mt-3">
-
-                    <a class="btn btn-outline-primary btn-sm"
+                    <a class="lesson-link"
                        href="/student/lessons/@Response.LessonId">
 
                         📖 Open Lesson
 
                     </a>
 
-                </div>
+                }
 
-            }
+
+            </div>
 
         }
 
+
+
     </div>
+
 
 </div>
 
+
+
+
+
+
 @code {
+
 
     [Parameter]
     public bool IsStudent { get; set; }
 
+
+
     [Parameter]
-    public string Message { get; set; } = "";
+    public string Message { get; set; }
+        = string.Empty;
+
+
+
 
     [Parameter]
     public StudentAIResponseDto? Response { get; set; }
+
+
+
+
+    // NEW
+    [Parameter]
+    public bool EnableTyping { get; set; }
+
+
+
+
+
+
+    private string HtmlMessage = string.Empty;
+
+
+
+    private string DisplayedHtml = string.Empty;
+
+
+
+    private string previousMessage = "";
+
+
+
+    private bool hasTyped = false;
+
+
+
+    private ElementReference messageContainer;
+
+
+
+
+
+
+    protected override void OnParametersSet()
+    {
+
+
+        if(string.IsNullOrWhiteSpace(Message))
+        {
+            HtmlMessage = "";
+            DisplayedHtml = "";
+            return;
+        }
+
+
+
+
+        HtmlMessage =
+            MarkdownService
+            .ConvertToHtml(Message);
+
+
+
+
+
+        // Message changed
+
+        if(previousMessage != Message)
+        {
+
+            previousMessage = Message;
+
+
+            hasTyped = false;
+
+
+            DisplayedHtml = "";
+
+        }
+
+
+        // History message
+        // Show immediately
+
+        if(!EnableTyping)
+        {
+
+            DisplayedHtml =
+                HtmlMessage;
+
+        }
+
+
+    }
+
+
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
+    {
+        if(IsStudent)
+            return;
+
+
+        if(!EnableTyping)
+            return;
+
+
+        if(hasTyped)
+            return;
+
+
+        if(string.IsNullOrEmpty(HtmlMessage))
+            return;
+
+
+        hasTyped = true;
+
+
+        await JS.InvokeVoidAsync(
+            "typeHTML",
+            messageContainer,
+            HtmlMessage,
+            15
+        );
+
+
+        await JS.InvokeVoidAsync(
+            "addCodeCopyButtons",
+            messageContainer
+        );
+    }
+
 
 }

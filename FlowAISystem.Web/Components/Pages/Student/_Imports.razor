@@ -1,0 +1,13 @@
+@using FlowAISystem.Web.Components.Pages.Student
+@using FlowAISystem.Web.Components.Pages.Student.Components
+
+@using FlowAISystem.Shared.DTOs.Students
+
+@using Microsoft.AspNetCore.Authorization
+@using FlowAISystem.Application.Interfaces.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@layout FlowAISystem.Web.Components.Layout.StudentMainLayout
+
+@attribute [Authorize(Roles="Student")]

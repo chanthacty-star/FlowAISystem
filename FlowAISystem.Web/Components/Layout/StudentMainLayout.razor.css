@@ -1,0 +1,61 @@
+.student-page {
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+
+
+/* Sidebar */
+
+.student-sidebar {
+
+    width:270px;
+
+    height:100vh;
+
+    overflow:hidden;
+
+    border-right:1px solid #ddd;
+
+    transition:width .3s ease;
+
+}
+
+
+
+/* Collapse */
+
+.student-sidebar-collapsed .student-sidebar {
+
+    width:0;
+
+}
+
+
+
+/* Main */
+
+.student-main-content {
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+
+/* Content */
+
+.student-content {
+
+    flex:1;
+
+    overflow:auto;
+
+}

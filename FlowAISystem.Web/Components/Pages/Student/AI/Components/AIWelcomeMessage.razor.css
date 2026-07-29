@@ -1,0 +1,38 @@
+.ai-welcome {
+
+    text-align:center;
+
+    padding:60px 20px;
+
+    color:#64748b;
+
+}
+
+
+.ai-welcome-icon {
+
+    font-size:3.5rem;
+
+    margin-bottom:15px;
+
+}
+
+
+.ai-welcome h3 {
+
+    color:#0f172a;
+
+    font-weight:700;
+
+}
+
+
+.ai-welcome p {
+
+    max-width:420px;
+
+    margin:auto;
+
+    line-height:1.6;
+
+}

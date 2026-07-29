@@ -1,6 +1,7 @@
 using FlowAISystem.Application.Interfaces.Repositories;
 using FlowAISystem.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using FlowAISystem.Application.AI.Interfaces;
 
 
 namespace FlowAISystem.Infrastructure;
@@ -42,6 +43,8 @@ public static class DependencyInjection
         services.AddScoped<IReportRepository, ReportRepository>();
         // teaver part knowledge
         services.AddScoped<ILessonKnowledgeRepository, LessonKnowledgeRepository>();
+
+        services.AddScoped<IAIConversationRepository, AIConversationRepository>(); // conversaytion memmory 
 
         return services;
     }

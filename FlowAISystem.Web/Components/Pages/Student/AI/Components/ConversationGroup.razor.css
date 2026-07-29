@@ -1,0 +1,194 @@
+/* ===============================
+   Conversation Group Title
+   =============================== */
+
+
+.conversation-title {
+
+    font-size:.75rem;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.05em;
+
+    color:#64748b;
+
+    margin:
+
+        16px 0 10px;
+
+}
+
+
+
+
+
+/* ===============================
+   Conversation Item
+   =============================== */
+
+
+.conversation-item {
+
+    padding:12px;
+
+    border-radius:12px;
+
+    margin-bottom:6px;
+
+    cursor:pointer;
+
+    transition:
+
+        background-color .15s ease,
+
+        transform .1s ease;
+
+}
+
+
+
+
+
+.conversation-item:hover {
+
+    background:#f1f5f9;
+
+}
+
+
+
+
+
+.conversation-item.active {
+
+    background:#2563eb;
+
+    color:white;
+
+    box-shadow:
+
+        0 4px 12px rgba(37,99,235,.25);
+
+}
+
+
+
+
+
+.conversation-item.active small {
+
+    color:white !important;
+
+    opacity:.85;
+
+}
+
+
+
+
+
+/* ===============================
+   Conversation Title Text
+   =============================== */
+
+
+.conversation-item .fw-semibold {
+
+    font-size:.9rem;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
+}
+
+
+
+
+
+/* ===============================
+   Date
+   =============================== */
+
+
+.conversation-item small {
+
+    font-size:.75rem;
+
+    color:#94a3b8;
+
+}
+
+
+
+
+
+/* ===============================
+   Rename/Delete Buttons
+   =============================== */
+
+
+.conversation-item .btn {
+
+    border:none;
+
+    background:transparent;
+
+    padding:4px 6px;
+
+    opacity:.45;
+
+    transition:.2s;
+
+}
+
+
+
+
+
+.conversation-item .btn:hover {
+
+    opacity:1;
+
+    transform:scale(1.15);
+
+}
+
+
+
+
+
+/* keep buttons visible on active item */
+
+
+.conversation-item.active .btn {
+
+    color:white;
+
+}
+
+
+
+
+
+/* ===============================
+   Mobile
+   =============================== */
+
+
+@media(max-width:576px) {
+
+
+    .conversation-item {
+
+        padding:10px;
+
+    }
+
+
+}

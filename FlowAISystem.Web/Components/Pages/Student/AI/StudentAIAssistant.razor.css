@@ -1,334 +1,397 @@
-/* ==========================================================
-   FlowAI Student Assistant - Stylesheet
-   ========================================================== */
-
-:root {
-    --ai-bg-page: #f6f8fc;
-    --ai-bg-card: #ffffff;
-    --ai-bg-chat: #f8fafc;
-    --ai-border: #e2e8f0;
-    --ai-primary: #0d6efd;
-    --ai-primary-hover: #0b5ed7;
-    --ai-text-main: #1e293b;
-    --ai-text-muted: #64748b;
-    --ai-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
-    --ai-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.05);
-    --ai-radius-lg: 18px;
-    --ai-radius-md: 12px;
-    --ai-radius-sm: 8px;
-    --ai-transition: all 0.2s ease-in-out;
-}
-
-/* ==========================================================
-   Page Layout
-   ========================================================== */
+/* ===============================
+   Page
+   =============================== */
 
 .student-ai-page {
-    background-color: var(--ai-bg-page);
+    background-color: var(--ai-bg-page, #f1f5f9);
     min-height: 100vh;
     padding: 24px;
-    color: var(--ai-text-main);
 }
 
-/* ==========================================================
+
+/* ===============================
    Header
-   ========================================================== */
+   =============================== */
 
 .ai-header {
-    background: var(--ai-bg-card);
-    border-radius: var(--ai-radius-lg);
-    padding: 24px 28px;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
     margin-bottom: 24px;
-    border: 1px solid rgba(226, 232, 240, 0.6);
-    box-shadow: var(--ai-shadow-md);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
 }
 
 .ai-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--ai-text-main);
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 
 .ai-subtitle {
-    color: var(--ai-text-muted);
-    font-size: 0.95rem;
+    color: #64748b;
+    margin: 4px 0 0;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 rgba(16, 185, 129, .5);
+    animation: statusPulse 2s infinite;
+    margin-right: 6px;
+}
+
+@keyframes statusPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, .45); }
+    70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+
+/* ===============================
+   Main AI Layout
+   =============================== */
+
+/* Wrap the Bootstrap .row.g-0 in <div class="ai-layout"> in the Razor
+   so this height actually has something to hand down to the columns. */
+.ai-layout {
+    height: calc(100vh - 220px);
+    min-height: 520px;
+}
+
+.ai-layout > .row {
+    height: 100%;
     margin: 0;
 }
 
-/* ==========================================================
-   Main Chat Card & Container
-   ========================================================== */
+.ai-layout > .row > [class^="col-"] {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* allows inner flex children to actually scroll */
+}
 
 .ai-card {
-    border: 1px solid var(--ai-border);
-    border-radius: var(--ai-radius-lg);
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
     overflow: hidden;
-    background: var(--ai-bg-card);
-    box-shadow: var(--ai-shadow-md);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .05);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
+
+
+/* ===============================
+   Chat Area
+   =============================== */
 
 .ai-chat {
     display: flex;
     flex-direction: column;
-    height: 720px;
+    height: 100%;
+    min-height: 0;
 }
 
-/* ==========================================================
-   Messages Area
-   ========================================================== */
+.ai-chat-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 0 0 auto;
+    background: white;
+}
 
 .ai-messages {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
-    padding: 28px;
-    background-color: var(--ai-bg-chat);
+    padding: 24px;
+    background: #f8fafc;
     scroll-behavior: smooth;
-    
-    /* Modern Firefox scrollbar support */
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
 }
 
-/* WebKit Scrollbar (Chrome, Safari, Edge) */
 .ai-messages::-webkit-scrollbar {
     width: 6px;
 }
 
 .ai-messages::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 20px;
-}
-
-.ai-messages::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
+    background: #cbd5e1;
+    border-radius: 999px;
 }
 
 .ai-messages::-webkit-scrollbar-track {
     background: transparent;
 }
 
-/* ==========================================================
-   Input Area
-   ========================================================== */
 
-/* ==========================================================
-   Input Area - Compact & Sleek
-   ========================================================== */
+/* ===============================
+   Conversation Sidebar
+   =============================== */
 
-.ai-input {
-    background: var(--ai-bg-card);
-    border-top: 1px solid var(--ai-border);
-    padding: 10px 14px; /* Reduced outer padding */
+.conversation-sidebar {
+
+    height:100%;
+
+    overflow-y:auto;
+
+    padding:16px;
+
+    background:white;
+
 }
 
-/* Compact floating wrapper */
+
+/* scrollbar */
+
+.conversation-sidebar::-webkit-scrollbar {
+
+    width:6px;
+
+}
+
+
+.conversation-sidebar::-webkit-scrollbar-thumb {
+
+    background:#cbd5e1;
+
+    border-radius:20px;
+
+}
+
+
+.conversation-title {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: #64748b;
+    font-size: .85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.conversation-item {
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.conversation-item:hover {
+    background: #f1f5f9;
+}
+
+.conversation-item.active {
+
+    background:#2563eb;
+
+    color:white;
+
+    box-shadow:
+        0 4px 12px rgba(37,99,235,.25);
+
+}
+
+.conversation-item.active small {
+    color: white !important;
+    opacity: .85;
+}
+
+
+/* ===============================
+   Input Area
+   =============================== */
+
+.ai-input {
+    background: white;
+    border-top: 1px solid var(--ai-border, #e2e8f0);
+    padding: 14px 18px;
+    flex: 0 0 auto;
+}
+
 .ai-input-box {
-    position: relative;
-    background: #ffffff;
-    border: 1px solid var(--ai-border);
-    border-radius: 12px;
-    padding: 8px 12px; /* Slimmer inner padding */
-    transition: var(--ai-transition);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    background: white;
+    border: 1px solid var(--ai-border, #e2e8f0);
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    transition: border-color .2s ease, box-shadow .2s ease;
 }
 
 .ai-input-box:focus-within {
-    border-color: var(--ai-primary);
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+    border-color: var(--ai-primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
 }
 
-/* Small, auto-fitting textarea */
 .ai-input textarea {
     width: 100%;
     resize: none;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    padding: 0;
-    margin-bottom: 6px;
-    font-size: 0.88rem; /* Smaller text size */
-    line-height: 1.4;
-    color: var(--ai-text-main);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 42px;
+    max-height: 120px;
+    padding: 8px 4px;
     background: transparent;
-    min-height: 38px; /* Significantly reduced height */
-    max-height: 100px;
 }
 
-.ai-input textarea::placeholder {
-    color: #94a3b8;
-    font-size: 0.88rem;
-}
-
-/* Slim action bar */
 .ai-input-actions {
     display: flex;
+    justify-content: flex-end;
     align-items: center;
-    justify-content: space-between;
-    padding-top: 4px;
-    border-top: 1px solid #f1f5f9;
+    margin-top: 8px;
 }
 
-.ai-input-hint {
-    font-size: 0.72rem; /* Small hint text */
-    color: var(--ai-text-muted);
-}
-
-/* Compact send button */
 .ai-send-btn {
-    border-radius: 8px;
-    padding: 5px 14px; /* Smaller button padding */
-    font-size: 0.80rem; /* Compact font size */
+    background: var(--ai-primary, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
     font-weight: 600;
-    transition: var(--ai-transition);
+    white-space: nowrap;
+    transition: background-color .15s ease, transform .1s ease;
+    flex: 0 0 auto;
 }
 
-.ai-send-btn:not(:disabled) {
-    background: var(--ai-primary);
-    color: #ffffff;
+.ai-send-btn:hover:not(:disabled) {
+    background: #1d4ed8;
 }
 
-.ai-send-btn:not(:disabled):hover {
-    background: var(--ai-primary-hover);
+.ai-send-btn:active:not(:disabled) {
+    transform: scale(.97);
 }
 
 .ai-send-btn:disabled {
-    background: #e2e8f0;
-    color: #94a3b8;
-    border-color: transparent;
+    background: #cbd5e1;
+    color: #64748b;
     cursor: not-allowed;
 }
-/* ========= */
-/* ==========================================================
-   Sidebar & Cards
-   ========================================================== */
+
+
+/* ===============================
+   Right AI Context Sidebar
+   =============================== */
 
 .ai-sidebar {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    height: 100%;
+    overflow-y: auto;
+    padding-left: 4px;
 }
 
 .ai-side-card {
-    background: var(--ai-bg-card);
-    border-radius: var(--ai-radius-lg);
+    background: white;
     padding: 20px;
-    border: 1px solid var(--ai-border);
-    box-shadow: var(--ai-shadow-sm);
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    flex: 0 0 auto;
 }
 
 .ai-side-title {
-    font-size: 1.1rem;
+    font-size: .95rem;
     font-weight: 700;
-    color: var(--ai-text-main);
-    margin-bottom: 16px;
+    margin: 0 0 14px;
 }
 
-/* ==========================================================
-   Interactive Buttons
-   ========================================================== */
-
-.ai-suggestion {
-    width: 100%;
-    text-align: left;
-    margin-bottom: 10px;
-    border-radius: var(--ai-radius-md);
-    padding: 12px 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border: 1px solid var(--ai-border);
-    background: var(--ai-bg-card);
-    color: var(--ai-text-main);
-    transition: var(--ai-transition);
+.context-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.ai-suggestion:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    transform: translateY(-2px);
-    box-shadow: var(--ai-shadow-sm);
-}
-
-.ai-suggestion:active {
-    transform: translateY(0);
-}
-
-.ai-send-btn {
-    border-radius: var(--ai-radius-md);
-    padding: 10px 24px;
+.context-label {
+    font-size: .75rem;
     font-weight: 600;
-    transition: var(--ai-transition);
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .04em;
 }
 
-.ai-send-btn:not(:disabled):hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+.context-value {
+    font-size: .9rem;
+    color: #334155;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    line-height: 1.4;
+    word-break: break-word;
 }
 
-/* ==========================================================
-   Welcome State
-   ========================================================== */
+/* ===============================
+   Conversation Actions
+   =============================== */
 
-.ai-welcome {
-    text-align: center;
-    color: var(--ai-text-muted);
-    padding: 80px 20px;
+
+.conversation-item .btn {
+
+    border:none;
+
+    background:transparent;
+
+    padding:4px 6px;
+
+    opacity:.5;
+
+    transition:.2s;
+
 }
 
-.ai-welcome-icon {
-    font-size: 4rem;
-    margin-bottom: 16px;
-    display: inline-block;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05));
+
+.conversation-item .btn:hover {
+
+    opacity:1;
+
+    transform:scale(1.15);
+
 }
 
-.ai-welcome h3 {
-    color: var(--ai-text-main);
-    font-weight: 700;
-    margin-bottom: 8px;
-}
 
-.ai-welcome p {
-    max-width: 480px;
-    margin: 0 auto;
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
+/* ===============================
+   Responsive
+   =============================== */
 
-/* ==========================================================
-   Responsive Design
-   ========================================================== */
+@media (max-width: 991.98px) {
+    .ai-layout {
+        height: auto;
+    }
 
-@media (max-width: 992px) {
-    .ai-chat {
-        height: 600px;
+    .ai-layout > .row > [class^="col-"] {
+        height: auto;
+        min-height: 400px;
+    }
+
+    .ai-sidebar {
+        height: auto;
+        overflow-y: visible;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 575.98px) {
     .student-ai-page {
         padding: 12px;
     }
 
     .ai-header {
-        padding: 18px;
-        margin-bottom: 16px;
-    }
-
-    .ai-title {
-        font-size: 1.4rem;
-    }
-
-    .ai-chat {
-        height: 520px;
-    }
-
-    .ai-messages {
         padding: 16px;
     }
 
-    .ai-input {
-        padding: 14px;
+    .ai-title {
+        font-size: 1.25rem;
     }
 }

@@ -1,0 +1,183 @@
+@using FlowAISystem.Shared.DTOs.AI
+
+
+<h6 class="conversation-title">
+    @Title
+</h6>
+
+
+
+@foreach (var item in Items)
+{
+
+    <div @key="item.Id"
+         class="conversation-item 
+         @(item.Id == SelectedId ? "active":"")">
+
+
+        <div class="d-flex justify-content-between align-items-center">
+
+
+            <!-- Conversation Click Area -->
+
+            <div @onclick="() => Select(item.Id)"
+                 class="flex-grow-1"
+                 style="cursor:pointer;">
+
+
+                <div class="fw-semibold">
+
+                    @item.Title
+
+                </div>
+
+
+
+                <small class="text-muted">
+
+                    @GetConversationDate(item.UpdatedAt)
+
+                </small>
+
+
+            </div>
+
+
+
+
+
+            <!-- Actions -->
+
+            <div class="ms-2">
+
+
+                <button type="button"
+                        class="btn btn-sm"
+                        @onclick:stopPropagation="true"
+                        @onclick="() => Rename(item.Id)">
+
+                    ✏️
+
+                </button>
+
+
+
+                <button type="button"
+                        class="btn btn-sm"
+                        @onclick:stopPropagation="true"
+                        @onclick="() => Delete(item.Id)">
+
+                    🗑
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+}
+
+
+
+
+
+@code {
+
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+
+
+    [Parameter]
+    public IEnumerable<AIConversationDto> Items { get; set; }
+        = Enumerable.Empty<AIConversationDto>();
+
+
+
+    [Parameter]
+    public int? SelectedId { get; set; }
+
+
+
+    [Parameter]
+    public EventCallback<int> OnSelected { get; set; }
+
+
+
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; }
+
+
+
+    [Parameter]
+    public EventCallback<int> OnRename { get; set; }
+
+
+
+
+
+
+    private async Task Select(int id)
+    {
+        await OnSelected.InvokeAsync(id);
+    }
+
+
+
+
+
+
+    private async Task Rename(int id)
+    {
+        await OnRename.InvokeAsync(id);
+    }
+
+
+
+
+
+
+    private async Task Delete(int id)
+    {
+        await OnDelete.InvokeAsync(id);
+    }
+
+
+
+
+
+
+
+    private string GetConversationDate(DateTime date)
+    {
+
+        var localDate = date.ToLocalTime();
+
+
+
+        if(localDate.Date == DateTime.Today)
+        {
+            return "Today";
+        }
+
+
+
+        if(localDate.Date == DateTime.Today.AddDays(-1))
+        {
+            return "Yesterday";
+        }
+
+
+
+        return localDate.ToString("MMM dd");
+
+    }
+
+
+}

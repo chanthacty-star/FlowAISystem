@@ -1,0 +1,249 @@
+@using FlowAISystem.Shared.DTOs.AI
+
+
+<div class="conversation-sidebar">
+
+
+    <!-- New Chat -->
+
+    <button class="btn btn-primary w-100 mb-3"
+            @onclick="CreateNewChat">
+
+        ➕ New Chat
+
+    </button>
+
+
+
+    <!-- Search -->
+
+    <div class="mb-3">
+
+        <input class="form-control"
+               placeholder="🔍 Search conversations..."
+               @bind="searchText"
+               @bind:event="oninput" />
+
+    </div>
+
+
+
+
+    @if (Conversations == null)
+    {
+
+        <div class="text-center">
+            Loading...
+        </div>
+
+    }
+    else if (!FilteredConversations.Any())
+    {
+
+        <div class="text-muted text-center">
+            No conversations found.
+        </div>
+
+    }
+    else
+    {
+
+
+        @if (Today.Any())
+        {
+            <ConversationGroup
+
+                Title="Today"
+
+                Items="Today"
+
+                SelectedId="SelectedId"
+
+                OnSelected="SelectConversation"
+
+                OnRename="RenameConversation"
+
+                OnDelete="DeleteConversation" />
+        }
+
+
+
+
+        @if (Yesterday.Any())
+        {
+            <ConversationGroup
+
+                Title="Yesterday"
+
+                Items="Yesterday"
+
+                SelectedId="SelectedId"
+
+                OnSelected="SelectConversation"
+
+                OnRename="RenameConversation"
+
+                OnDelete="DeleteConversation" />
+        }
+
+
+
+
+        @if (Previous.Any())
+        {
+            <ConversationGroup
+
+                Title="Previous"
+
+                Items="Previous"
+
+                SelectedId="SelectedId"
+
+                OnSelected="SelectConversation"
+
+                OnRename="RenameConversation"
+
+                OnDelete="DeleteConversation" />
+        }
+
+
+    }
+
+
+</div>
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public EventCallback<int> OnDeleteConversation { get; set; }
+
+
+    [Parameter]
+    public EventCallback<int> OnRenameConversation { get; set; }
+
+    private string searchText = string.Empty;
+
+
+
+    [Parameter]
+    public List<AIConversationDto>? Conversations { get; set; }
+
+
+
+    [Parameter]
+    public int? SelectedId { get; set; }
+
+
+
+
+    [Parameter]
+    public EventCallback<int> OnConversationSelected { get; set; }
+
+
+
+    [Parameter]
+    public EventCallback OnNewChat { get; set; }
+
+
+
+    private IEnumerable<AIConversationDto> FilteredConversations =>
+        Conversations?
+        .Where(x =>
+            string.IsNullOrWhiteSpace(searchText)
+            ||
+            x.Title.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase))
+        ??
+        Enumerable.Empty<AIConversationDto>();
+
+
+
+
+
+
+    private IEnumerable<AIConversationDto> Today =>
+        FilteredConversations
+        .Where(x =>
+            x.UpdatedAt
+            .ToLocalTime()
+            .Date == DateTime.Today);
+
+
+
+
+
+
+    private IEnumerable<AIConversationDto> Yesterday =>
+        FilteredConversations
+        .Where(x =>
+            x.UpdatedAt
+            .ToLocalTime()
+            .Date ==
+            DateTime.Today.AddDays(-1));
+
+
+
+
+
+
+    private IEnumerable<AIConversationDto> Previous =>
+        FilteredConversations
+        .Where(x =>
+            x.UpdatedAt
+            .ToLocalTime()
+            .Date <
+            DateTime.Today.AddDays(-1));
+
+
+
+
+
+
+
+    private async Task SelectConversation(int id)
+    {
+        await OnConversationSelected
+            .InvokeAsync(id);
+    }
+
+
+
+
+
+
+    private async Task CreateNewChat()
+    {
+        await OnNewChat
+            .InvokeAsync();
+    }
+
+
+
+
+
+
+
+    private async Task RenameConversation(int id)
+    {
+        await OnRenameConversation
+            .InvokeAsync(id);
+    }
+
+
+
+
+
+
+
+    private async Task DeleteConversation(int id)
+    {
+        await OnDeleteConversation
+            .InvokeAsync(id);
+    }
+
+}

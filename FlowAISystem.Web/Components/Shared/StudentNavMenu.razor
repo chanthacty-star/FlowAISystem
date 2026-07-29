@@ -1,0 +1,84 @@
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="Student">
+
+    <Authorized>
+
+        <nav class="nav flex-column p-3">
+
+            <div class="mb-4">
+
+                <h5 class="fw-bold text-primary">
+                    🎓 Student Portal
+                </h5>
+
+                <small class="text-muted">
+                    FlowAISystem
+                </small>
+
+            </div>
+
+            <NavLink class="nav-link"
+                     href="/student/dashboard"
+                     Match="NavLinkMatch.All">
+
+                📊 Dashboard
+
+            </NavLink>
+
+            <NavLink class="nav-link"
+                     href="/student/profile">
+
+                👤 My Profile
+
+            </NavLink>
+
+            <NavLink class="nav-link"
+                     href="/student/subjects">
+
+                📚 My Subjects
+
+            </NavLink>
+
+            <NavLink class="nav-link"
+                     href="/student/grades">
+
+                📈 My Grades
+
+            </NavLink>
+
+            <NavLink class="nav-link"
+                     href="/student/attendance">
+
+                📅 Attendance
+
+            </NavLink>
+
+            <NavLink class="nav-link"
+                     href="/student/feedback">
+
+                💬 Feedback
+
+            </NavLink>
+
+            <NavLink class="nav-link"
+                     href="/student/announcements">
+
+                📢 Announcements
+
+            </NavLink>
+
+            <hr />
+
+            <NavLink class="nav-link text-primary fw-bold"
+                     href="/student/ai-chat">
+
+                🤖 AI Learning Assistant
+
+            </NavLink>
+
+        </nav>
+
+    </Authorized>
+
+</AuthorizeView>

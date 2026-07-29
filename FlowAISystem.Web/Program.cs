@@ -129,6 +129,10 @@ builder.Services.AddScoped<IGeneralAIHandler, GeneralAIHandler>(); // general
 builder.Services.AddScoped<IReportAIHandler, ReportAIHandler>(); // report
 builder.Services.AddScoped<AIConversationMemory>();// memory
 builder.Services.AddScoped<AIConversationContext>(); // 
+//builder.Services.AddScoped< IAIConversationService, AIConversationService>(); because I had in both depndency 
+// Makds
+builder.Services.AddScoped<IMarkdownService, MarkdownService>();
+
 // AI Assistance for students
 builder.Services.AddScoped<IStudentAIService, StudentAIService>();
 

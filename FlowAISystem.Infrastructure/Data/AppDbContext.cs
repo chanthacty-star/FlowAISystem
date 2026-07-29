@@ -1,3 +1,4 @@
+using FlowAISystem.Domain.Entities.AI; // student AI
 using FlowAISystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +44,10 @@ public class AppDbContext : DbContext
     public DbSet<TrainingData> TrainingData => Set<TrainingData>();
 
 
+    public DbSet<AIConversation> AIConversations { get; set; }
+
+
+    public DbSet<AIMessage> AIMessages { get; set; }
 
 
 
@@ -65,6 +70,14 @@ public class AppDbContext : DbContext
             .WithMany(x => x.KnowledgeItems)
             .HasForeignKey(x => x.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+       // AI Conversation->AI Messages
+        modelBuilder.Entity<AIConversation>()
+            .HasMany(c => c.Messages)
+            .WithOne(m => m.Conversation)
+            .HasForeignKey(m => m.ConversationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
 
 
         modelBuilder.ApplyConfigurationsFromAssembly(

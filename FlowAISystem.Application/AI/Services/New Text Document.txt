@@ -1,0 +1,33 @@
+using FlowAISystem.Application.AI.Interfaces;
+
+namespace FlowAISystem.Application.AI.Services;
+
+public class ConversationTitleService
+    : IConversationTitleService
+{
+    public string GenerateTitle(string question)
+    {
+        if (string.IsNullOrWhiteSpace(question))
+            return "New Conversation";
+
+        question = question.Trim();
+
+        // Remove line breaks
+        question = question
+            .Replace("\r", "")
+            .Replace("\n", " ");
+
+        // Collapse extra spaces
+        while (question.Contains("  "))
+        {
+            question = question.Replace("  ", " ");
+        }
+
+        const int maxLength = 45;
+
+        if (question.Length <= maxLength)
+            return question;
+
+        return question[..maxLength] + "...";
+    }
+}

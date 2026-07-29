@@ -162,7 +162,6 @@ Review the concepts and practice with examples.
         string content,
         string sectionName)
     {
-
         var start =
             content.IndexOf(
                 sectionName,
@@ -175,6 +174,15 @@ Review the concepts and practice with examples.
 
 
         start += sectionName.Length;
+
+
+
+        // Remove ":" after section title
+        if (start < content.Length &&
+           content[start] == ':')
+        {
+            start++;
+        }
 
 
 
@@ -195,7 +203,6 @@ Review the concepts and practice with examples.
 
         foreach (var section in sections)
         {
-
             var index =
                 content.IndexOf(
                     section,
@@ -208,12 +215,28 @@ Review the concepts and practice with examples.
             {
                 end = index;
             }
-
         }
 
 
 
-        return content[start..end]
+        return CleanText(
+            content[start..end]);
+    }
+    // clean text
+    private string CleanText(string text)
+    {
+
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+
+        while (text.StartsWith(":"))
+        {
+            text = text[1..];
+        }
+
+
+        return text
             .Trim();
 
     }

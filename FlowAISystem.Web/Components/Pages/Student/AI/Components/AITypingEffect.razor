@@ -1,0 +1,44 @@
+<div @ref="messageElement">
+
+</div>
+
+
+@code {
+
+    private ElementReference messageElement;
+
+
+    [Parameter]
+    public string HtmlContent { get; set; } = "";
+
+
+
+    [Parameter]
+    public int Speed { get; set; } = 10;
+
+
+
+    [Inject]
+    private IJSRuntime JS { get; set; } = default!;
+
+
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
+    {
+
+        if(firstRender)
+        {
+
+            await JS.InvokeVoidAsync(
+                "aiTyping.typeHTML",
+                messageElement,
+                HtmlContent,
+                Speed
+            );
+
+        }
+
+    }
+
+}

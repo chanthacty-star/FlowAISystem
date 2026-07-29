@@ -1,0 +1,23 @@
+.ai-source-badge {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    padding:5px 12px;
+
+    border-radius:20px;
+
+    background:#eff6ff;
+
+    color:#2563eb;
+
+    border:1px solid #bfdbfe;
+
+    font-size:.75rem;
+
+    font-weight:600;
+
+}

@@ -1,9 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using FlowAISystem.Application.Interfaces.Services;
 using FlowAISystem.Application.Services;
-using FlowAISystem.Application.AI.Student.Services;
+
 using FlowAISystem.Application.Interfaces.Services.Reports;
 using FlowAISystem.Application.Services.Reports;
+using FlowAISystem.Application.AI.Interfaces;
+using FlowAISystem.Application.AI.Services;
 
 using FlowAISystem.Application.AI.Student.Interfaces;
 using FlowAISystem.Application.AI.Student.Services; // or wherever your formatter implementation class is located
@@ -75,6 +77,10 @@ public static class DependencyInjection
         //services.AddScoped<IStudentIntentDetector, StudentIntentDetector>();
 
         //services.AddScoped<IKeywordExtractor, KeywordExtractor>();
+        services.AddScoped<IAIConversationService, AIConversationService>();
+
+        services.AddScoped<IConversationTitleService,
+                   ConversationTitleService>();
 
         return services;
 

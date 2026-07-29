@@ -1,0 +1,48 @@
+<button class="ai-suggestion"
+        @onclick="ClickQuestion">
+
+
+    <span>
+
+        @Icon @Text
+
+    </span>
+
+
+    <span class="arrow">
+
+        →
+
+    </span>
+
+
+</button>
+
+
+
+@code {
+
+    [Parameter]
+    public string Text { get; set; }
+        = string.Empty;
+
+
+
+    [Parameter]
+    public string Icon { get; set; }
+        = "⚡";
+
+
+
+    [Parameter]
+    public EventCallback<string> OnQuestionSelected { get; set; }
+
+
+
+    private async Task ClickQuestion()
+    {
+        await OnQuestionSelected
+            .InvokeAsync(Text);
+    }
+
+}

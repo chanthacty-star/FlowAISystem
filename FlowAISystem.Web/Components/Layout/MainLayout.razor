@@ -1,10 +1,13 @@
 ﻿@inherits LayoutComponentBase
+
+@using FlowAISystem.Web.Components.Shared
 @using FlowAISystem.Web.Components.Shared.Notifications
 @using Microsoft.AspNetCore.Components.Authorization
 @using FlowAISystem.Web.Authentication
 
 @inject JwtAuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
+
 
 <MudThemeProvider />
 
@@ -14,53 +17,82 @@
 
 <MudSnackbarProvider />
 
-<div class="page">
 
-    <div class="sidebar">
+<div class="page @(isSidebarOpen ? "" : "sidebar-collapsed")">
+
+
+    <aside class="sidebar">
+
         <NavMenu />
-    </div>
+
+    </aside>
 
 
-    <main>
+    <main class="main-content">
+
+
+        <!-- Top Navbar -->
 
         <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom px-4 sticky-top">
 
+            <button class="btn btn-outline-secondary me-3"
+                 @onclick="ToggleSidebar">
+
+                ☰
+
+            </button>
+
             <a class="navbar-brand fw-bold"
-                   href="/">
+               href="/">
+
                 FlowAISystem
+
             </a>
+
 
 
             <div class="ms-auto">
 
+
                 <AuthorizeView>
+
 
                     <Authorized>
 
+
                         <span class="me-3">
 
+
                             👤
+
 
                             <strong>
                                 @context.User.Identity?.Name
                             </strong>
 
 
+
                             <span class="badge bg-secondary ms-2">
+
 
                                 @context.User.FindFirst(
                                     System.Security.Claims.ClaimTypes.Role
                                 )?.Value
 
+
                             </span>
 
+
                         </span>
+
 
 
                         <button class="btn btn-danger"
                                 @onclick="Logout">
 
+
                             Logout
+
 
                         </button>
 
@@ -68,214 +100,87 @@
                     </Authorized>
 
 
+
                     <NotAuthorized>
 
+
                         <a class="btn btn-primary"
-                               href="/login">
+                           href="/login">
+
 
                             Login
 
+
                         </a>
+
 
                     </NotAuthorized>
 
 
+
                 </AuthorizeView>
 
+
             </div>
+
 
         </nav>
 
 
+
+
+
+        <!-- Page Content -->
+
         <article class="content px-4">
 
+
             @Body
+
 
         </article>
 
 
-        <!-- Global Notification System -->
+
+
+
+        <!-- Global Services -->
+
 
         <NotificationContainer />
 
         <ConfirmationDialog />
 
+
     </main>
+
 
 </div>
 
 
+
+
 @code {
+
+    private bool isSidebarOpen = true;
+
 
     private async Task Logout()
     {
+
         await AuthProvider.NotifyUserLogout();
 
         Navigation.NavigateTo("/login");
+
+    }
+
+
+
+    private void ToggleSidebar()
+    {
+
+        isSidebarOpen = !isSidebarOpen;
+
     }
 
 }
-
-@* 
-@inherits LayoutComponentBase
-
-@using Microsoft.AspNetCore.Components.Authorization
-@using FlowAISystem.Web.Authentication
-
-@inject JwtAuthenticationStateProvider AuthProvider
-@inject NavigationManager Navigation
-
-<div class="app-layout">
-
-    <!-- Left Sidebar -->
-    <aside class="app-sidebar">
-        <NavMenu />
-    </aside>
-
-    <!-- Right Main Workspace -->
-    <main class="app-main">
-
-        <!-- Header / Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-white bg-white px-4 py-3 sticky-top main-navbar">
-            <div class="container-fluid p-0">
-                
-                <!-- Brand / Logo Link -->
-                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
-                    <div class="brand-accent-box rounded">
-                        <i class="bi bi-cpu-fill text-white fs-5"></i>
-                    </div>
-                    <span class="brand-text">Flow<span class="text-primary">AI</span></span>
-                </a>
-
-                <!-- User Session / Auth View -->
-                <div class="ms-auto d-flex align-items-center">
-                    <AuthorizeView>
-                        <Authorized>
-                            <div class="d-flex align-items-center gap-3">
-                                <!-- User Profile Badge & Info -->
-                                <div class="user-profile-widget d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-light border">
-                                    <i class="bi bi-person-circle text-secondary fs-5"></i>
-                                    <div class="d-flex flex-column text-start lh-sm">
-                                        <span class="fw-semibold text-dark small">@context.User.Identity?.Name</span>
-                                        <span class="text-muted text-uppercase" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;">
-                                            @context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Sleek Logout Button -->
-                                <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1.5 px-3 py-2 rounded-pill hover-shake"
-                                        @onclick="Logout">
-                                    <i class="bi bi-box-arrow-right"></i>
-                                    <span>Logout</span>
-                                </button>
-                            </div>
-                        </Authorized>
-
-                        <NotAuthorized>
-                            <a class="btn btn-primary btn-sm px-4 py-2 rounded-pill d-flex align-items-center gap-2" href="/login">
-                                <i class="bi bi-box-arrow-in-right"></i>
-                                <span>Sign In</span>
-                            </a>
-                        </NotAuthorized>
-                    </AuthorizeView>
-                </div>
-
-            </div>
-        </nav>
-
-        <!-- Dynamic Body Content Container -->
-        <article class="app-content px-4 py-4">
-            <div class="container-fluid p-0">
-                @Body
-            </div>
-        </article>
-
-    </main>
-</div>
-
-<style>
-    /* Base Layout Container */
-    .app-layout {
-        display: flex;
-        min-vh: 100vh;
-        background-color: #f8f9fa;
-    }
-
-    /* Sidebar Layout Fixes */
-    .app-sidebar {
-        flex: 0 0 250px;
-        min-width: 250px;
-        background-color: #1e1e2d; /* Modern dark sidebar theme */
-        color: #ffffff;
-    }
-
-    /* Main Container with viewport handling */
-    .app-main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-width: 0; /* Prevents flex children from breaking parent boundaries */
-        background-color: #f4f6f9;
-    }
-
-    /* Top Navigation bar customization */
-    .main-navbar {
-        background-color: #ffffff !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 0px rgba(0, 0, 0, 0.05);
-        z-index: 1030;
-    }
-
-    .brand-accent-box {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .brand-text {
-        font-size: 1.25rem;
-        letter-spacing: -0.5px;
-        color: #1e293b;
-    }
-
-    /* Custom pill layout for user details */
-    .user-profile-widget {
-        background-color: #f8fafc !important;
-        transition: background-color 0.2s ease;
-    }
-
-    /* UI Interactions */
-    .hover-shake:hover {
-        background-color: #dc3545;
-        color: #ffffff !important;
-    }
-
-    /* Body wrapper scaling standard */
-    .app-content {
-        flex: 1;
-        overflow-y: auto;
-    }
-
-    /* Responsive scaling behavior rules */
-    @@media (max-width: 768px) {
-        .app-layout {
-            flex-direction: column;
-        }
-        .app-sidebar {
-            width: 100%;
-            flex: none;
-            min-height: auto;
-        }
-    }
-</style>
-
-@code {
-    private async Task Logout()
-    {
-        await AuthProvider.NotifyUserLogout();
-        Navigation.NavigateTo("/login");
-    }
-} *@
