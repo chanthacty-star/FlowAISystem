@@ -1,0 +1,173 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using FlowAISystem.Application.Interfaces.Services
+
+
+@inject IStudentService StudentService
+
+
+
+@if (!string.IsNullOrEmpty(CurrentImage))
+{
+    <img src="@CurrentImage"
+         class="rounded-circle mb-3"
+         width="120"
+         height="120" />
+}
+else
+{
+    <img src="/images/default-user.png"
+         class="rounded-circle mb-3"
+         width="120"
+         height="120" />
+}
+
+
+
+<InputFile OnChange="UploadImage"
+           class="form-control mt-2" />
+
+
+
+@if(!string.IsNullOrEmpty(Message))
+{
+    <div class="alert alert-info mt-2">
+        @Message
+    </div>
+}
+
+
+
+@code {
+
+
+    [Parameter]
+    public int StudentId { get; set; }
+
+
+
+    [Parameter]
+    public int? UserId { get; set; }
+
+
+
+    [Parameter]
+    public string? CurrentImage { get; set; }
+
+
+
+    [Parameter]
+    public EventCallback<string> OnImageUploaded { get; set; }
+
+
+
+    private string? Message;
+
+
+
+    private async Task UploadImage(
+        InputFileChangeEventArgs e)
+    {
+
+        Message = null;
+
+
+        var file = e.File;
+
+
+        if(file == null)
+            return;
+
+
+
+        try
+        {
+
+            var extension =
+                Path.GetExtension(file.Name);
+
+
+
+            var fileName =
+                $"student_{StudentId}{extension}";
+
+
+
+            var folder =
+                Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "images",
+                    "students");
+
+
+
+            if(!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+
+
+            var filePath =
+                Path.Combine(
+                    folder,
+                    fileName);
+
+
+
+            await using FileStream fs =
+                new(
+                    filePath,
+                    FileMode.Create);
+
+
+
+            await file.OpenReadStream(
+                    5 * 1024 * 1024)
+                .CopyToAsync(fs);
+
+
+
+            var imagePath =
+                $"/images/students/{fileName}";
+
+
+
+            // Update database
+
+            if(UserId.HasValue)
+            {
+
+                await StudentService
+                    .UpdateProfileImageAsync(
+                        UserId.Value,
+                        imagePath);
+
+            }
+
+
+
+            CurrentImage = imagePath;
+
+
+
+            await OnImageUploaded
+                .InvokeAsync(imagePath);
+
+
+
+            Message =
+                "Profile image updated successfully.";
+
+        }
+        catch(Exception ex)
+        {
+
+            Message =
+                $"Upload failed: {ex.Message}";
+
+        }
+
+    }
+
+}

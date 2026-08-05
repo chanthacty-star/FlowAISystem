@@ -17,7 +17,10 @@
         <div class="d-flex align-items-center mb-3">
 
 
-            <AIAvatar IsStudent="@IsStudent" />
+            @* <AIAvatar IsStudent="@IsStudent" /> *@
+            <AIAvatar
+                IsStudent="@IsStudent"
+                ProfileImage="@studentProfileImage" />
 
 
             <div class="ms-2">
@@ -26,7 +29,7 @@
                 <div class="fw-bold">
 
                     @(IsStudent
-                        ? "You"
+                        ? StudentName
                         : "FlowAI Assistant")
 
                 </div>
@@ -144,7 +147,12 @@
         = string.Empty;
 
 
-
+    [Parameter]
+    public string StudentName { get; set; }
+        = string.Empty; 
+        
+    [Parameter]
+    public string? studentProfileImage { get; set; }
 
     [Parameter]
     public StudentAIResponseDto? Response { get; set; }

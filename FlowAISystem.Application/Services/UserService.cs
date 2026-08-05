@@ -202,7 +202,7 @@ public class UserService : IUserService
     }
     // Change password
     public async Task<bool> ChangePasswordAsync(
-    ChangePasswordDto dto)
+        ChangePasswordDto dto)
     {
         var user =
             await _repository.GetByIdAsync(
@@ -213,31 +213,73 @@ public class UserService : IUserService
             return false;
 
 
+
+        // Verify current password
+
         bool valid =
             BCrypt.Net.BCrypt.Verify(
                 dto.CurrentPassword,
                 user.PasswordHash);
 
 
+
         if (!valid)
             return false;
 
 
+
+        // Confirm new password
+
         if (dto.NewPassword != dto.ConfirmPassword)
             return false;
 
+
+
+        // Generate new BCrypt hash
 
         user.PasswordHash =
             BCrypt.Net.BCrypt.HashPassword(
                 dto.NewPassword);
 
 
+
         user.UpdatedAt =
             DateTime.UtcNow;
 
 
+
         await _repository.UpdateAsync(user);
 
+
+        // IMPORTANT: Save database
+
+        await _repository.SaveChangesAsync();
+
+
+
+        return true;
+    }
+    // reset pp
+    public async Task<bool> ResetPasswordAsync(
+    ResetPasswordDto dto)
+    {
+        var user =
+            await _repository.GetByIdAsync(dto.UserId);
+
+        if (user == null)
+            return false;
+
+        if (dto.NewPassword != dto.ConfirmPassword)
+            return false;
+
+        user.PasswordHash =
+            BCrypt.Net.BCrypt.HashPassword(
+                dto.NewPassword);
+
+        user.UpdatedAt =
+            DateTime.UtcNow;
+
+        await _repository.UpdateAsync(user);
 
         return true;
     }

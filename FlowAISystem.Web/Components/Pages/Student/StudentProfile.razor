@@ -87,7 +87,7 @@ else
                     <div class="card-body text-center">
 
 
-                        @if (!string.IsNullOrEmpty(student.ProfileImage))
+                        @* @if (!string.IsNullOrEmpty(student.ProfileImage))
                         {
 
                             <img src="@student.ProfileImage"
@@ -103,7 +103,11 @@ else
                                 👨‍🎓
                             </div>
 
-                        }
+                        } *@
+                        <ProfileImageUpload
+                                StudentId="@student.Id"
+                                CurrentImage="@student.ProfileImage"
+                                OnImageUploaded="UpdateProfileImage" />
 
 
 
@@ -391,6 +395,16 @@ else
         student =
             await StudentService.GetProfileAsync(userId);
 
+    }
+
+    private Task UpdateProfileImage(string imagePath)
+    {
+        if(student != null)
+        {
+            student.ProfileImage = imagePath;
+        }
+
+        return Task.CompletedTask;
     }
 
 }

@@ -1,17 +1,29 @@
 <div class="ai-avatar @(IsStudent ? "student" : "assistant")">
 
-    @if(IsStudent)
+@if(IsStudent)
+{
+    @if(!string.IsNullOrEmpty(ProfileImage))
     {
-        <span>
-            👨‍🎓
-        </span>
+        <img src="@ProfileImage"
+             class="rounded-circle"
+             width="45"
+             height="45" />
     }
     else
     {
-        <span>
-            🤖
-        </span>
+        <img src="/images/default-user.png"
+             class="rounded-circle"
+             width="45"
+             height="45" />
     }
+}
+else
+{
+    <img src="/images/flowai-logo.png"
+         class="rounded-circle"
+         width="45"
+         height="45" />
+}
 
 </div>
 
@@ -20,5 +32,9 @@
 
     [Parameter]
     public bool IsStudent { get; set; }
+
+
+    [Parameter]
+    public string? ProfileImage { get; set; }
 
 }

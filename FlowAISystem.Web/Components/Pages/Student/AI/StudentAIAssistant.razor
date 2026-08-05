@@ -1,6 +1,6 @@
 @page "/student/ai-chat"
-
-
+@* ChatMessage reference
+@using FlowAISystem.Web.Models   *@
 @using FlowAISystem.Application.Interfaces.Services
 @using FlowAISystem.Application.AI.Interfaces
 @using FlowAISystem.Shared.DTOs.AI
@@ -229,6 +229,9 @@
 
                                     Message="@chat.Message"
 
+                                    StudentName="@studentName"
+                                    studentProfileImage="@studentProfileImage"  
+
                                     Response="@chat.Response"
 
                                     EnableTyping="@chat.EnableTyping" />
@@ -441,7 +444,7 @@
 
 
                             @(chats
-                                .LastOrDefault(x => x.IsStudent)
+                                .LastOrDefault(x => x.IsStudent) //?.Message
                                 ?.Message
                                 ??
                                 "Waiting for question...")
@@ -735,6 +738,9 @@
     private int currentUserId;
 
     private int currentStudentId;
+    
+    private string studentName = string.Empty; // connect to student profile from AIMessageBubble.razor
+    private string? studentProfileImage; // connect to student profile from AIMessageBubble.razor
 
     private string renameTitle = string.Empty;
     /////
@@ -804,10 +810,50 @@
         }
 
 
-
+        await LoadStudent(); // Load student info calling 
         await LoadConversations();
     }
 
+    private async Task LoadStudent() // for all student info, name, profile image, etc. to connect to AIMessageBubble.razor
+    {
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+        var user =
+            authState.User;
+
+
+        var userIdClaim =
+            user.FindFirst("sub");
+
+
+        if(userIdClaim != null)
+        {
+            currentUserId =
+                int.Parse(userIdClaim.Value);
+
+
+            var profile =
+                await StudentService
+                    .GetProfileAsync(currentUserId);
+
+
+            if(profile != null)
+            {
+                currentStudentId =
+                    profile.Id;
+
+
+            studentName =
+                $"{profile.FirstName} {profile.LastName}"; // connect to student profile from AIMessageBubble.razor
+
+
+            studentProfileImage =
+                profile.ProfileImage; // connect to student profile from AIMessageBubble.razor
+            }
+        }
+    }
 
 
     private async Task LoadConversations()
@@ -900,17 +946,17 @@
                 );
 
 
-
+            // student message
             chats.Add(new ChatMessage
             {
-                IsStudent=true,
-                Message=currentQuestion,
-                EnableTyping=false,
-                Time=DateTime.Now
+                IsStudent = true,
+                Message = currentQuestion,
+                EnableTyping = false,
+                Time = DateTime.Now
             });
 
 
-
+            // AI repond
             await InvokeAsync(
                 StateHasChanged
             );
@@ -932,23 +978,22 @@
 
 
 
-            await ConversationService
-                .AddMessageAsync(
-                    currentConversationId.Value,
-                    "Assistant",
-                    response.Answer
-                );
+                await ConversationService
+                    .AddMessageAsync(
+                        currentConversationId.Value,
+                        "Assistant",
+                        response.Answer
+                    );
 
-
-
-            chats.Add(new ChatMessage
-            {
-                IsStudent=false,
-                Message=response.Answer,
-                Response=response,
-                EnableTyping=true,
-                Time=DateTime.Now
-            });
+                //AI message // do not need student img
+                chats.Add(new ChatMessage
+                {
+                    IsStudent = false,
+                    Message = response.Answer,
+                    Response = response,
+                    EnableTyping = true,
+                    Time = DateTime.Now
+                });
 
 
 
@@ -994,7 +1039,7 @@
     }
 
 
-    private async Task LoadConversation(int id)
+    private async Task LoadConversation(int id) // for load conversation and messages for spacific student by Id
     {
         currentConversationId = id;
 
@@ -1674,20 +1719,16 @@
         showRenameModal = false;
     }
 
-
-
-
     private class ChatMessage
     {
 
 
         public bool IsStudent { get; set; }
 
-
+        // public string StudentName { get; set; } = string.Empty; // no 
 
         public string Message { get; set; }
             = string.Empty;
-
 
 
         public StudentAIResponseDto? Response { get; set; }

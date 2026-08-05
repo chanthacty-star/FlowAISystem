@@ -24,6 +24,10 @@ public class AuthService : IAuthService
     public async Task<LoginResponseDto?> LoginAsync(
         LoginRequestDto request)
     {
+        Console.WriteLine("=======================");
+        Console.WriteLine("LOGIN REQUEST");
+        Console.WriteLine($"Username: {request.Username}");
+        Console.WriteLine("=======================");
 
         // 1. Find user
         var user = await _userRepository

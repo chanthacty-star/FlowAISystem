@@ -35,7 +35,9 @@ public interface IUserService
     // ===============================
     // Change Password
     // ===============================
-
     Task<bool> ChangePasswordAsync(
         ChangePasswordDto dto);
+    // Reset mean forgot pp and want return it back
+    Task<bool> ResetPasswordAsync(
+    ResetPasswordDto dto);
 }

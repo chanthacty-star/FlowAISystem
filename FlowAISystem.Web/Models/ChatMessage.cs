@@ -10,7 +10,8 @@ public class ChatMessage
 
     public bool IsUser { get; set; }
 
-
+    public string SenderName { get; set; }
+    = string.Empty;// can be many user 
 
     public DateTime Time { get; set; }
         = DateTime.Now;

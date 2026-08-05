@@ -29,8 +29,7 @@
 
 <div class="mb-3">
 
-    <button class="btn btn-primary"
-            @onclick="CreateUser">
+    <button class="btn btn-primary" @onclick="CreateUser">
 
         + Create User
 
@@ -43,134 +42,136 @@
 
 <div class="card">
 
-<div class="card-body">
+    <div class="card-body">
 
 
-<table class="table table-striped">
+        <table class="table table-striped">
 
 
-<thead>
+            <thead>
 
-<tr>
+                <tr>
 
-<th>
-    Username
-</th>
-
-
-<th>
-    Email
-</th>
+                    <th>
+                        Username
+                    </th>
 
 
-<th>
-    Role
-</th>
+                    <th>
+                        Email
+                    </th>
 
 
-<th>
-    Status
-</th>
+                    <th>
+                        Role
+                    </th>
 
 
-<th>
-    Action
-</th>
+                    <th>
+                        Status
+                    </th>
 
 
-</tr>
-
-</thead>
-
-
-
-<tbody>
+                    <th>
+                        Action
+                    </th>
 
 
-@foreach(var user in users)
-{
+                </tr>
 
-<tr>
-
-
-<td>
-    @user.Username
-</td>
-
-
-<td>
-    @user.Email
-</td>
-
-
-<td>
-    @user.RoleName
-</td>
-
-
-<td>
-
-@if(user.IsActive)
-{
-    <span class="badge bg-success">
-        Active
-    </span>
-}
-else
-{
-    <span class="badge bg-danger">
-        Disabled
-    </span>
-}
-
-</td>
-
-
-<td>
-
-
-<a class="btn btn-sm btn-info"
-   href="/admin-dashboard/users/details/@user.Id">
-
-    Details
-
-</a>
+            </thead>
 
 
 
-<a class="btn btn-sm btn-warning ms-1"
-   href="/admin-dashboard/users/edit/@user.Id">
-
-    Edit
-
-</a>
+            <tbody>
 
 
+                @foreach (var user in users)
+                {
 
-<a class="btn btn-sm btn-danger ms-1"
-   href="/admin-dashboard/users/delete/@user.Id">
-
-    Delete
-
-</a>
+                    <tr>
 
 
-
-</td>
-
-
-</tr>
-
-}
+                        <td>
+                            @user.Username
+                        </td>
 
 
-</tbody>
+                        <td>
+                            @user.Email
+                        </td>
 
 
-</table>
+                        <td>
+                            @user.RoleName
+                        </td>
 
 
-</div>
+                        <td>
+
+                            @if (user.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Disabled
+                                </span>
+                            }
+
+                        </td>
+
+
+                        <td>
+
+
+                            <a class="btn btn-sm btn-info" href="/admin-dashboard/users/details/@user.Id">
+
+                                Details
+
+                            </a>
+
+
+
+                            <a class="btn btn-sm btn-warning ms-1" href="/admin-dashboard/users/edit/@user.Id">
+
+                                Edit
+
+                            </a>
+
+
+
+                            <a class="btn btn-sm btn-danger ms-1" href="/admin-dashboard/users/delete/@user.Id">
+
+                                Delete
+
+                            </a>
+
+                            <a class="btn btn-warning btn-sm" href="/admin-dashboard/users/reset-password/@user.Id">
+
+                                🔑 Reset Password
+
+                            </a>
+
+
+                        </td>
+
+
+                    </tr>
+
+                }
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
 
 </div>
 

@@ -1,0 +1,195 @@
+@page "/admin-dashboard/enrollments/edit/{Id:int}"
+
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.Enrollments
+@using FlowAISystem.Shared.DTOs.Students
+@using FlowAISystem.Shared.DTOs.CourseOfferings
+@using FlowAISystem.Shared.Enums
+@using FlowAISystem.Web.Services
+
+@inject IEnrollmentService EnrollmentService
+@inject IStudentService StudentService
+@inject ICourseOfferingService CourseOfferingService
+@inject NotificationService Notification
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Enrollment</PageTitle>
+
+<h3 class="mb-4">✏️ Edit Enrollment</h3>
+
+<div class="card shadow">
+    <div class="card-body">
+        @if (loading)
+        {
+            <div class="text-center my-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Loading enrollment details...</p>
+            </div>
+        }
+        else if (model == null)
+        {
+            <div class="alert alert-danger">
+                Enrollment record not found.
+            </div>
+            <button class="btn btn-secondary" @onclick="Cancel">Back to List</button>
+        }
+        else
+        {
+            <EditForm Model="@model" OnValidSubmit="Save">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <!-- Student Selection -->
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Student</label>
+                    <InputSelect class="form-select" @bind-Value="model.StudentId">
+                        <option value="0">-- Select Student --</option>
+                        @foreach (var student in students)
+                        {
+                            <option value="@student.Id">
+                                @student.StudentNumber - @student.FullName
+                            </option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <!-- Course Offering Selection -->
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Course Offering</label>
+                    <InputSelect class="form-select" @bind-Value="model.CourseOfferingId">
+                        <option value="0">-- Select Course Offering --</option>
+                        @foreach (var offering in offerings)
+                        {
+                            <option value="@offering.Id">
+                                @offering.SubjectName | Class: @offering.ClassName | @offering.TeacherName | @offering.SemesterName
+                            </option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <!-- Enrollment Date -->
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Enrollment Date</label>
+                    <InputDate class="form-control" @bind-Value="model.EnrollmentDate" />
+                </div>
+
+                <!-- Status -->
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Status</label>
+                    <InputSelect class="form-select" @bind-Value="model.Status">
+                        @foreach (var status in Enum.GetValues<EnrollmentStatus>())
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <button type="submit" class="btn btn-primary me-2" disabled="@submitting">
+                    @if (submitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>Save Changes</span>
+                    }
+                </button>
+
+                <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@submitting">
+                    Cancel
+                </button>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private UpdateEnrollmentDto? model;
+    private List<StudentListItemDto> students = new();
+    private List<CourseOfferingListItemDto> offerings = new();
+
+    private bool loading = true;
+    private bool submitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+
+        try
+        {
+            // ✅ Sequential execution avoids EF Core concurrency conflicts on shared DbContext
+            students = await StudentService.GetAllAsync(new StudentSearchDto());
+            offerings = await CourseOfferingService.GetAllAsync(new CourseOfferingSearchDto());
+            
+            var existing = await EnrollmentService.GetByIdAsync(Id);
+
+            if (existing != null)
+            {
+                model = new UpdateEnrollmentDto
+                {
+                    Id = existing.Id,
+                    StudentId = existing.StudentId,
+                    CourseOfferingId = existing.CourseOfferingId,
+                    EnrollmentDate = existing.EnrollmentDate,
+                    Status = existing.Status
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Notification.Error(ex.Message);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task Save()
+    {
+        if (model == null) return;
+
+        if (model.StudentId <= 0)
+        {
+            Notification.Error("Please select a valid student.");
+            return;
+        }
+
+        if (model.CourseOfferingId <= 0)
+        {
+            Notification.Error("Please select a valid course offering.");
+            return;
+        }
+
+        submitting = true;
+
+        try
+        {
+            await EnrollmentService.UpdateAsync(model);
+            Notification.Success("Enrollment updated successfully.");
+            Navigation.NavigateTo("/admin-dashboard/enrollments");
+        }
+        catch (Exception ex)
+        {
+            Notification.Error(ex.Message);
+        }
+        finally
+        {
+            submitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/admin-dashboard/enrollments");
+    }
+}
