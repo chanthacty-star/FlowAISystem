@@ -19,6 +19,7 @@ public enum StudentIntent
     /// "Good morning"
     /// </summary>
     Greeting,
+    ThankYou,   // new
 
     /// <summary>
     /// Learn or understand an academic topic.

@@ -132,5 +132,4 @@ public interface IStudentRepository
         string name);
 
 
-
 }

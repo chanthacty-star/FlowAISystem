@@ -373,5 +373,22 @@ public class StudentService : IStudentService
             userId,
             count);
     }
+
+    public async Task<int> GetStudentIdByUserIdAsync(
+    int userId)
+    {
+        var student =
+            await _repository
+                .GetByUserIdAsync(userId);
+
+
+        if (student == null)
+        {
+            return 0;
+        }
+
+
+        return student.Id;
+    }
 }
 

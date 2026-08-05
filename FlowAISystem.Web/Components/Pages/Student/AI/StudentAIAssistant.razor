@@ -10,9 +10,11 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 
-
+@* voice parr *@
+@using Microsoft.JSInterop
 
 @inject IJSRuntime JS
+@implements IAsyncDisposable // auton voice
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -20,6 +22,7 @@
 
 @inject IStudentAIService StudentAIService
 
+@inject IStudentService StudentService
 
 
 @attribute [Authorize(Roles = "Student")]
@@ -199,10 +202,6 @@
         </div>
 
 
-
-
-
-
                     <!-- Messages -->
 
 
@@ -238,8 +237,6 @@
 
 
                         }
-
-
 
 
                         @if(isLoading)
@@ -281,7 +278,6 @@
 
 
 
-
                             <button
                                 class="btn ai-send-btn"
 
@@ -289,17 +285,108 @@
                                     || isSending
                                     || string.IsNullOrWhiteSpace(question))"
 
-                                @onclick="AskAI">
+                                @onclick="SendMessage">
 
 
-                            @(isSending
-                                ? "Sending..."
-                                : isLoading
-                                    ? "Thinking..."
-                                    : "🚀 Send")
+                                @(isSending
+                                    ? "Sending..."
+                                    : isLoading
+                                        ? "Thinking..."
+                                        : "🚀 Send")
 
 
                             </button>
+
+                            @* Voice Control *@
+
+                            <div class="voice-controls d-flex gap-2">
+
+
+                                @* Main Voice Button *@
+                                <button class="btn btn-outline-secondary"
+                                        @onclick="ToggleVoice">
+
+                                    @if (isListening)
+                                    {
+                                        <span>
+                                            🛑 Stop
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span>
+                                            🎤 Voice
+                                        </span>
+                                    }
+
+                                </button>
+
+
+
+                                @* Pause / Resume *@
+                                @if (isListening || isPaused)
+                                {
+
+                                    @if (!isPaused)
+                                    {
+
+                                        <button class="btn btn-warning"
+                                                @onclick="PauseVoice">
+
+                                            ⏸ Pause
+
+                                        </button>
+
+                                    }
+                                    else
+                                    {
+
+                                        <button class="btn btn-success"
+                                                @onclick="ResumeVoice">
+
+                                            ▶ Resume
+
+                                        </button>
+
+                                    }
+
+                                }
+
+                                <div>
+                                    Voice:
+    
+                                    @if(isListening)
+                                    {
+                                        <span class="text-success">
+                                            Listening...
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">
+                                            Off
+                                        </span>
+                                    }
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            @* Live Speech Preview *@
+
+                            @if(!string.IsNullOrWhiteSpace(liveSpeech))
+                            {
+
+                                <div class="voice-preview mt-2">
+
+                                    🎙️ @liveSpeech
+
+                                </div>
+
+                            }
 
 
                         </div>
@@ -618,6 +705,24 @@
 
 @code
 {
+    // ===============================
+    // Voice State
+
+    private DotNetObjectReference<StudentAIAssistant>? voiceRef;
+
+    private bool voiceInitialized = false;
+
+    private bool isListening = false;
+
+    private bool isPaused = false;
+
+    private bool disposed = false;
+
+    private string liveSpeech = string.Empty;
+
+    private string voiceLanguage = "en-US";
+    //end voic feature
+
     private bool showDeleteModal;
 
     private bool showRenameModal;
@@ -625,6 +730,11 @@
 
     private int selectedConversationId;
 
+     // student 
+
+    private int currentUserId;
+
+    private int currentStudentId;
 
     private string renameTitle = string.Empty;
     /////
@@ -652,25 +762,15 @@
     private int? currentConversationId;
 
 
-
-    private int currentUserId;
-
-
-
-
-
     protected override async Task OnInitializedAsync()
     {
-
         var authState =
             await AuthenticationStateProvider
                 .GetAuthenticationStateAsync();
 
 
-
         var user =
             authState.User;
-
 
 
         var userIdClaim =
@@ -680,25 +780,33 @@
                 ClaimTypes.NameIdentifier);
 
 
-
         if(userIdClaim == null)
             return;
 
 
-
         currentUserId =
-            int.Parse(
-                userIdClaim.Value);
+            int.Parse(userIdClaim.Value);
+
+
+
+        // Get Student Profile
+        var student =
+            await StudentService
+                .GetProfileAsync(
+                    currentUserId);
+
+
+
+        if(student != null)
+        {
+            currentStudentId =
+                student.Id;
+        }
 
 
 
         await LoadConversations();
-
     }
-
-
-
-
 
 
 
@@ -711,11 +819,6 @@
                     currentUserId);
 
     }
-
-
-
-
-
 
 
     private async Task CreateConversation()
@@ -738,78 +841,97 @@
     }
 
 
-
-    // Ask AI section 
-    private async Task AskAI()
+   private async Task AskAI(
+        string? voiceText = null,
+        string? language = null)
     {
-        if(string.IsNullOrWhiteSpace(question)
-            || isLoading
-            || isSending)
+
+        if(
+            string.IsNullOrWhiteSpace(question)
+            &&
+            string.IsNullOrWhiteSpace(voiceText)
+        )
             return;
 
 
-        isSending = true;
 
-
-        var currentQuestion = question.Trim();
-
-
-        question = string.Empty;
-
-
-        await CreateConversation();
-
-
-        isLoading = true;
-
-
-        StateHasChanged();
+        if(isLoading || isSending)
+            return;
 
 
 
-        // Save student message
-        await ConversationService
-            .AddMessageAsync(
-                currentConversationId!.Value,
-                "User",
-                currentQuestion
-            );
+        isSending=true;
 
 
 
-        // Show student message
-        chats.Add(new ChatMessage
-        {
-            IsStudent = true,
-
-            Message = currentQuestion,
-
-            EnableTyping = false,
-
-            Time = DateTime.Now
-        });
+        var currentQuestion =
+            !string.IsNullOrWhiteSpace(voiceText)
+            ?
+            voiceText.Trim()
+            :
+            question.Trim();
 
 
 
-        StateHasChanged();
+        question=string.Empty;
 
-        await ScrollToBottom();
+
+        isLoading=true;
+
+
+        await InvokeAsync(
+            StateHasChanged
+        );
 
 
 
         try
         {
+
+            await CreateConversation();
+
+
+
+            await ConversationService
+                .AddMessageAsync(
+                    currentConversationId!.Value,
+                    "User",
+                    currentQuestion
+                );
+
+
+
+            chats.Add(new ChatMessage
+            {
+                IsStudent=true,
+                Message=currentQuestion,
+                EnableTyping=false,
+                Time=DateTime.Now
+            });
+
+
+
+            await InvokeAsync(
+                StateHasChanged
+            );
+
+
+
+            var detectedLanguage =
+                DetectLanguage(currentQuestion);
+
             var response =
-                await StudentAIService
-                .AskAsync(
+                await StudentAIService.AskAsync(
                     new StudentAIRequestDto
                     {
-                        Question = currentQuestion
+                        Question = currentQuestion,
+                        Language = detectedLanguage,
+                        StudentId = currentStudentId,
+                        ConversationId = currentConversationId
                     });
 
 
 
-            // Save AI response
             await ConversationService
                 .AddMessageAsync(
                     currentConversationId.Value,
@@ -819,74 +941,57 @@
 
 
 
-            // Show AI message
             chats.Add(new ChatMessage
             {
-                IsStudent = false,
-
-                Message = response.Answer,
-
-                Response = response,
-
-                EnableTyping = true,
-
-                Time = DateTime.Now
+                IsStudent=false,
+                Message=response.Answer,
+                Response=response,
+                EnableTyping=true,
+                Time=DateTime.Now
             });
 
 
 
-            StateHasChanged();
+            await InvokeAsync(
+                StateHasChanged
+            );
 
 
-            await ScrollToBottom();
+
+            await Task.Delay(500);
+
+
+
+            await SafeVoiceJS(
+                "flowAIVoice.speak",
+                response.Answer,
+                detectedLanguage
+            );
 
         }
-        catch(Exception)
+        catch(Exception ex)
         {
-            var error =
-                "Sorry, FlowAI cannot answer now.";
 
+            Console.WriteLine(
+                $"AskAI Error: {ex.Message}"
+            );
 
-            await ConversationService
-                .AddMessageAsync(
-                    currentConversationId.Value,
-                    "Assistant",
-                    error
-                );
-
-
-            chats.Add(new ChatMessage
-            {
-                IsStudent = false,
-
-                Message = error,
-
-                EnableTyping = true,
-
-                Time = DateTime.Now
-            });
-
-
-            StateHasChanged();
-
-
-            await ScrollToBottom();
         }
         finally
         {
-            isLoading = false;
 
-            isSending = false;
+            isLoading=false;
 
-
-            await LoadConversations();
+            isSending=false;
 
 
-            StateHasChanged();
+            await InvokeAsync(
+                StateHasChanged
+            );
+
         }
+
     }
-
-
 
 
     private async Task LoadConversation(int id)
@@ -940,8 +1045,6 @@
 
 
 
-
-
     private void NewChat()
     {
 
@@ -958,14 +1061,12 @@
 
 
 
-
     private void ClearChat()
     {
 
         chats.Clear();
 
     }
-
 
 
     private void SetQuestion(string text)
@@ -981,10 +1082,17 @@
         KeyboardEventArgs e)
     {
 
-        if(e.Key == "Enter"
-            && !e.ShiftKey)
-
+        if(
+            e.Key=="Enter"
+            &&
+            !e.ShiftKey
+        )
         {
+
+            await SafeVoiceJS(
+                "flowAIVoice.pause"
+            );
+
 
             await AskAI();
 
@@ -992,6 +1100,468 @@
 
     }
 
+    // Voice method Initialize
+    // ==========================
+    // VOICE INITIALIZE
+    // ==========================
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if(!firstRender)
+            return;
+
+
+        if(disposed)
+            return;
+
+
+        if(voiceInitialized)
+            return;
+
+
+
+        voiceRef =
+            DotNetObjectReference.Create(this);
+
+
+
+        try
+        {
+
+            await JS.InvokeVoidAsync(
+                "flowAIVoice.initialize",
+                voiceRef
+            );
+
+
+            await JS.InvokeVoidAsync(
+                "flowAIVoice.startBackgroundListening"
+            );
+
+
+            voiceInitialized=true;
+
+
+        }
+        catch(JSDisconnectedException)
+        {
+
+            Console.WriteLine(
+                "Circuit disconnected during voice init"
+            );
+
+        }
+        catch(Exception ex)
+        {
+
+            Console.WriteLine(
+                $"Voice init error: {ex.Message}"
+            );
+
+        }
+
+    }
+
+
+
+    // ==========================
+    // VOICE STARTED
+    // ==========================
+
+    [JSInvokable]
+    public Task VoiceStarted()
+    {
+
+        isListening = true;
+
+
+        InvokeAsync(
+            StateHasChanged
+        );
+
+
+        return Task.CompletedTask;
+
+    }
+
+
+
+    // ==========================
+    // VOICE STOPPED
+    // ==========================
+
+    [JSInvokable]
+    public Task VoiceStopped()
+    {
+
+        isListening = false;
+
+
+
+        if(!isPaused)
+        {
+            liveSpeech = string.Empty;
+        }
+
+
+
+        InvokeAsync(
+            StateHasChanged
+        );
+
+
+        return Task.CompletedTask;
+
+    }
+
+
+
+    // ==========================
+    // VOICE ERROR
+    // ==========================
+
+    [JSInvokable]
+    public Task VoiceError(string error)
+    {
+
+        isListening = false;
+
+
+        Console.WriteLine(
+            $"Voice Error: {error}"
+        );
+
+
+        InvokeAsync(
+            StateHasChanged
+        );
+
+
+        return Task.CompletedTask;
+
+    }
+
+
+
+    // ==========================
+    // LIVE SPEECH STREAMING
+    // ==========================
+
+    [JSInvokable]
+    public Task SpeechStreaming(
+        string text,
+        string language)
+    {
+
+
+        liveSpeech = text;
+
+
+        voiceLanguage = language;
+
+
+
+        InvokeAsync(
+            StateHasChanged
+        );
+
+
+        return Task.CompletedTask;
+
+    }
+
+
+
+    // ==========================
+    // FINAL SPEECH
+    // AUTO SEND TO AI
+    // ==========================
+
+    [JSInvokable]
+    public async Task SpeechCompleted(
+        string text,
+        string language)
+    {
+
+        Console.WriteLine(
+            $"Voice Question: {text}"
+        );
+
+
+        if(string.IsNullOrWhiteSpace(text))
+            return;
+
+
+        voiceLanguage = language;
+
+        liveSpeech = string.Empty;
+
+
+        await InvokeAsync(
+            StateHasChanged
+        );
+
+
+        await InvokeAsync(async () =>
+        {
+            await AskAI(text,  language);
+        });
+
+    }
+
+
+
+    // ==========================
+    // WAKE WORD DETECTED
+    // ==========================
+
+    [JSInvokable]
+    public async Task WakeWordDetected()
+    {
+
+
+        isListening = true;
+
+
+
+        await InvokeAsync(
+            StateHasChanged
+        );
+
+
+
+        try
+        {
+
+            await JS.InvokeVoidAsync(
+                "flowAIVoice.start"
+            );
+
+        }
+        catch(JSDisconnectedException)
+        {
+
+        }
+
+    }
+
+
+
+    // ==========================
+    // AI SPEAK START
+    // ==========================
+
+    [JSInvokable]
+    public Task AISpeakingStarted()
+    {
+
+        isListening = false;
+
+
+        InvokeAsync(
+            StateHasChanged
+        );
+
+
+        return Task.CompletedTask;
+
+    }
+
+
+
+    // ==========================
+    // AI SPEAK FINISHED
+    // ==========================
+
+    [JSInvokable]
+    public async Task AISpeakingFinished()
+    {
+
+        await InvokeAsync(
+            StateHasChanged
+        );
+
+
+
+        if(!isPaused)
+        {
+
+            try
+            {
+
+                await JS.InvokeVoidAsync(
+                    "flowAIVoice.resume"
+                );
+
+            }
+            catch(JSDisconnectedException)
+            {
+
+            }
+
+        }
+
+    }
+
+
+
+    // ==========================
+    // TOGGLE VOICE BUTTON
+    // ==========================
+
+    private async Task ToggleVoice()
+    {
+
+        if(isListening)
+        {
+
+            isPaused=true;
+
+            isListening=false;
+
+
+            await SafeVoiceJS(
+                "flowAIVoice.stop"
+            );
+
+        }
+        else
+        {
+
+            isPaused=false;
+
+
+            await SafeVoiceJS(
+                "flowAIVoice.startBackgroundListening"
+            );
+
+        }
+
+
+        StateHasChanged();
+
+    }
+
+
+
+    // ==========================
+    // PAUSE VOICE
+    // ==========================
+
+    private async Task PauseVoice()
+    {
+
+        isPaused = true;
+
+
+        await SafeVoiceJS(
+            "flowAIVoice.pause"
+        );
+
+
+        StateHasChanged();
+
+    }
+
+
+
+    // ==========================
+    // RESUME VOICE
+    // ==========================
+
+    private async Task ResumeVoice()
+    {
+
+        isPaused = false;
+
+
+
+        await SafeVoiceJS(
+            "flowAIVoice.resume"
+        );
+
+
+        StateHasChanged();
+
+    }
+
+
+
+    // ==========================
+    // SAFE JS CALL
+    // ==========================
+
+    private async Task SafeVoiceJS(
+        string function,
+        params object[] args)
+    {
+
+        try
+        {
+
+            await JS.InvokeVoidAsync(
+                function,
+                args
+            );
+
+        }
+        catch(JSDisconnectedException)
+        {
+
+            Console.WriteLine(
+                "JS circuit disconnected"
+            );
+
+        }
+        catch(ObjectDisposedException)
+        {
+
+        }
+        catch(Exception ex)
+        {
+
+            Console.WriteLine(
+                $"Voice JS Error: {ex.Message}"
+            );
+
+        }
+
+    }
+
+
+
+    // ==========================
+    // DISPOSE
+    // ==========================
+
+    public async ValueTask DisposeAsync()
+    {
+
+        try
+        {
+
+            await SafeVoiceJS(
+                "flowAIVoice.stop"
+            );
+
+        }
+        catch(Exception ex)
+        {
+
+            Console.WriteLine(
+                "Voice Dispose Error: " + ex.Message
+            );
+
+        }
+
+
+
+        voiceRef?.Dispose();
+
+    }
+
+    //end//==
 
     private void OpenDeleteModal(int id)
     {
@@ -1141,6 +1711,26 @@
         await JS.InvokeVoidAsync(
             "scrollChatBottom",
             chatScrollContainer);
+    }
+    // send 
+    private async Task SendMessage()
+    {
+        await AskAI();
+    }
+
+    private string DetectLanguage(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return "en-US";
+
+
+        return text.Any(c =>
+            c >= '\u1780' &&
+            c <= '\u17FF')
+            ?
+            "km-KH"
+            :
+            "en-US";
     }
 
 }

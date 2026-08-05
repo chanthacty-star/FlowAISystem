@@ -2,14 +2,14 @@ using FlowAISystem.Application.AI.Student.Interfaces;
 
 namespace FlowAISystem.Application.AI.Student.Services;
 
-
 public class StudentAIResponseFormatter
     : IStudentAIResponseFormatter
 {
 
     public string Format(
         string title,
-        string content)
+        string content,
+        string language)
     {
 
         if (string.IsNullOrWhiteSpace(content))
@@ -18,10 +18,19 @@ public class StudentAIResponseFormatter
         }
 
 
+        bool isKhmer =
+            language == "km-KH";
+
+
+
         var result = new List<string>();
 
 
+
+        // ==========================
         // Title
+        // ==========================
+
         result.Add(
 $"""
 📘 {title}
@@ -31,10 +40,13 @@ $"""
 
 
 
+        // ==========================
         // Explanation
+        // ==========================
+
         result.Add(
 $"""
-🔎 Explanation
+🔎 {(isKhmer ? "ការពន្យល់" : "Explanation")}
 
 {ExtractExplanation(content)}
 
@@ -43,7 +55,10 @@ $"""
 
 
 
+        // ==========================
         // Steps
+        // ==========================
+
         var steps =
             ExtractSection(
                 content,
@@ -52,20 +67,25 @@ $"""
 
         if (!string.IsNullOrWhiteSpace(steps))
         {
+
             result.Add(
 $"""
-⚙️ How It Works
+⚙️ {(isKhmer ? "របៀបដំណើរការ" : "How It Works")}
 
 {steps}
 
 """
             );
+
         }
 
 
 
 
+        // ==========================
         // Example
+        // ==========================
+
         var example =
             ExtractSection(
                 content,
@@ -74,21 +94,25 @@ $"""
 
         if (!string.IsNullOrWhiteSpace(example))
         {
+
             result.Add(
 $"""
-💡 Example
+💡 {(isKhmer ? "ឧទាហរណ៍" : "Example")}
 
 {example}
 
 """
             );
+
         }
 
 
 
 
-
+        // ==========================
         // Complexity
+        // ==========================
+
         var complexity =
             ExtractSection(
                 content,
@@ -97,29 +121,39 @@ $"""
 
         if (!string.IsNullOrWhiteSpace(complexity))
         {
+
             result.Add(
 $"""
-⏱ Time Complexity
+⏱ {(isKhmer ? "ភាពស្មុគស្មាញពេលវេលា" : "Time Complexity")}
 
 {complexity}
 
 """
             );
+
         }
 
 
 
 
+        // ==========================
         // Summary
+        // ==========================
 
         result.Add(
 $"""
-✅ Summary
+✅ {(isKhmer ? "សង្ខេប" : "Summary")}
 
-This lesson helps you understand {title}.
-Review the concepts and practice with examples.
+{(
+    isKhmer
+    ?
+    $"មេរៀននេះជួយអ្នកយល់ពី {title}។ សូមពិនិត្យគំនិតសំខាន់ៗ និងអនុវត្តជាមួយឧទាហរណ៍។"
+    :
+    $"This lesson helps you understand {title}. Review the concepts and practice with examples."
+)}
 """
         );
+
 
 
         return string.Join(
@@ -151,21 +185,27 @@ Review the concepts and practice with examples.
         }
 
 
+
         return content.Trim();
 
     }
 
 
 
-    // format the secttion that not conatin in lesson 
+
+
+
+
     private string ExtractSection(
         string content,
         string sectionName)
     {
+
         var start =
             content.IndexOf(
                 sectionName,
                 StringComparison.OrdinalIgnoreCase);
+
 
 
         if (start < 0)
@@ -177,7 +217,6 @@ Review the concepts and practice with examples.
 
 
 
-        // Remove ":" after section title
         if (start < content.Length &&
            content[start] == ':')
         {
@@ -188,21 +227,23 @@ Review the concepts and practice with examples.
 
         string[] sections =
         {
-        "Steps:",
-        "Example:",
-        "Time Complexity:",
-        "Complexity:",
-        "Summary:"
-    };
+            "Steps:",
+            "Example:",
+            "Time Complexity:",
+            "Complexity:",
+            "Summary:"
+        };
 
 
 
-        var end = content.Length;
+        var end =
+            content.Length;
 
 
 
         foreach (var section in sections)
         {
+
             var index =
                 content.IndexOf(
                     section,
@@ -215,19 +256,28 @@ Review the concepts and practice with examples.
             {
                 end = index;
             }
+
         }
 
 
 
         return CleanText(
             content[start..end]);
+
     }
-    // clean text
-    private string CleanText(string text)
+
+
+
+
+
+
+    private string CleanText(
+        string text)
     {
 
         if (string.IsNullOrWhiteSpace(text))
             return string.Empty;
+
 
 
         while (text.StartsWith(":"))
@@ -236,8 +286,8 @@ Review the concepts and practice with examples.
         }
 
 
-        return text
-            .Trim();
+
+        return text.Trim();
 
     }
 

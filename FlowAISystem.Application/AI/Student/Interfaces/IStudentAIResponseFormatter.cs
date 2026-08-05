@@ -4,5 +4,7 @@ public interface IStudentAIResponseFormatter
 {
     string Format(
         string title,
-        string content);
+        string content,
+        string language
+    );
 }

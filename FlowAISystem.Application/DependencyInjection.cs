@@ -79,8 +79,7 @@ public static class DependencyInjection
         //services.AddScoped<IKeywordExtractor, KeywordExtractor>();
         services.AddScoped<IAIConversationService, AIConversationService>();
 
-        services.AddScoped<IConversationTitleService,
-                   ConversationTitleService>();
+        services.AddScoped<IConversationTitleService, ConversationTitleService>();
 
         return services;
 
