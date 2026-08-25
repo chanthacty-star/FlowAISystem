@@ -1,97 +1,71 @@
+@* --- DEPENDENCIES & NAMESPACES --- *@
 @using FlowAISystem.Shared.DTOs.AI
-
 
 <h6 class="conversation-title">
     @Title
 </h6>
 
-
-
 @foreach (var item in Items)
 {
-
     <div @key="item.Id"
-         class="conversation-item 
-         @(item.Id == SelectedId ? "active":"")">
-
+         class="conversation-item @(item.Id == SelectedId ? "active" : "")">
 
         <div class="d-flex justify-content-between align-items-center">
 
+            @* =========================================
+               Conversation Selection
+               ========================================= *@
+            <div class="flex-grow-1 conversation-select"
+                 @onclick="() => Select(item.Id)">
 
-            <!-- Conversation Click Area -->
-
-            <div @onclick="() => Select(item.Id)"
-                 class="flex-grow-1"
-                 style="cursor:pointer;">
-
-
-                <div class="fw-semibold">
-
+                <div class="fw-semibold conversation-name">
                     @item.Title
-
                 </div>
 
-
-
-                <small class="text-muted">
-
+                <small class="text-muted conversation-time">
                     @GetConversationDate(item.UpdatedAt)
-
                 </small>
 
-
             </div>
 
 
-
-
-
-            <!-- Actions -->
-
-            <div class="ms-2">
-
+            @* =========================================
+               Quick Actions
+               ========================================= *@
+            <div class="conversation-actions ms-2">
 
                 <button type="button"
                         class="btn btn-sm"
+                        title="Rename"
                         @onclick:stopPropagation="true"
                         @onclick="() => Rename(item.Id)">
-
                     ✏️
-
                 </button>
-
-
 
                 <button type="button"
                         class="btn btn-sm"
+                        title="Delete"
                         @onclick:stopPropagation="true"
                         @onclick="() => Delete(item.Id)">
-
                     🗑
-
                 </button>
 
-
             </div>
-
 
         </div>
 
-
     </div>
-
 }
-
-
-
 
 
 @code {
 
+    // =========================================================
+    // PARAMETERS
+    // =========================================================
 
     [Parameter]
     public string Title { get; set; } = string.Empty;
-
 
 
     [Parameter]
@@ -99,38 +73,30 @@
         = Enumerable.Empty<AIConversationDto>();
 
 
-
     [Parameter]
     public int? SelectedId { get; set; }
-
 
 
     [Parameter]
     public EventCallback<int> OnSelected { get; set; }
 
 
+    [Parameter]
+    public EventCallback<int> OnRename { get; set; }
+
 
     [Parameter]
     public EventCallback<int> OnDelete { get; set; }
 
 
-
-    [Parameter]
-    public EventCallback<int> OnRename { get; set; }
-
-
-
-
-
+    // =========================================================
+    // EVENT HANDLERS
+    // =========================================================
 
     private async Task Select(int id)
     {
         await OnSelected.InvokeAsync(id);
     }
-
-
-
-
 
 
     private async Task Rename(int id)
@@ -139,45 +105,37 @@
     }
 
 
-
-
-
-
     private async Task Delete(int id)
     {
         await OnDelete.InvokeAsync(id);
     }
 
 
-
-
-
-
+    // =========================================================
+    // DATE / TIME DISPLAY
+    // =========================================================
 
     private string GetConversationDate(DateTime date)
     {
-
         var localDate = date.ToLocalTime();
 
+        var today = DateTime.Today;
 
-
-        if(localDate.Date == DateTime.Today)
+        if (localDate.Date == today)
         {
-            return "Today";
+            return $"Today · {localDate:h:mm tt}";
         }
 
-
-
-        if(localDate.Date == DateTime.Today.AddDays(-1))
+        if (localDate.Date == today.AddDays(-1))
         {
-            return "Yesterday";
+            return $"Yesterday · {localDate:h:mm tt}";
         }
 
+        if (localDate.Year == today.Year)
+        {
+            return localDate.ToString("MMM dd · h:mm tt");
+        }
 
-
-        return localDate.ToString("MMM dd");
-
+        return localDate.ToString("MMM dd, yyyy · h:mm tt");
     }
-
-
 }

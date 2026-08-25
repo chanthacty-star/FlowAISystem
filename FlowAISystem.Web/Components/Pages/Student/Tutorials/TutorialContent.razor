@@ -1,0 +1,597 @@
+@using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
+@using FlowAISystem.Application.AI.Interfaces
+@using Microsoft.AspNetCore.Components.Rendering
+@using System.Text.RegularExpressions
+
+@using InteractiveCodePlaygroundComponent =
+    FlowAISystem.Web.Components.Pages.Student.Tutorials.InteractiveCodePlayground.InteractiveCodePlayground
+
+@inject IMarkdownService MarkdownService
+
+
+@if (Lesson == null)
+{
+    <div class="tutorial-content-empty">
+
+        <div class="tutorial-empty-icon">
+            📘
+        </div>
+
+        <h3>
+            Select a lesson
+        </h3>
+
+        <p>
+            Choose a lesson from the tutorial sidebar to begin learning.
+        </p>
+
+    </div>
+}
+else
+{
+    <article class="tutorial-content">
+
+        <!-- =================================================
+             Header
+             ================================================= -->
+
+        <header class="tutorial-content-header">
+
+            <div class="tutorial-breadcrumb">
+
+                C# Tutorial
+
+                <span>›</span>
+
+                Lesson @Lesson.Order
+
+            </div>
+
+
+            <h1 class="tutorial-content-title">
+                @Lesson.Title
+            </h1>
+
+
+            @if (!string.IsNullOrWhiteSpace(Lesson.Description))
+            {
+                <p class="tutorial-content-description">
+                    @Lesson.Description
+                </p>
+            }
+
+
+            <div class="tutorial-content-meta">
+
+                @if (Lesson.Difficulty != default)
+                {
+                    <span class="tutorial-meta-badge difficulty">
+                        🎯 @Lesson.Difficulty
+                    </span>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Lesson.Category))
+                {
+                    <span class="tutorial-meta-badge">
+                        📚 @Lesson.Category
+                    </span>
+                }
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             Lesson Content
+             ================================================= -->
+
+        <section class="tutorial-content-body">
+
+            @if (!string.IsNullOrWhiteSpace(Lesson.Content))
+            {
+                @RenderLessonContent(Lesson.Content)
+            }
+            else
+            {
+                <div class="tutorial-empty-content">
+                    This lesson does not have any content yet.
+                </div>
+            }
+
+        </section>
+
+
+        <!-- =================================================
+             Activity
+             ================================================= -->
+
+        @if (!string.IsNullOrWhiteSpace(Lesson.ActivityType))
+        {
+            <section class="tutorial-activity">
+
+                <div class="tutorial-activity-header">
+
+                    <span class="tutorial-activity-icon">
+                        🎮
+                    </span>
+
+                    <div>
+                        <h3>
+                            Practice Activity
+                        </h3>
+
+                        <p>
+                            Practice what you learned in this lesson.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="tutorial-activity-body">
+
+                    @if (Lesson.ActivityType == "BubbleSort")
+                    {
+                        <div class="tutorial-activity-placeholder">
+
+                            <div class="tutorial-activity-symbol">
+                                🔢
+                            </div>
+
+                            <h4>
+                                Bubble Sort Interactive
+                            </h4>
+
+                            <p>
+                                Practice Bubble Sort by predicting
+                                which numbers will swap.
+                            </p>
+
+                            <a href="/student/bubble-sort"
+                               class="btn btn-primary">
+
+                                Start Practice →
+
+                            </a>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="tutorial-activity-placeholder">
+
+                            <div class="tutorial-activity-symbol">
+                                🎯
+                            </div>
+
+                            <h4>
+                                @Lesson.ActivityType
+                            </h4>
+
+                            <p>
+                                Interactive practice for this lesson
+                                will be available soon.
+                            </p>
+
+                        </div>
+                    }
+
+                </div>
+
+            </section>
+        }
+
+
+        <!-- =================================================
+             Footer
+             ================================================= -->
+
+        <footer class="tutorial-content-footer">
+
+            <span>
+                📖 Lesson @Lesson.Order
+            </span>
+
+            <span>
+                C# Tutorial
+            </span>
+
+        </footer>
+
+    </article>
+}
+
+
+@code
+{
+    // =========================================================
+    // Parameters
+    // =========================================================
+
+    [Parameter]
+    public LessonKnowledgeDto? Lesson { get; set; }
+
+
+    // =========================================================
+    // Render Lesson Content
+    // =========================================================
+
+    private RenderFragment RenderLessonContent(
+        string markdown) => builder =>
+    {
+        var sections =
+            ParseMarkdown(markdown);
+
+        var sequence = 0;
+
+        foreach (var section in sections)
+        {
+            // -------------------------------------------------
+            // Interactive Playground
+            // -------------------------------------------------
+
+            if (section.IsInteractive)
+            {
+                builder.OpenComponent<InteractiveCodePlaygroundComponent>(
+                    sequence++);
+
+                builder.AddAttribute(
+                    sequence++,
+                    nameof(
+                        InteractiveCodePlaygroundComponent.Title),
+                    section.Title);
+
+                builder.AddAttribute(
+                    sequence++,
+                    nameof(
+                        InteractiveCodePlaygroundComponent.Language),
+                    section.Language);
+
+                builder.AddAttribute(
+                    sequence++,
+                    nameof(
+                        InteractiveCodePlaygroundComponent.Code),
+                    section.Content);
+
+                builder.CloseComponent();
+
+                continue;
+            }
+
+
+            // -------------------------------------------------
+            // Normal Code Example
+            // -------------------------------------------------
+
+            if (section.IsCode)
+            {
+                builder.OpenComponent<CodeExample>(
+                    sequence++);
+
+                builder.AddAttribute(
+                    sequence++,
+                    nameof(CodeExample.Code),
+                    section.Content);
+
+                builder.AddAttribute(
+                    sequence++,
+                    nameof(CodeExample.Language),
+                    section.Language);
+
+                builder.AddAttribute(
+                    sequence++,
+                    nameof(CodeExample.Title),
+                    GetCodeTitle(section.Language));
+
+                builder.AddAttribute(
+                    sequence++,
+                    nameof(CodeExample.ShowRun),
+                    false);
+
+                builder.CloseComponent();
+
+                continue;
+            }
+
+
+            // -------------------------------------------------
+            // Markdown
+            // -------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                section.Content))
+            {
+                continue;
+            }
+
+
+            var html =
+                MarkdownService
+                    .ConvertToHtml(
+                        section.Content);
+
+
+            builder.AddMarkupContent(
+                sequence++,
+                html);
+        }
+    };
+
+
+    // =========================================================
+    // Parse Markdown
+    // =========================================================
+
+    private List<MarkdownSection> ParseMarkdown(
+        string markdown)
+    {
+        var sections =
+            new List<MarkdownSection>();
+
+
+        if (string.IsNullOrWhiteSpace(markdown))
+        {
+            return sections;
+        }
+
+
+        const string interactivePattern =
+            @"\[interactive-code(?:\s+language=""?(?<language>[^""\]]+)""?)?\]\s*(?<code>[\s\S]*?)\s*\[/interactive-code\]";
+
+
+        const string codePattern =
+            @"```(?<language>[^\r\n`]*)\r?\n(?<code>[\s\S]*?)\r?\n```";
+
+
+        const string combinedPattern =
+            $@"(?<interactive>{interactivePattern})|(?<code>{codePattern})";
+
+
+        var matches =
+            Regex.Matches(
+                markdown,
+                combinedPattern,
+                RegexOptions.Multiline |
+                RegexOptions.IgnoreCase);
+
+
+        var currentPosition = 0;
+
+
+        foreach (Match match in matches)
+        {
+            // -------------------------------------------------
+            // Markdown before block
+            // -------------------------------------------------
+
+            if (match.Index > currentPosition)
+            {
+                var markdownBefore =
+                    markdown.Substring(
+                        currentPosition,
+                        match.Index - currentPosition);
+
+
+                if (!string.IsNullOrWhiteSpace(
+                    markdownBefore))
+                {
+                    sections.Add(
+                        new MarkdownSection
+                        {
+                            Content =
+                                markdownBefore
+                        });
+                }
+            }
+
+
+            // -------------------------------------------------
+            // Interactive
+            // -------------------------------------------------
+
+            if (match.Groups["interactive"].Success)
+            {
+                var language =
+                    match.Groups["language"]
+                        .Value
+                        .Trim();
+
+
+                var code =
+                    match.Groups["code"]
+                        .Value
+                        .Trim('\r', '\n');
+
+
+                var normalizedLanguage =
+                    NormalizeLanguage(language);
+
+
+                sections.Add(
+                    new MarkdownSection
+                    {
+                        IsInteractive = true,
+
+                        Language =
+                            normalizedLanguage,
+
+                        Title =
+                            GetPlaygroundTitle(
+                                normalizedLanguage),
+
+                        Content =
+                            code
+                    });
+            }
+
+
+            // -------------------------------------------------
+            // Normal code
+            // -------------------------------------------------
+
+            else if (match.Groups["code"].Success)
+            {
+                var language =
+                    match.Groups["language"]
+                        .Value
+                        .Trim();
+
+
+                var code =
+                    match.Groups["code"]
+                        .Value
+                        .Trim('\r', '\n');
+
+
+                sections.Add(
+                    new MarkdownSection
+                    {
+                        IsCode = true,
+
+                        Language =
+                            NormalizeLanguage(
+                                language),
+
+                        Content =
+                            code
+                    });
+            }
+
+
+            currentPosition =
+                match.Index +
+                match.Length;
+        }
+
+
+        // -----------------------------------------------------
+        // Remaining Markdown
+        // -----------------------------------------------------
+
+        if (currentPosition < markdown.Length)
+        {
+            var remaining =
+                markdown.Substring(
+                    currentPosition);
+
+
+            if (!string.IsNullOrWhiteSpace(
+                remaining))
+            {
+                sections.Add(
+                    new MarkdownSection
+                    {
+                        Content =
+                            remaining
+                    });
+            }
+        }
+
+
+        // -----------------------------------------------------
+        // No blocks
+        // -----------------------------------------------------
+
+        if (sections.Count == 0)
+        {
+            sections.Add(
+                new MarkdownSection
+                {
+                    Content =
+                        markdown
+                });
+        }
+
+
+        return sections;
+    }
+
+
+    // =========================================================
+    // Language
+    // =========================================================
+
+    private string NormalizeLanguage(
+        string language)
+    {
+        if (string.IsNullOrWhiteSpace(language))
+        {
+            return "C#";
+        }
+
+
+        return language
+            .Trim()
+            .ToLowerInvariant() switch
+        {
+            "csharp" => "C#",
+            "cs" => "C#",
+            "c#" => "C#",
+
+            "javascript" => "JavaScript",
+            "js" => "JavaScript",
+
+            "typescript" => "TypeScript",
+            "ts" => "TypeScript",
+
+            "python" => "Python",
+            "py" => "Python",
+
+            "java" => "Java",
+
+            "cpp" => "C++",
+            "c++" => "C++",
+
+            "sql" => "SQL",
+
+            "html" => "HTML",
+            "css" => "CSS",
+
+            _ => language
+        };
+    }
+
+
+    // =========================================================
+    // Code Title
+    // =========================================================
+
+    private string GetCodeTitle(
+        string language)
+    {
+        return $"{language} Example";
+    }
+
+
+    // =========================================================
+    // Playground Title
+    // =========================================================
+
+    private string GetPlaygroundTitle(
+        string language)
+    {
+        return $"Try {language}";
+    }
+
+
+    // =========================================================
+    // Model
+    // =========================================================
+
+    private sealed class MarkdownSection
+    {
+        public bool IsCode { get; set; }
+
+        public bool IsInteractive { get; set; }
+
+        public string Language { get; set; }
+            = "C#";
+
+        public string Title { get; set; }
+            = "Try It Yourself";
+
+        public string Content { get; set; }
+            = string.Empty;
+    }
+}

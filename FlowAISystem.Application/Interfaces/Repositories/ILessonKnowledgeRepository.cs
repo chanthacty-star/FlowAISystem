@@ -48,8 +48,10 @@ public interface ILessonKnowledgeRepository
     // ==================================================
 
     Task<List<LessonKnowledgeDto>> SearchAsync(
-        string keyword);
+        IEnumerable<string> keywords);
 
+    Task<List<LessonKnowledgeDto>> GetAllForTutorialAsync(
+    LessonKnowledgeSearchDto search); // Tutorials lesson
 
 
     Task<LessonKnowledgeDto?> GetLessonForAIAsync(

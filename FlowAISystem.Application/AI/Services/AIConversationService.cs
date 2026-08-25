@@ -27,10 +27,6 @@ public class AIConversationService
 
     }
 
-
-
-
-
     public async Task<int>
         CreateConversationAsync(
             int userId)
@@ -59,47 +55,24 @@ public class AIConversationService
 
     }
 
-
-
-
-
-
-
     public async Task<List<AIConversationDto>>
-        GetUserConversationsAsync(
-            int userId)
+       GetUserConversationsAsync(int userId)
     {
-
         var conversations =
             await _repository
                 .GetByUserIdAsync(userId);
 
-
-
         return conversations
-            .OrderByDescending(x => x.UpdatedAt)
             .Select(x => new AIConversationDto
             {
                 Id = x.Id,
-
                 Title = x.Title,
-
                 CreatedAt = x.CreatedAt,
-
                 UpdatedAt = x.UpdatedAt,
-
                 MessageCount = x.Messages.Count
             })
             .ToList();
-
     }
-
-
-
-
-
-
-
 
     public async Task<AIConversationDto?>
         GetConversationAsync(
@@ -145,94 +118,89 @@ public class AIConversationService
 
     }
 
-
-
-
-
-
-
-
-
     public async Task AddMessageAsync(
-        int conversationId,
-        string role,
-        string content)
+       int conversationId,
+       string role,
+       string content)
     {
+        // =========================================================
+        // Validate
+        // =========================================================
 
+        if (conversationId <= 0)
+            return;
+
+        if (string.IsNullOrWhiteSpace(content))
+            return;
+
+
+        // =========================================================
+        // Get Conversation
+        // =========================================================
+
+        var conversation =
+            await _repository
+                .GetByIdAsync(conversationId);
+
+        if (conversation == null)
+            return;
+
+
+        // =========================================================
+        // Create Message
+        // =========================================================
 
         var message =
             new AIMessage
             {
-                ConversationId =
-                    conversationId,
+                ConversationId = conversationId,
 
-                Role =
-                    role,
+                Role = role,
 
-                Content =
-                    content,
+                Content = content.Trim(),
 
-                CreatedAt =
-                    DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow
             };
 
 
+        // =========================================================
+        // Add Message
+        // =========================================================
 
         await _repository
             .AddMessageAsync(message);
 
 
+        // =========================================================
+        // Update Conversation Activity
+        // =========================================================
 
-        await _repository
-            .SaveAsync();
+        conversation.UpdatedAt =
+            DateTime.UtcNow;
 
 
-
-
+        // =========================================================
         // Auto Title
-        if (role == "User")
+        // =========================================================
+
+        if (role.Equals(
+                "User",
+                StringComparison.OrdinalIgnoreCase) &&
+            conversation.Title == "New Conversation")
         {
-
-            var conversation =
-                await _repository
-                .GetByIdAsync(conversationId);
-
-
-
-            if (conversation != null
-                &&
-               conversation.Title == "New Conversation")
-            {
-
-                conversation.Title =
-                    _titleService
+            conversation.Title =
+                _titleService
                     .GenerateTitle(content);
-
-
-
-                conversation.UpdatedAt =
-                    DateTime.UtcNow;
-
-
-
-                await _repository
-                    .UpdateAsync(conversation);
-
-            }
-
         }
 
 
+        // =========================================================
+        // Save Message + Conversation
+        // =========================================================
+
+        await _repository
+            .UpdateAsync(conversation);
     }
-
-
-
-
-
-
-
-
-
 
     public async Task<List<AIMessageDto>>
         GetMessagesAsync(
@@ -262,14 +230,6 @@ public class AIConversationService
             .ToList();
 
     }
-
-
-
-
-
-
-
-
 
     public async Task UpdateConversationTitleAsync(
         int conversationId,
@@ -307,7 +267,6 @@ public class AIConversationService
     {
         await _repository.UpdateAsync(conversation);
     }
-
 
     public async Task RenameConversationAsync(
     int conversationId,
@@ -385,8 +344,6 @@ public class AIConversationService
 
         }
 
-
-
         return conversations
             .Where(x =>
                 x.Title.Contains(
@@ -402,7 +359,6 @@ public class AIConversationService
 
             })
             .ToList();
-
     }
 
 }

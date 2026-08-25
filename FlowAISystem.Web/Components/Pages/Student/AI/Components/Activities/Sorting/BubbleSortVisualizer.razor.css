@@ -1,0 +1,480 @@
+.bubble-sort-game {
+    width: 100%;
+    padding: 1.25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    background: var(--bs-body-bg);
+}
+
+
+/* ============================================================
+   Header
+   ============================================================ */
+
+.bubble-sort-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.bubble-sort-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.bubble-sort-description {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: 0.9rem;
+}
+
+.bubble-sort-complete-badge {
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   Setup
+   ============================================================ */
+
+.bubble-sort-setup {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    background: var(--bs-tertiary-bg);
+}
+
+.bubble-sort-option {
+    margin-bottom: 1rem;
+}
+
+.bubble-sort-option-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.bubble-sort-pattern-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+
+/* ============================================================
+   Progress
+   ============================================================ */
+
+.bubble-sort-progress {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+
+    border-radius: 10px;
+    background: var(--bs-tertiary-bg);
+
+    font-size: 0.85rem;
+}
+
+.bubble-sort-progress-label {
+    margin-right: 0.3rem;
+    color: var(--bs-secondary-color);
+}
+
+
+/* ============================================================
+   Array
+   ============================================================ */
+
+.bubble-sort-array {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex-wrap: wrap;
+
+    gap: 0.65rem;
+
+    margin: 1.75rem 0;
+}
+
+.bubble-sort-item {
+    position: relative;
+    min-width: 58px;
+    text-align: center;
+}
+
+.bubble-sort-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 58px;
+    min-height: 58px;
+
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+
+    background: var(--bs-body-bg);
+
+    font-size: 1.1rem;
+    font-weight: 700;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.bubble-sort-item.comparing .bubble-sort-value {
+    border: 2px solid var(--bs-primary);
+    background: var(--bs-primary-bg-subtle);
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 4px 12px rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.bubble-sort-item.sorted .bubble-sort-value {
+    border-color: var(--bs-success);
+    background: var(--bs-success-bg-subtle);
+}
+
+.bubble-sort-index {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--bs-secondary-color);
+    font-size: 0.7rem;
+}
+
+.bubble-sort-sorted-label {
+    display: block;
+    color: var(--bs-success);
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   Comparison
+   ============================================================ */
+
+.bubble-sort-comparison {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 0.5rem;
+
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+
+    border-radius: 10px;
+
+    background: var(--bs-tertiary-bg);
+
+    color: var(--bs-secondary-color);
+}
+
+.bubble-sort-comparison strong {
+    color: var(--bs-body-color);
+}
+
+
+/* ============================================================
+   Prediction
+   ============================================================ */
+
+.bubble-sort-prediction {
+    padding: 1rem;
+
+    border: 1px solid var(--bs-info-border-subtle);
+    border-radius: 12px;
+
+    background: var(--bs-info-bg-subtle);
+
+    text-align: center;
+}
+
+.bubble-sort-prediction-title {
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.bubble-sort-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+
+/* ============================================================
+   Feedback
+   ============================================================ */
+
+.bubble-sort-feedback {
+    margin-top: 1rem;
+    padding: 1rem;
+
+    border-radius: 12px;
+}
+
+.bubble-sort-feedback.correct {
+    border: 1px solid var(--bs-success-border-subtle);
+    background: var(--bs-success-bg-subtle);
+}
+
+.bubble-sort-feedback.incorrect {
+    border: 1px solid var(--bs-danger-border-subtle);
+    background: var(--bs-danger-bg-subtle);
+}
+
+.bubble-sort-feedback-title {
+    margin-bottom: 0.35rem;
+    font-weight: 700;
+}
+
+.bubble-sort-feedback-rule {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+
+    border-top: 1px solid var(--bs-border-color);
+    color: var(--bs-secondary-color);
+
+    font-size: 0.85rem;
+}
+
+
+/* ============================================================
+   Statistics
+   ============================================================ */
+
+.bubble-sort-statistics {
+    margin-top: 1.25rem;
+}
+
+.bubble-sort-stat {
+    height: 100%;
+    padding: 0.75rem;
+
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+
+    background: var(--bs-body-bg);
+    text-align: center;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.bubble-sort-stat:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.bubble-sort-stat-label {
+    display: block;
+
+    margin-bottom: 0.2rem;
+
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+}
+
+.bubble-sort-stat-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   Result
+   ============================================================ */
+
+.bubble-sort-result {
+    margin-top: 1rem;
+    padding: 1rem;
+
+    border: 1px solid var(--bs-success-border-subtle);
+    border-radius: 12px;
+
+    background: var(--bs-success-bg-subtle);
+}
+
+.bubble-sort-result-title {
+    margin-bottom: 0.35rem;
+    font-weight: 700;
+}
+
+.bubble-sort-result-summary {
+    margin-bottom: 1rem;
+    color: var(--bs-secondary-color);
+}
+
+.bubble-sort-result-score {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.bubble-sort-result-score div {
+    padding: 0.75rem;
+
+    border-radius: 8px;
+
+    background: var(--bs-body-bg);
+
+    text-align: center;
+}
+
+.bubble-sort-result-score span {
+    display: block;
+
+    margin-bottom: 0.2rem;
+
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+}
+
+.bubble-sort-result-score strong {
+    font-size: 1.15rem;
+}
+
+
+/* ============================================================
+   Mistakes
+   ============================================================ */
+
+.bubble-sort-mistakes {
+    margin-top: 1rem;
+    padding: 1rem;
+
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+
+    background: var(--bs-tertiary-bg);
+}
+
+.bubble-sort-mistakes ul {
+    margin-bottom: 0;
+    padding-left: 1.25rem;
+}
+
+.bubble-sort-mistakes li {
+    margin-bottom: 0.4rem;
+}
+
+.bubble-sort-mistakes li:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ============================================================
+   Explanation
+   ============================================================ */
+
+.bubble-sort-explanation {
+    margin-top: 1rem;
+    padding: 1rem;
+
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+
+    background: var(--bs-tertiary-bg);
+}
+
+.bubble-sort-explanation-title {
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.bubble-sort-explanation p {
+    margin-bottom: 0.5rem;
+    color: var(--bs-secondary-color);
+}
+
+.bubble-sort-explanation p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ============================================================
+   Actions
+   ============================================================ */
+
+.bubble-sort-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 0.75rem;
+
+    margin-top: 1rem;
+}
+
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 576px) {
+
+    .bubble-sort-game {
+        padding: 1rem;
+    }
+
+    .bubble-sort-header {
+        flex-direction: column;
+    }
+
+    .bubble-sort-progress {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .bubble-sort-array {
+        gap: 0.4rem;
+    }
+
+    .bubble-sort-item {
+        min-width: 48px;
+    }
+
+    .bubble-sort-value {
+        min-width: 48px;
+        min-height: 48px;
+        font-size: 1rem;
+    }
+
+    .bubble-sort-buttons {
+        flex-direction: column;
+    }
+
+    .bubble-sort-buttons .btn {
+        width: 100%;
+    }
+
+    .bubble-sort-result-score {
+        grid-template-columns: 1fr;
+    }
+
+    .bubble-sort-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bubble-sort-actions .btn {
+        width: 100%;
+    }
+}

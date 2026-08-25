@@ -1,0 +1,131 @@
+@using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
+
+<nav class="tutorial-navigation">
+
+    <!-- Previous -->
+
+    <div>
+
+        @if (PreviousLesson != null)
+        {
+            <button type="button"
+                    class="tutorial-nav-button previous"
+                    @onclick="() => SelectLesson(PreviousLesson)">
+
+                <span class="tutorial-nav-arrow">
+                    ←
+                </span>
+
+                <span>
+                    <small>Previous</small>
+                    <strong>@PreviousLesson.Title</strong>
+                </span>
+
+            </button>
+        }
+
+    </div>
+
+
+    <!-- Next -->
+
+    <div>
+
+        @if (NextLesson != null)
+        {
+            <button type="button"
+                    class="tutorial-nav-button next"
+                    @onclick="() => SelectLesson(NextLesson)">
+
+                <span>
+                    <small>Next</small>
+                    <strong>@NextLesson.Title</strong>
+                </span>
+
+                <span class="tutorial-nav-arrow">
+                    →
+                </span>
+
+            </button>
+        }
+
+    </div>
+
+</nav>
+
+
+@code
+{
+    [Parameter]
+    public List<LessonKnowledgeDto> Lessons { get; set; }
+        = new();
+
+
+    [Parameter]
+    public LessonKnowledgeDto? CurrentLesson { get; set; }
+
+
+    [Parameter]
+    public EventCallback<LessonKnowledgeDto> OnLessonChanged { get; set; }
+
+
+    private LessonKnowledgeDto? PreviousLesson;
+
+    private LessonKnowledgeDto? NextLesson;
+
+
+    protected override void OnParametersSet()
+    {
+        PreviousLesson = null;
+        NextLesson = null;
+
+
+        if (CurrentLesson == null ||
+            Lessons.Count == 0)
+        {
+            return;
+        }
+
+
+        var index =
+            Lessons.IndexOf(
+                CurrentLesson);
+
+
+        if (index < 0)
+        {
+            return;
+        }
+
+
+        if (index > 0)
+        {
+            PreviousLesson =
+                Lessons[index - 1];
+        }
+
+
+        if (index < Lessons.Count - 1)
+        {
+            NextLesson =
+                Lessons[index + 1];
+        }
+    }
+
+
+    private async Task SelectLesson(
+        LessonKnowledgeDto? lesson)
+    {
+        if (lesson == null)
+        {
+            return;
+        }
+
+
+        if (OnLessonChanged.HasDelegate)
+        {
+            await OnLessonChanged
+                .InvokeAsync(lesson);
+        }
+    }
+}

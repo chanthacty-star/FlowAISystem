@@ -1,383 +1,461 @@
 @page "/teacher/lesson-knowledge/edit/{id:int}"
 
+@attribute [Authorize(Roles = "Teacher")]
+
+@using FlowAISystem.Shared.Enums
 @using FlowAISystem.Application.Interfaces.Services
 @using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
 @using Microsoft.AspNetCore.Authorization
 
-
-@attribute [Authorize(Roles="Teacher")]
-
-
 @inject ILessonKnowledgeService LessonKnowledgeService
-
 @inject NavigationManager NavigationManager
 
+<PageTitle>Edit Lesson Knowledge</PageTitle>
 
+<div class="container-fluid py-4">
 
-<PageTitle>
-    Edit Lesson Knowledge
-</PageTitle>
-
-
-
-<div class="container py-4">
-
-
-    <div class="card shadow-sm border-0">
-
-
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
+            <h2 class="fw-bold">✏️ Edit Lesson Knowledge</h2>
+            <p class="text-muted mb-0">
+                Update the lesson content and metadata used by Student AI Assistant.
+            </p>
+        </div>
+    </div>
 
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @message
 
-            <h2 class="fw-bold mb-4">
+            <button type="button"
+                    class="btn-close"
+                    @onclick="ClearMessage">
+            </button>
+        </div>
+    }
 
-                ✏️ Edit Lesson Knowledge
+    @if (isLoading)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
 
-            </h2>
+                <p class="mt-3 mb-0 text-muted">
+                    Loading lesson...
+                </p>
+            </div>
+        </div>
+    }
+    else if (lesson.Id <= 0)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
 
-
-
-            @if(!string.IsNullOrEmpty(message))
-            {
-
-                <div class="alert alert-info">
-
-                    @message
-
+                <div class="alert alert-warning">
+                    Lesson not found.
                 </div>
 
-            }
+                <button type="button"
+                        class="btn btn-secondary"
+                        @onclick="Back">
+                    ← Back to Lessons
+                </button>
 
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
 
+                <h5 class="fw-bold mb-3">
+                    📖 Lesson Information
+                </h5>
 
-            @if(isLoading)
-            {
-
-                <div class="text-center">
-
-                    <div class="spinner-border text-primary">
-                    </div>
-
-                </div>
-
-            }
-
-            else
-            {
-
+                <!-- TITLE -->
 
                 <div class="mb-3">
-
                     <label class="form-label fw-bold">
-                        Title
+                        Lesson Title
                     </label>
 
                     <input class="form-control"
+                           placeholder="Example: C# Introduction"
                            @bind="lesson.Title" />
-
                 </div>
 
 
-
+                <!-- ORDER -->
 
                 <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        Lesson Order
+                    </label>
 
+                    <input type="number"
+                           class="form-control"
+                           min="1"
+                           @bind="lesson.Order" />
+
+                    <div class="form-text">
+                        Controls the lesson's position in the Student Tutorial.
+                    </div>
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="mb-3">
                     <label class="form-label fw-bold">
                         Description
                     </label>
 
                     <textarea class="form-control"
                               rows="3"
-                              @bind="lesson.Description">
-                    </textarea>
-
+                              placeholder="Describe what students will learn..."
+                              @bind="lesson.Description"></textarea>
                 </div>
 
 
+                <!-- CONTENT -->
 
-
+                <h5 class="fw-bold mt-4 mb-3">
+                    📝 Lesson Content
+                </h5>
 
                 <div class="mb-3">
-
                     <label class="form-label fw-bold">
                         Lesson Content
                     </label>
 
                     <textarea class="form-control"
-                              rows="8"
-                              @bind="lesson.Content">
-                    </textarea>
+                              rows="14"
+                              placeholder="Write lesson content using Markdown..."
+                              @bind="lesson.Content"></textarea>
 
+                    <div class="form-text">
+                        Markdown is supported.
+                    </div>
                 </div>
 
 
+                <!-- AI METADATA -->
+
+                <h5 class="fw-bold mt-4 mb-3">
+                    🤖 AI Knowledge Metadata
+                </h5>
 
 
+                <!-- KEYWORDS -->
 
                 <div class="mb-3">
-
                     <label class="form-label fw-bold">
                         AI Keywords
                     </label>
 
                     <input class="form-control"
+                           placeholder="Example: C#, variables, programming, .NET"
                            @bind="lesson.Keywords" />
 
+                    <div class="form-text">
+                        Keywords help Student AI find this lesson.
+                    </div>
                 </div>
 
 
-
-
+                <!-- CATEGORY -->
 
                 <div class="mb-3">
-
                     <label class="form-label fw-bold">
                         Category
                     </label>
 
                     <input class="form-control"
+                           placeholder="Example: C# Programming"
                            @bind="lesson.Category" />
-
                 </div>
 
 
-
-
+                <!-- DIFFICULTY -->
 
                 <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        Lesson Difficulty
+                    </label>
 
+                    <select class="form-select"
+                            @bind="lesson.Difficulty">
+
+                        @foreach (var difficulty in Enum.GetValues<LessonDifficulty>())
+                        {
+                            <option value="@difficulty">
+                                @difficulty
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+
+                <!-- ACTIVITY -->
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        Interactive Activity
+                    </label>
+
+                    <select class="form-select"
+                            @bind="lesson.ActivityType">
+
+                        <option value="">
+                            None
+                        </option>
+
+                        <option value="BubbleSort">
+                            Bubble Sort
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <!-- REFERENCES -->
+
+                <h5 class="fw-bold mt-4 mb-3">
+                    🔗 References
+                </h5>
+
+
+                <!-- REFERENCE URL -->
+
+                <div class="mb-3">
                     <label class="form-label fw-bold">
                         Reference URL
                     </label>
 
                     <input class="form-control"
+                           placeholder="https://..."
                            @bind="lesson.ReferenceUrl" />
-
                 </div>
 
 
-
-
+                <!-- ATTACHMENT -->
 
                 <div class="mb-3">
-
                     <label class="form-label fw-bold">
                         Attachment Path
                     </label>
 
                     <input class="form-control"
+                           placeholder="Optional attachment path"
                            @bind="lesson.AttachmentPath" />
-
                 </div>
 
 
+                <!-- ACTIVE -->
 
-
-
-                <div class="form-check mb-3">
-
-
+                <div class="form-check mb-4">
                     <input class="form-check-input"
                            type="checkbox"
+                           id="isActiveCheck"
                            @bind="lesson.IsActive" />
 
-
-                    <label class="form-check-label">
-
-                        Active (Available for Student AI)
-
+                    <label class="form-check-label fw-semibold"
+                           for="isActiveCheck">
+                        Available for Student AI / Tutorials
                     </label>
-
-
                 </div>
 
 
+                <!-- ACTION BUTTONS -->
+
+                <div class="d-flex gap-2 flex-wrap">
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            disabled="@isSaving"
+                            @onclick="SaveLesson">
+
+                        @(isSaving ? "Saving..." : "💾 Save Changes")
+
+                    </button>
 
 
+                    <button type="button"
+                            class="btn btn-warning"
+                            disabled="@isSaving"
+                            @onclick="OpenLessonDetail">
 
-                <button class="btn btn-primary"
-                        disabled="@isSaving"
-                        @onclick="SaveLesson">
+                        🤖 Lesson AI Assistance
 
-
-                    @(isSaving
-                        ? "Saving..."
-                        : "💾 Save Changes")
-
-
-                </button>
+                    </button>
 
 
+                    <button type="button"
+                            class="btn btn-secondary"
+                            disabled="@isSaving"
+                            @onclick="Back">
 
-                <button class="btn btn-secondary ms-2"
-                        @onclick="Back">
+                        ← Cancel
 
+                    </button>
 
-                    Cancel
+                </div>
 
-
-                </button>
-
-
-            }
-
-
+            </div>
         </div>
-
-
-    </div>
-
+    }
 
 </div>
 
 
-
-
-
 @code {
 
+    // ======================================================
+    // ROUTE PARAMETER
+    // ======================================================
 
     [Parameter]
     public int id { get; set; }
 
 
+    // ======================================================
+    // STATE
+    // ======================================================
 
     private bool isLoading = true;
 
     private bool isSaving;
 
-
     private string message = string.Empty;
 
 
+    // ======================================================
+    // LESSON
+    // ======================================================
 
-    private UpdateLessonKnowledgeDto lesson =
-        new();
+    private UpdateLessonKnowledgeDto lesson = new();
 
 
-
-
+    // ======================================================
+    // INITIALIZATION
+    // ======================================================
 
     protected override async Task OnInitializedAsync()
     {
-
-        var data =
-            await LessonKnowledgeService
-                .GetByIdAsync(id);
-
-
-
-        if(data == null)
+        try
         {
+            var data =
+                await LessonKnowledgeService.GetByIdAsync(id);
 
-            message =
-                "Lesson not found.";
+            if (data == null)
+            {
+                message = "Lesson not found.";
+                return;
+            }
 
-            return;
-
+            lesson.Id = data.Id;
+            lesson.Title = data.Title;
+            lesson.Description = data.Description;
+            lesson.Content = data.Content;
+            lesson.Keywords = data.Keywords;
+            lesson.Category = data.Category;
+            lesson.ActivityType = data.ActivityType;
+            lesson.Difficulty = data.Difficulty;
+            lesson.CourseOfferingId = data.CourseOfferingId;
+            lesson.ReferenceUrl = data.ReferenceUrl;
+            lesson.AttachmentPath = data.AttachmentPath;
+            lesson.IsActive = data.IsActive;
+            lesson.Order = data.Order;
         }
-
-
-
-        lesson.Id =
-            data.Id;
-
-
-        lesson.Title =
-            data.Title;
-
-
-        lesson.Description =
-            data.Description;
-
-
-        lesson.Content =
-            data.Content;
-
-
-        lesson.Keywords =
-            data.Keywords;
-
-
-        lesson.Category =
-            data.Category;
-
-
-        lesson.CourseOfferingId =
-            data.CourseOfferingId;
-
-
-        lesson.ReferenceUrl =
-            data.ReferenceUrl;
-
-
-        lesson.AttachmentPath =
-            data.AttachmentPath;
-
-
-        lesson.IsActive =
-            data.IsActive;
-
-
-
-        isLoading = false;
-
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load Lesson Error: {ex}");
+            message = "Failed to load lesson.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
 
-
-
-
-
+    // ======================================================
+    // SAVE
+    // ======================================================
 
     private async Task SaveLesson()
     {
+        message = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(lesson.Title))
+        {
+            message = "Lesson title is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(lesson.Content))
+        {
+            message = "Lesson content is required.";
+            return;
+        }
+
+        if (lesson.Order <= 0)
+        {
+            message = "Lesson order must be greater than 0.";
+            return;
+        }
 
         isSaving = true;
 
-
         try
         {
+            await LessonKnowledgeService.UpdateAsync(lesson);
 
-            await LessonKnowledgeService
-                .UpdateAsync(lesson);
-
-
-
-            message =
-                "Lesson updated successfully.";
-
-
-
-            await Task.Delay(500);
-
-
-
-            NavigationManager.NavigateTo(
-                "/teacher/lesson-knowledge");
-
+            message = "Lesson updated successfully.";
         }
-
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Update Lesson Error: {ex}");
+            message = "Update failed. Please try again.";
+        }
         finally
         {
-
             isSaving = false;
-
         }
-
     }
 
 
+    // ======================================================
+    // OPEN AI ASSISTANCE
+    // ======================================================
+
+    private void OpenLessonDetail()
+    {
+        NavigationManager.NavigateTo(
+            $"/teacher/lesson-knowledge/{lesson.Id}");
+    }
 
 
-
+    // ======================================================
+    // BACK
+    // ======================================================
 
     private void Back()
     {
-
         NavigationManager.NavigateTo(
             "/teacher/lesson-knowledge");
-
     }
 
+
+    // ======================================================
+    // CLEAR MESSAGE
+    // ======================================================
+
+    private void ClearMessage()
+    {
+        message = string.Empty;
+    }
 }

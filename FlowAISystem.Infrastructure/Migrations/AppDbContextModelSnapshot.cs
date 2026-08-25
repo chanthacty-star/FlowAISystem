@@ -424,12 +424,18 @@ namespace FlowAISystem.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ActivityType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<string>("AttachmentPath")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -443,24 +449,40 @@ namespace FlowAISystem.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("Difficulty")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Keywords")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("Order")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("ReferenceUrl")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<int>("TeacherId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -471,7 +493,7 @@ namespace FlowAISystem.Infrastructure.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("LessonKnowledges");
+                    b.ToTable("LessonKnowledges", (string)null);
                 });
 
             modelBuilder.Entity("FlowAISystem.Domain.Entities.Prediction", b =>
@@ -1009,12 +1031,13 @@ namespace FlowAISystem.Infrastructure.Migrations
                 {
                     b.HasOne("FlowAISystem.Domain.Entities.CourseOffering", "CourseOffering")
                         .WithMany()
-                        .HasForeignKey("CourseOfferingId");
+                        .HasForeignKey("CourseOfferingId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("FlowAISystem.Domain.Entities.User", "Teacher")
                         .WithMany()
                         .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("CourseOffering");

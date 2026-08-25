@@ -48,9 +48,10 @@ public interface ILessonKnowledgeService
     // ==================================================
 
     Task<List<LessonKnowledgeDto>> SearchAsync(
-        string keyword);
+        IEnumerable<string> keywords);
 
-
+    Task<List<LessonKnowledgeDto>> GetAllForTutorialAsync(
+        LessonKnowledgeSearchDto search); //sear tutorials leson page
 
     // ==================================================
     // Student AI Context

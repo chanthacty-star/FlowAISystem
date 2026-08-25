@@ -1,3 +1,4 @@
+using FlowAISystem.Shared.Enums;
 namespace FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
 public class LessonKnowledgeSearchDto
@@ -7,7 +8,8 @@ public class LessonKnowledgeSearchDto
     // ==================================================
 
     public string? SearchTerm { get; set; }
-
+    public LessonDifficulty? Difficulty { get; set; }
+    //public int Order { get; set; }
 
     // ==================================================
     // Filter

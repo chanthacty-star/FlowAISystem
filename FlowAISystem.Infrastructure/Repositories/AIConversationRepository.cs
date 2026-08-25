@@ -3,16 +3,12 @@ using FlowAISystem.Domain.Entities.AI;
 using FlowAISystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace FlowAISystem.Infrastructure.Repositories;
-
 
 public class AIConversationRepository
     : IAIConversationRepository
 {
-
     private readonly AppDbContext _context;
-
 
     public AIConversationRepository(
         AppDbContext context)
@@ -21,6 +17,9 @@ public class AIConversationRepository
     }
 
 
+    // =========================================================
+    // Get Conversation By Id
+    // =========================================================
 
     public async Task<AIConversation?> GetByIdAsync(
         int id)
@@ -31,6 +30,9 @@ public class AIConversationRepository
     }
 
 
+    // =========================================================
+    // Get User Conversations
+    // =========================================================
 
     public async Task<List<AIConversation>>
         GetByUserIdAsync(int userId)
@@ -42,11 +44,25 @@ public class AIConversationRepository
     }
 
 
+    // =========================================================
+    // Create Conversation
+    // =========================================================
 
     public async Task<AIConversation> CreateAsync(
         AIConversation conversation)
     {
-        await _context.AIConversations.AddAsync(conversation);
+        var now = DateTime.UtcNow;
+
+        // Make sure timestamps are initialized.
+        if (conversation.CreatedAt == default)
+        {
+            conversation.CreatedAt = now;
+        }
+
+        conversation.UpdatedAt = now;
+
+        await _context.AIConversations.AddAsync(
+            conversation);
 
         await SaveChangesAsync();
 
@@ -54,6 +70,9 @@ public class AIConversationRepository
     }
 
 
+    // =========================================================
+    // Add Message
+    // =========================================================
 
     public async Task AddMessageAsync(
         AIMessage message)
@@ -62,37 +81,52 @@ public class AIConversationRepository
     }
 
 
+    // =========================================================
+    // Get Messages
+    // =========================================================
 
     public async Task<List<AIMessage>>
         GetMessagesAsync(int conversationId)
     {
         return await _context.AIMessages
-            .Where(x => x.ConversationId == conversationId)
+            .Where(x =>
+                x.ConversationId == conversationId)
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
     }
 
 
+    // =========================================================
+    // Update Conversation
+    // =========================================================
 
     public async Task UpdateAsync(
         AIConversation conversation)
     {
-        _context.AIConversations.Update(conversation);
+        _context.AIConversations.Update(
+            conversation);
 
         await SaveChangesAsync();
     }
 
 
+    // =========================================================
+    // Delete Conversation
+    // =========================================================
 
     public async Task DeleteAsync(
         AIConversation conversation)
     {
-        _context.AIConversations.Remove(conversation);
+        _context.AIConversations.Remove(
+            conversation);
 
         await SaveChangesAsync();
     }
 
 
+    // =========================================================
+    // Save
+    // =========================================================
 
     public async Task SaveAsync()
     {
@@ -100,10 +134,12 @@ public class AIConversationRepository
     }
 
 
+    // =========================================================
+    // Internal Save
+    // =========================================================
 
     private async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
     }
-
 }

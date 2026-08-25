@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
-
-using FlowAISystem.Application.AI.Memory;
 using FlowAISystem.Application.AI.Interfaces;
+using FlowAISystem.Application.AI.Memory;
+
 using FlowAISystem.Application.Interfaces.Repositories;
 
 namespace FlowAISystem.Application.AI.Handlers;

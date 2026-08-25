@@ -37,6 +37,12 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
             query = query.Where(x => x.TeacherId == search.TeacherId);
         }
 
+        if (search.Difficulty.HasValue)
+        {
+            query = query.Where(x =>
+                x.Difficulty == search.Difficulty.Value);
+        }
+
         return await query
             .OrderByDescending(x => x.CreatedAt)
             .Skip((search.PageNumber - 1) * search.PageSize)
@@ -46,10 +52,14 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
                 Id = x.Id,
                 Title = x.Title,
                 TeacherId = x.TeacherId,
+                Difficulty = x.Difficulty,
+                ActivityType = x.ActivityType,
+                Order = x.Order, // lesson index Order
                 TeacherName = x.Teacher != null
                     ? x.Teacher.Username
                     : string.Empty,
-                CourseOfferingId = x.CourseOfferingId ?? 0,
+                //CourseOfferingId = x.CourseOfferingId ?? 0,
+                CourseOfferingId = x.CourseOfferingId,
                 CourseName = x.CourseOffering != null && x.CourseOffering.Subject != null
                     ? x.CourseOffering.Subject.Name
                     : string.Empty,
@@ -81,6 +91,9 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
 
                 Content = x.Content,
 
+                Difficulty = x.Difficulty,
+                ActivityType = x.ActivityType,// for ative sort lesson
+                Order = x.Order,
 
                 Keywords = x.Keywords,
 
@@ -94,7 +107,8 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
                     : string.Empty,
 
 
-                CourseOfferingId = x.CourseOfferingId ?? 0,
+                //CourseOfferingId = x.CourseOfferingId ?? 0,
+                CourseOfferingId = x.CourseOfferingId,
 
 
                 CourseName = x.CourseOffering != null &&
@@ -135,7 +149,9 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
             Keywords = dto.Keywords,
 
             Category = dto.Category,
-
+            Difficulty = dto.Difficulty,
+            ActivityType = dto.ActivityType,
+            Order = dto.Order,
 
             TeacherId = dto.TeacherId,
 
@@ -178,7 +194,9 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
 
         entity.Category = dto.Category;
 
-
+        entity.Difficulty = dto.Difficulty;
+        entity.ActivityType = dto.ActivityType;
+        entity.Order = dto.Order; // Lesson index order
         entity.CourseOfferingId = dto.CourseOfferingId;
 
 
@@ -223,19 +241,34 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
     // ==================================================
     // AI Search
     // ==================================================
-    public async Task<List<LessonKnowledgeDto>> SearchAsync(string keyword)
+    public async Task<List<LessonKnowledgeDto>> SearchAsync(
+        IEnumerable<string> keywords)
     {
-        return await _context.LessonKnowledges
+        var searchKeywords = keywords
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim())
+            .Distinct()
+            .ToList();
+
+        if (searchKeywords.Count == 0)
+        {
+            return new List<LessonKnowledgeDto>();
+        }
+
+        var query = _context.LessonKnowledges
             .AsNoTracking()
-            .Where(x =>
-                x.IsActive &&
-                (
-                    x.Title.Contains(keyword) ||
-                    x.Description.Contains(keyword) ||
-                    x.Content.Contains(keyword) ||
-                    x.Keywords.Contains(keyword) ||
-                    x.Category.Contains(keyword)
-                ))
+            .Where(x => x.IsActive);
+
+        // Match ANY extracted keyword.
+        query = query.Where(x =>
+            searchKeywords.Any(keyword =>
+                x.Title.Contains(keyword) ||
+                x.Description.Contains(keyword) ||
+                x.Content.Contains(keyword) ||
+                x.Keywords.Contains(keyword) ||
+                x.Category.Contains(keyword)));
+
+        return await query
             .Select(x => new LessonKnowledgeDto
             {
                 Id = x.Id,
@@ -250,9 +283,48 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
 
                 Category = x.Category,
 
+                Difficulty = x.Difficulty,
+                ActivityType = x.ActivityType,
+                //Order = x.Order,
+
+                CourseOfferingId = x.CourseOfferingId,
+
                 IsActive = x.IsActive,
 
-                CreatedAt = x.CreatedAt
+                CreatedAt = x.CreatedAt,
+
+                UpdatedAt = x.UpdatedAt
+            })
+            .ToListAsync();
+    }
+    // Tutorial lession
+    public async Task<List<LessonKnowledgeDto>> GetAllForTutorialAsync(
+    LessonKnowledgeSearchDto search)
+    {
+        var query = _context.LessonKnowledges
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (search.IsActive.HasValue)
+        {
+            query = query.Where(x =>
+                x.IsActive == search.IsActive.Value);
+        }
+
+        return await query
+            .OrderBy(x => x.Order)
+            .ThenBy(x => x.Id)
+            .Select(x => new LessonKnowledgeDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                Content = x.Content,
+                Category = x.Category,
+                Difficulty = x.Difficulty,
+                Order = x.Order,
+                IsActive = x.IsActive,
+                ActivityType = x.ActivityType
             })
             .ToListAsync();
     }

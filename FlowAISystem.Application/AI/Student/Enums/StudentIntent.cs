@@ -69,5 +69,11 @@ public enum StudentIntent
     /// <summary>
     /// General questions that don't fit another category.
     /// </summary>
+    /// 
+    CodeHelp,          // new
+    Summarize,         // new
+    Translate,         // new
+    GeneratePractice,  // new
+
     General
 }

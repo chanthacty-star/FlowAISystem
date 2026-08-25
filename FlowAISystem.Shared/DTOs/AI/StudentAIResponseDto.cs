@@ -18,10 +18,15 @@ public class StudentAIResponseDto
 
     // Related lesson
     public int? LessonId { get; set; }
-
+    public string? ActivityType { get; set; }
 
     // Confidence score
     public decimal Confidence { get; set; }
     public DateTime CreatedAt { get; set; }
+    // ==================================================
+    // Interactive Learning Activity
+    // ==================================================
+
+    
 }
 

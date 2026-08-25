@@ -1,0 +1,321 @@
+.tutorial-content {
+    width: 100%;
+}
+
+
+/* =========================================================
+   Empty
+   ========================================================= */
+
+.tutorial-content-empty {
+    padding: 80px 30px;
+
+    text-align: center;
+
+    background: #ffffff;
+
+    border: 1px solid #e1e5e9;
+
+    border-radius: 12px;
+}
+
+
+.tutorial-empty-icon {
+    font-size: 3rem;
+
+    margin-bottom: 16px;
+}
+
+
+.tutorial-content-empty h3 {
+    margin-bottom: 8px;
+
+    color: #202124;
+}
+
+
+.tutorial-content-empty p {
+    margin: 0;
+
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.tutorial-content-header {
+    padding-bottom: 26px;
+
+    border-bottom: 1px solid #e1e5e9;
+}
+
+
+.tutorial-breadcrumb {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 12px;
+
+    color: #6b7280;
+
+    font-size: 0.86rem;
+}
+
+
+.tutorial-breadcrumb span {
+    color: #9ca3af;
+}
+
+
+.tutorial-content-title {
+    margin: 0;
+
+    color: #202124;
+
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+
+    font-weight: 700;
+}
+
+
+.tutorial-content-description {
+    max-width: 800px;
+
+    margin: 12px 0 0;
+
+    color: #5f6368;
+
+    font-size: 1.02rem;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   Metadata
+   ========================================================= */
+
+.tutorial-content-meta {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 18px;
+}
+
+
+.tutorial-meta-badge {
+    padding: 5px 10px;
+
+    border-radius: 999px;
+
+    background: #f1f3f4;
+
+    color: #4b5563;
+
+    font-size: 0.8rem;
+
+    font-weight: 600;
+}
+
+
+.tutorial-meta-badge.difficulty {
+    background: #e8f5e9;
+
+    color: #26734d;
+}
+
+
+/* =========================================================
+   Body
+   ========================================================= */
+
+.tutorial-content-body {
+    padding-top: 28px;
+}
+
+
+.tutorial-content-body :deep(h1),
+.tutorial-content-body :deep(h2),
+.tutorial-content-body :deep(h3) {
+    color: #202124;
+
+    margin-top: 2rem;
+
+    margin-bottom: 1rem;
+}
+
+
+.tutorial-content-body :deep(p) {
+    color: #374151;
+
+    line-height: 1.75;
+}
+
+
+.tutorial-content-body :deep(li) {
+    margin-bottom: 6px;
+
+    line-height: 1.65;
+}
+
+
+.tutorial-content-body :deep(table) {
+    width: 100%;
+
+    margin: 20px 0;
+
+    border-collapse: collapse;
+
+    background: #ffffff;
+}
+
+
+.tutorial-content-body :deep(th),
+.tutorial-content-body :deep(td) {
+    padding: 10px 12px;
+
+    border: 1px solid #dfe3e8;
+
+    text-align: left;
+}
+
+
+.tutorial-content-body :deep(th) {
+    background: #f3f4f6;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   Empty Content
+   ========================================================= */
+
+.tutorial-empty-content {
+    padding: 20px;
+
+    border: 1px solid #dbeafe;
+
+    border-radius: 8px;
+
+    background: #eff6ff;
+
+    color: #1e40af;
+}
+
+
+/* =========================================================
+   Activity
+   ========================================================= */
+
+.tutorial-activity {
+    margin-top: 40px;
+
+    overflow: hidden;
+
+    border: 1px solid #dfe3e8;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+}
+
+
+.tutorial-activity-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 18px;
+
+    background: #f8fafc;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+.tutorial-activity-icon {
+    font-size: 1.5rem;
+}
+
+
+.tutorial-activity-header h3 {
+    margin: 0;
+
+    font-size: 1.1rem;
+}
+
+
+.tutorial-activity-header p {
+    margin: 4px 0 0;
+
+    color: #6b7280;
+}
+
+
+.tutorial-activity-body {
+    padding: 25px;
+}
+
+
+.tutorial-activity-placeholder {
+    text-align: center;
+}
+
+
+.tutorial-activity-symbol {
+    font-size: 2.5rem;
+
+    margin-bottom: 10px;
+}
+
+
+.tutorial-activity-placeholder h4 {
+    margin-bottom: 8px;
+}
+
+
+.tutorial-activity-placeholder p {
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   Footer
+   ========================================================= */
+
+.tutorial-content-footer {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-top: 45px;
+
+    padding: 20px 0;
+
+    border-top: 1px solid #dfe3e8;
+
+    color: #6b7280;
+
+    font-size: 0.85rem;
+}
+
+
+@media (max-width: 600px) {
+
+    .tutorial-content-footer {
+        flex-direction: column;
+    }
+}

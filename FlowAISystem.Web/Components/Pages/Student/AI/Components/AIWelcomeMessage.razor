@@ -1,19 +1,16 @@
 <div class="ai-welcome">
-
-    <div class="ai-welcome-icon">
-        👋
-    </div>
-
-
-    <h3>
-        Welcome to FlowAI Assistant
-    </h3>
-
-
-    <p>
-        Ask about your teacher's lessons,
-        coursework, algorithms,
-        programming or academic information.
-    </p>
-
+    <div class="ai-welcome-icon">👋</div>
+    <h3>Welcome, @(string.IsNullOrWhiteSpace(StudentName) ? "there" : StudentName)!</h3>
+    
+    <p class="text-muted text-greeting">Hi @StudentName! I'm your AI learning assistant.</p>
+    
+    <p class="welcome-description">
+        Ask me about your lessons, programming, algorithms,
+        databases, assignments, or anything related to your studies.
+    </p> 
 </div>
+
+@code {
+    [Parameter]
+    public string StudentName { get; set; } = string.Empty;
+}

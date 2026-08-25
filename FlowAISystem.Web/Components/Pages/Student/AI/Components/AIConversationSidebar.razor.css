@@ -1,65 +1,117 @@
-.conversation-sidebar
-{
-    padding:15px;
-    height:100%;
-    overflow-y:auto;
-}
-
-
-.conversation-title
-{
-    margin-top:15px;
-    margin-bottom:10px;
-    color:#6c757d;
-    font-size:0.85rem;
-    font-weight:600;
-}
-
-
-
-.conversation-item
-{
-    padding:12px;
-    border-radius:10px;
-    cursor:pointer;
-    margin-bottom:6px;
-    transition:0.2s;
-}
-
-
-
-.conversation-item:hover
-{
-    background:#f1f3f5;
-}
-
-
-
-.conversation-item.active
-{
-    background:#0d6efd;
-    color:white;
-}
-
-
-
-.conversation-item.active small
-{
-    color:white !important;
-}
-
+/* =========================================================
+   Conversation Sidebar
+   ========================================================= */
 
 .conversation-sidebar {
+    display: flex;
+    flex-direction: column;
 
-    height:100%;
+    width: 100%;
+    height: 100%;
 
-    overflow-y:auto;
+    padding: 1rem;
 
+    background: #ffffff;
+
+    overflow-y: auto;
 }
 
 
-.conversation-sidebar input {
+/* =========================================================
+   New Chat Button
+   ========================================================= */
 
-    border-radius:12px;
+.conversation-sidebar .btn-primary {
+    border-radius: 10px;
 
+    font-weight: 600;
+
+    padding: 0.65rem 1rem;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.conversation-sidebar .btn-primary:hover {
+    transform: translateY(-1px);
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================================================
+   Search
+   ========================================================= */
+
+.conversation-sidebar .form-control {
+    border-radius: 10px;
+
+    border: 1px solid #dee2e6;
+
+    padding: 0.65rem 0.8rem;
+
+    font-size: 0.9rem;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.conversation-sidebar .form-control:focus {
+    border-color: #86b7fe;
+
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.12);
+}
+
+
+/* =========================================================
+   Empty / Loading State
+   ========================================================= */
+
+.conversation-sidebar .text-muted {
+    font-size: 0.85rem;
+}
+
+
+/* =========================================================
+   Scrollbar
+   ========================================================= */
+
+.conversation-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.conversation-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.conversation-sidebar::-webkit-scrollbar-thumb {
+    background: #ced4da;
+
+    border-radius: 10px;
+}
+
+.conversation-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .conversation-sidebar {
+        padding: 0.75rem;
+    }
+
+    .conversation-sidebar .btn-primary {
+        padding: 0.55rem 0.8rem;
+    }
+
+    .conversation-sidebar .form-control {
+        font-size: 0.85rem;
+    }
 }

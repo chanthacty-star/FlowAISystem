@@ -1,0 +1,157 @@
+.student-tutorials {
+    min-height: 100vh;
+    background: #f5f7fa;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.student-tutorials-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    padding: 14px 24px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #dfe3e8;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+
+.student-tutorials-brand {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.student-tutorials-brand-icon {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 10px;
+
+    background: #252526;
+
+    font-size: 1.2rem;
+}
+
+
+.student-tutorials-brand h1 {
+    margin: 0;
+
+    font-size: 1.2rem;
+
+    font-weight: 700;
+
+    color: #202124;
+}
+
+
+.student-tutorials-brand p {
+    margin: 2px 0 0;
+
+    color: #6b7280;
+
+    font-size: 0.82rem;
+}
+
+
+/* =========================================================
+   Layout
+   ========================================================= */
+
+.student-tutorials-layout {
+    display: grid;
+
+    grid-template-columns: 270px minmax(0, 1fr);
+
+    min-height: calc(100vh - 72px);
+}
+
+
+/* =========================================================
+   Sidebar
+   ========================================================= */
+
+.student-tutorials-sidebar {
+    position: sticky;
+
+    top: 72px;
+
+    height: calc(100vh - 72px);
+
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border-right: 1px solid #dfe3e8;
+}
+
+
+/* =========================================================
+   Main
+   ========================================================= */
+
+.student-tutorials-main {
+    min-width: 0;
+
+    padding: 32px;
+
+    max-width: 1200px;
+
+    width: 100%;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .student-tutorials-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .student-tutorials-sidebar {
+        position: static;
+
+        height: auto;
+
+        border-right: none;
+
+        border-bottom: 1px solid #dfe3e8;
+    }
+
+    .student-tutorials-main {
+        padding: 20px;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .student-tutorials-header {
+        padding: 12px 16px;
+    }
+
+    .student-tutorials-main {
+        padding: 14px;
+    }
+}

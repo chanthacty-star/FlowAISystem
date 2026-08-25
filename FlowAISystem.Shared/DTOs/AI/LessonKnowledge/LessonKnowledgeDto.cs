@@ -1,3 +1,5 @@
+using FlowAISystem.Shared.Enums;
+
 namespace FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
 public class LessonKnowledgeDto
@@ -7,6 +9,7 @@ public class LessonKnowledgeDto
     // ==================================================
 
     public int Id { get; set; }
+
 
     // ==================================================
     // Lesson Information
@@ -21,6 +24,7 @@ public class LessonKnowledgeDto
     public string Content { get; set; }
         = string.Empty;
 
+
     // ==================================================
     // AI Knowledge
     // ==================================================
@@ -31,6 +35,17 @@ public class LessonKnowledgeDto
     public string Category { get; set; }
         = string.Empty;
 
+    public LessonDifficulty Difficulty { get; set; }
+        = LessonDifficulty.Beginner;
+    // ==========================================
+    // Interactive Activity
+    // ==========================================
+
+    public string? ActivityType { get; set; }
+
+    public int Order { get; set; }
+
+
     // ==================================================
     // Teacher Information
     // ==================================================
@@ -40,14 +55,16 @@ public class LessonKnowledgeDto
     public string TeacherName { get; set; }
         = string.Empty;
 
+
     // ==================================================
     // Course Information
     // ==================================================
 
-    public int CourseOfferingId { get; set; }
+    public int? CourseOfferingId { get; set; }
 
     public string CourseName { get; set; }
         = string.Empty;
+
 
     // ==================================================
     // Learning Material
@@ -57,11 +74,13 @@ public class LessonKnowledgeDto
 
     public string? AttachmentPath { get; set; }
 
+
     // ==================================================
     // Status
     // ==================================================
 
     public bool IsActive { get; set; }
+
 
     // ==================================================
     // Audit

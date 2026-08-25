@@ -3,7 +3,8 @@ using FlowAISystem.Application.AI.Student.Interfaces;
 
 namespace FlowAISystem.Application.AI.Student.Services;
 
-public class StudentIntentDetector : IStudentIntentDetector
+public class StudentIntentDetector
+    : IStudentIntentDetector
 {
     public StudentIntent Detect(string message)
     {
@@ -12,63 +13,85 @@ public class StudentIntentDetector : IStudentIntentDetector
             return StudentIntent.Unknown;
         }
 
-
         message = message
-            .ToLower()
+            .ToLowerInvariant()
             .Trim();
 
 
-
-        // ==========================================
-        // Greeting (English + Khmer)
-        // ==========================================
+        // =====================================================
+        // Greeting
+        // =====================================================
 
         if (
-            // English
             message.Contains("hello") ||
             message.Contains("hi") ||
             message.Contains("hey") ||
             message.Contains("good morning") ||
             message.Contains("good afternoon") ||
 
-            // Khmer
             message.Contains("សួស្តី") ||
             message.Contains("ជំរាបសួរ") ||
-            message.Contains("អរុណសួស្តី") ||
-            message.Contains("សួស្តី flowai")
+            message.Contains("អរុណសួស្តី")
         )
         {
             return StudentIntent.Greeting;
         }
 
 
-
-        // ==========================================
-        // Thank You (English + Khmer)
-        // ==========================================
+        // =====================================================
+        // Thank You
+        // =====================================================
 
         if (
-            // English
             message.Contains("thank") ||
             message.Contains("thanks") ||
             message.Contains("appreciate") ||
-            message.Contains("good job") ||
 
-            // Khmer
             message.Contains("អរគុណ") ||
-            message.Contains("អរគុណច្រើន") ||
-            message.Contains("ល្អណាស់")
+            message.Contains("អរគុណច្រើន")
         )
         {
             return StudentIntent.ThankYou;
         }
 
 
+        // =====================================================
+        // Conversation / Follow-up
+        // IMPORTANT:
+        // These must be checked BEFORE Quiz.
+        // =====================================================
+
+        if (
+            message.Contains("explain more") ||
+            message.Contains("explain again") ||
+            message.Contains("more detail") ||
+            message.Contains("show example") ||
+            message.Contains("give example") ||
+            message.Contains("create quiz") ||
+            message.Contains("make a quiz") ||
+            message.Contains("continue") ||
+            message.Contains("compare") ||
+            message.Contains("summarize") ||
+            message.Contains("summary") ||
+            message.Contains("translate") ||
+
+            message.Contains("ពន្យល់បន្ថែម") ||
+            message.Contains("ពន្យល់ម្ដងទៀត") ||
+            message.Contains("ឧទាហរណ៍") ||
+            message.Contains("ធ្វើតេស្ត") ||
+            message.Contains("បន្ត") ||
+            message.Contains("ប្រៀបធៀប") ||
+            message.Contains("សង្ខេប") ||
+            message.Contains("បកប្រែ")
+        )
+        {
+            return StudentIntent.Conversation;
+        }
 
 
-        // ==========================================
-        // Quiz Request
-        // ==========================================
+        // =====================================================
+        // Standalone Quiz Request
+        // =====================================================
 
         if (
             message.Contains("quiz") ||
@@ -77,7 +100,6 @@ public class StudentIntentDetector : IStudentIntentDetector
             message.Contains("give me questions") ||
 
             message.Contains("សំណួរ") ||
-            message.Contains("ធ្វើតេស្ត") ||
             message.Contains("ប្រឡង")
         )
         {
@@ -85,11 +107,9 @@ public class StudentIntentDetector : IStudentIntentDetector
         }
 
 
-
-
-        // ==========================================
+        // =====================================================
         // Recommendation
-        // ==========================================
+        // =====================================================
 
         if (
             message.Contains("recommend") ||
@@ -106,11 +126,9 @@ public class StudentIntentDetector : IStudentIntentDetector
         }
 
 
-
-
-        // ==========================================
+        // =====================================================
         // Academic Information
-        // ==========================================
+        // =====================================================
 
         if (
             message.Contains("gpa") ||
@@ -131,11 +149,9 @@ public class StudentIntentDetector : IStudentIntentDetector
         }
 
 
-
-
-        // ==========================================
-        // Learning / Explanation
-        // ==========================================
+        // =====================================================
+        // Learning
+        // =====================================================
 
         if (
             message.Contains("explain") ||
@@ -146,7 +162,6 @@ public class StudentIntentDetector : IStudentIntentDetector
             message.Contains("define") ||
             message.Contains("meaning") ||
 
-            // Khmer
             message.Contains("ពន្យល់") ||
             message.Contains("អ្វីជា") ||
             message.Contains("មានន័យថា") ||
@@ -158,35 +173,11 @@ public class StudentIntentDetector : IStudentIntentDetector
         }
 
 
-
-
-        // ==========================================
-        // Conversation Follow-up
-        // ==========================================
-
-        if (
-            message.Contains("example") ||
-            message.Contains("again") ||
-            message.Contains("compare") ||
-            message.Contains("more detail") ||
-            message.Contains("continue") ||
-
-            message.Contains("ឧទាហរណ៍") ||
-            message.Contains("ម្តងទៀត") ||
-            message.Contains("ប្រៀបធៀប") ||
-            message.Contains("បន្ថែម")
-        )
-        {
-            return StudentIntent.Conversation;
-        }
-
-
-
-
-        // ==========================================
-        // Default
-        // ==========================================
+        // =====================================================
+        // General Conversation
+        // =====================================================
 
         return StudentIntent.General;
     }
 }
+

@@ -12,14 +12,12 @@ public class KeywordExtractor : IKeywordExtractor
         }
 
         message = message
-            .ToLower()
+            .ToLowerInvariant()
             .Trim();
 
-        var keywords = new List<string>();
-
-        // ==========================================
+        // ==================================================
         // English Stop Words
-        // ==========================================
+        // ==================================================
 
         var englishIgnored = new HashSet<string>
         {
@@ -56,12 +54,17 @@ public class KeywordExtractor : IKeywordExtractor
             "and",
             "or",
             "in",
-            "on"
+            "on",
+            "from",
+            "this",
+            "that",
+            "it",
+            "its"
         };
 
-        // ==========================================
+        // ==================================================
         // Khmer Stop Words
-        // ==========================================
+        // ==================================================
 
         var khmerIgnored = new HashSet<string>
         {
@@ -92,60 +95,99 @@ public class KeywordExtractor : IKeywordExtractor
             "តើ",
             "អ្វី",
             "យ៉ាង",
-            "ដូចម្តេច",
-            "ដូចម្តេច?"
+            "ដូចម្តេច"
         };
 
-        // ==========================================
-        // Split
-        // ==========================================
+        // ==================================================
+        // Normalize punctuation
+        // ==================================================
 
-        var words = message.Split(
-            new[]
-            {
+        var normalized = message
+            .Replace("?", " ")
+            .Replace("!", " ")
+            .Replace(",", " ")
+            .Replace(".", " ")
+            .Replace(":", " ")
+            .Replace(";", " ")
+            .Replace("(", " ")
+            .Replace(")", " ")
+            .Replace("[", " ")
+            .Replace("]", " ")
+            .Replace("{", " ")
+            .Replace("}", " ")
+            .Replace("\n", " ")
+            .Replace("\r", " ")
+            .Replace("\t", " ");
+
+        var words = normalized
+            .Split(
                 ' ',
-                ',',
-                '.',
-                '?',
-                '!',
-                ':',
-                ';',
-                '\n',
-                '\r',
-                '\t'
-            },
-            StringSplitOptions.RemoveEmptyEntries);
+                StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToList();
+
+        var keywords = new List<string>();
+
+        // ==================================================
+        // Single-word keywords
+        // ==================================================
 
         foreach (var word in words)
         {
-            var token = word.Trim();
-
-            if (string.IsNullOrWhiteSpace(token))
+            if (englishIgnored.Contains(word))
                 continue;
 
-            if (englishIgnored.Contains(token))
+            if (khmerIgnored.Contains(word))
                 continue;
 
-            if (khmerIgnored.Contains(token))
-                continue;
-
-            // English keyword
-            if (token.All(c => c < 128))
+            // English
+            if (word.All(c => c < 128))
             {
-                if (token.Length > 2)
+                if (word.Length > 2)
                 {
-                    keywords.Add(token);
+                    keywords.Add(word);
                 }
 
                 continue;
             }
 
-            // Khmer keyword
-            keywords.Add(token);
+            // Khmer
+            keywords.Add(word);
         }
 
+        // ==================================================
+        // Common multi-word AI concepts
+        // ==================================================
+
+        for (int i = 0; i < words.Count - 1; i++)
+        {
+            var first = words[i];
+            var second = words[i + 1];
+
+            if (englishIgnored.Contains(first) ||
+                englishIgnored.Contains(second))
+            {
+                continue;
+            }
+
+            if (first.Length <= 1 || second.Length <= 1)
+            {
+                continue;
+            }
+
+            var phrase =
+                $"{first} {second}";
+
+            keywords.Add(phrase);
+        }
+
+        // ==================================================
+        // Return distinct keywords
+        // ==================================================
+
         return keywords
-            .Distinct()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 }

@@ -1,281 +1,201 @@
 /* ===============================
-   Message Card
+   Design Tokens & Variables
    =============================== */
-
-
-.ai-message-card {
-
-    max-width:75%;
-
-    padding:18px 22px;
-
-    border-radius:18px;
-
-    background:white;
-
-    border:1px solid #e2e8f0;
-
-    box-shadow:
-        0 4px 12px rgba(0,0,0,.05);
-
+:root {
+    --ai-card-bg-assistant: #ffffff;
+    --ai-card-bg-student: #2563eb;
+    --ai-card-text-assistant: #1e293b;
+    --ai-card-text-student: #ffffff;
+    --ai-card-border: #e2e8f0;
+    --ai-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    
+    --ai-code-bg: #0f172a;
+    --ai-code-text: #f8fafc;
+    --ai-inline-code-bg: #f1f5f9;
+    --ai-inline-code-text: #0f172a;
 }
 
-
-
-/* Student Message */
-
-.justify-content-end 
+/* ===============================
+   Message Card Structure
+   =============================== */
 .ai-message-card {
-
-    background:#2563eb;
-
-    color:white;
-
-    border:none;
-
+    max-width: 75%;
+    padding: 18px 22px;
+    border-radius: 18px;
+    background: var(--ai-card-bg-assistant);
+    color: var(--ai-card-text-assistant);
+    border: 1px solid var(--ai-card-border);
+    box-shadow: var(--ai-card-shadow);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
+/* Student Message Context Overrides */
+.justify-content-end .ai-message-card {
+    background: var(--ai-card-bg-student);
+    color: var(--ai-card-text-student);
+    border: none;
+}
 
+.justify-content-end .ai-message-card .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
 
+/* Ensure inline code stays legible inside student messages */
+.justify-content-end .ai-message-content p code {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
 
 /* ===============================
    Avatar
    =============================== */
-
-
 .ai-avatar {
-
-    width:48px;
-
-    height:48px;
-
-    border-radius:50%;
-
-    background:#0d6efd;
-
-    color:white;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:24px;
-
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    object-fit: cover;
 }
-
-
-
-
 
 /* ===============================
-   Message Content
+   Message Content & Typography
    =============================== */
-
-
 .ai-message-content {
-
-    line-height:1.7;
-
-    font-size:15px;
-
+    line-height: 1.65;
+    font-size: 0.95rem;
+    word-break: break-word;
 }
-
-
-
 
 .ai-message-content h1,
 .ai-message-content h2,
 .ai-message-content h3 {
-
-    font-weight:700;
-
-    margin-top:16px;
-
+    font-weight: 700;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: inherit;
 }
-
-
 
 .ai-message-content h5 {
-
-    margin-top:20px;
-
-    color:#2563eb;
-
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #2563eb;
 }
-
-
 
 .ai-message-content p {
-
-    white-space:pre-wrap;
-
+    margin-bottom: 0.75rem;
+    white-space: pre-wrap;
 }
 
-
-
-
-.ai-message-content ul {
-
-    padding-left:20px;
-
+.ai-message-content p:last-child {
+    margin-bottom: 0;
 }
 
+.ai-message-content ul,
+.ai-message-content ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+}
 
-
-
+.ai-message-content li {
+    margin-bottom: 0.25rem;
+}
 
 /* ===============================
-   Code Blocks
+   Code Blocks & Inline Code
    =============================== */
-
-
 .ai-message-content pre {
-
-    background:#0f172a;
-
-    color:#f8fafc;
-
-    padding:16px;
-
-    border-radius:12px;
-
-    overflow-x:auto;
-
-    font-size:14px;
-
+    position: relative;
+    background: var(--ai-code-bg);
+    color: var(--ai-code-text);
+    padding: 16px;
+    padding-top: 40px; /* Space for copy button */
+    border-radius: 12px;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
-
-
-
 
 .ai-message-content code {
-
-    font-family:
-
-        "Cascadia Code",
-        Consolas,
-        monospace;
-
+    font-family: "Cascadia Code", Consolas, "Fira Code", Monaco, monospace;
 }
-
-
-
 
 .ai-message-content p code {
-
-    background:#e2e8f0;
-
-    color:#111827;
-
-    padding:3px 6px;
-
-    border-radius:5px;
-
-}
-
-
-
-
-/* ===============================
-   Metadata
-   =============================== */
-
-
-.ai-metadata {
-
-    margin-top:12px;
-
-    display:flex;
-
-    flex-wrap:wrap;
-
-    gap:8px;
-
-    align-items:center;
-
-}
-
-
-
-
-
-.lesson-link {
-
-    font-size:.75rem;
-
-    padding:5px 12px;
-
-    border-radius:20px;
-
-    border:1px solid #cbd5e1;
-
-    text-decoration:none;
-
-    color:#334155;
-
-    background:white;
-
-}
-
-
-
-.lesson-link:hover {
-
-    background:#f8fafc;
-
-}
-
-
-.ai-message-content pre {
-
-    position:relative;
-
+    background: var(--ai-inline-code-bg);
+    color: var(--ai-inline-code-text);
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 0.875em;
 }
 
 /* Copy Code Button */
 .copy-code-btn {
-
-    position:absolute;
-
-    top:8px;
-
-    right:8px;
-
-
-    background:#334155;
-
-    color:white;
-
-
-    border:none;
-
-    border-radius:8px;
-
-
-    padding:5px 12px;
-
-
-    font-size:12px;
-
-
-    cursor:pointer;
-
-
-    opacity:.8;
-
-
-    transition:.2s;
-
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #334155;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
-
-
 .copy-code-btn:hover {
+    opacity: 1;
+    background: #475569;
+    transform: translateY(-1px);
+}
 
-    opacity:1;
+.copy-code-btn:active {
+    transform: translateY(0);
+}
 
-    transform:scale(1.05);
+/* ===============================
+   Metadata & Action Controls
+   =============================== */
+.followup-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
 
+.ai-metadata {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.lesson-link {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    text-decoration: none;
+    color: #334155;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.lesson-link:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
 }

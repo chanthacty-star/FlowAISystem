@@ -1,0 +1,1034 @@
+@using FlowAISystem.Web.Components.Pages.Student.AI.Components.Activities.Sorting
+
+<div class="bubble-sort-game">
+
+    <!-- =========================================================
+         HEADER
+         ========================================================= -->
+
+    <div class="bubble-sort-header">
+
+        <div>
+            <div class="bubble-sort-title">
+                🎮 Bubble Sort Predictor
+            </div>
+
+            <p class="bubble-sort-description">
+                Predict whether the next two elements will swap.
+                Learn how Bubble Sort moves larger values toward the end.
+            </p>
+        </div>
+
+        @if (Phase == GamePhase.Completed)
+        {
+            <span class="badge bg-success bubble-sort-complete-badge">
+                ✓ Complete
+            </span>
+        }
+
+    </div>
+
+
+    <!-- =========================================================
+         SETUP
+         ========================================================= -->
+
+    @if (Phase == GamePhase.Setup)
+    {
+        <div class="bubble-sort-setup">
+
+            <h6 class="fw-bold mb-3">
+                Choose your challenge
+            </h6>
+
+
+            <!-- Array Size -->
+
+            <div class="bubble-sort-option">
+
+                <label class="bubble-sort-option-label">
+                    Array size
+                </label>
+
+                <div class="btn-group" role="group">
+
+                    @foreach (var size in ArraySizes)
+                    {
+                        var selectedSize = size;
+
+                        <button type="button"
+                                class="btn btn-sm @(ArraySize == selectedSize
+                                    ? "btn-primary"
+                                    : "btn-outline-primary")"
+                                @onclick="() => ArraySize = selectedSize">
+
+                            @selectedSize numbers
+
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- Pattern -->
+
+            <div class="bubble-sort-option">
+
+                <label class="bubble-sort-option-label">
+                    Starting arrangement
+                </label>
+
+                <div class="bubble-sort-pattern-buttons">
+
+                    <button type="button"
+                            class="btn btn-sm @(Pattern == ArrayPattern.Randomized
+                                ? "btn-primary"
+                                : "btn-outline-primary")"
+                            @onclick="() => Pattern = ArrayPattern.Randomized">
+
+                        🎲 Random
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-sm @(Pattern == ArrayPattern.NearlySorted
+                                ? "btn-primary"
+                                : "btn-outline-primary")"
+                            @onclick="() => Pattern = ArrayPattern.NearlySorted">
+
+                        🟡 Nearly Sorted
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-sm @(Pattern == ArrayPattern.Reversed
+                                ? "btn-primary"
+                                : "btn-outline-primary")"
+                            @onclick="() => Pattern = ArrayPattern.Reversed">
+
+                        🔄 Reversed
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Start -->
+
+            <button type="button"
+                    class="btn btn-success"
+                    @onclick="StartGame">
+
+                ▶ Start Challenge
+
+            </button>
+
+        </div>
+    }
+
+
+    <!-- =========================================================
+         GAME
+         ========================================================= -->
+
+    @if (Phase != GamePhase.Setup)
+    {
+
+        <!-- Progress -->
+
+        <div class="bubble-sort-progress">
+
+            <div>
+                <span class="bubble-sort-progress-label">
+                    Pass
+                </span>
+
+                <strong>
+                    @CurrentPass
+                </strong>
+            </div>
+
+            <div>
+                <span class="bubble-sort-progress-label">
+                    Comparison
+                </span>
+
+                <strong>
+                    @(ComparisonCount + 1)
+                </strong>
+            </div>
+
+            <div>
+                <span class="bubble-sort-progress-label">
+                    Array
+                </span>
+
+                <strong>
+                    @Numbers.Count elements
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             ARRAY
+             ===================================================== -->
+
+        <div class="bubble-sort-array">
+
+            @for (var i = 0; i < Numbers.Count; i++)
+            {
+                var index = i;
+
+                var isComparing =
+                    index == ComparingIndex ||
+                    index == ComparingIndex + 1;
+
+                var isSorted =
+                    index >= Numbers.Count - CurrentPass;
+
+                <div class="bubble-sort-item
+                            @(isComparing ? "comparing" : "")
+                            @(isSorted ? "sorted" : "")">
+
+                    <div class="bubble-sort-value">
+
+                        @Numbers[index]
+
+                    </div>
+
+                    <small class="bubble-sort-index">
+                        @index
+                    </small>
+
+                    @if (isSorted)
+                    {
+                        <small class="bubble-sort-sorted-label">
+                            ✓
+                        </small>
+                    }
+
+                </div>
+            }
+
+        </div>
+
+
+        <!-- =====================================================
+             COMPARISON INDICATOR
+             ===================================================== -->
+
+        @if (Phase == GamePhase.Predicting ||
+             Phase == GamePhase.Revealed)
+        {
+            <div class="bubble-sort-comparison">
+
+                <span>
+                    Comparing
+                </span>
+
+                <strong>
+                    @Numbers[ComparingIndex]
+                </strong>
+
+                <span>
+                    and
+                </span>
+
+                <strong>
+                    @Numbers[ComparingIndex + 1]
+                </strong>
+
+            </div>
+        }
+
+
+        <!-- =====================================================
+             PREDICTION
+             ===================================================== -->
+
+        @if (Phase == GamePhase.Predicting)
+        {
+            <div class="bubble-sort-prediction">
+
+                <div class="bubble-sort-prediction-title">
+                    🤔 What will happen?
+                </div>
+
+                <p class="mb-3">
+                    Will
+                    <strong>@Numbers[ComparingIndex]</strong>
+                    and
+                    <strong>@Numbers[ComparingIndex + 1]</strong>
+                    swap?
+                </p>
+
+                <div class="bubble-sort-buttons">
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="() => SubmitGuess(true)">
+
+                        🔁 Yes, Swap
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            @onclick="() => SubmitGuess(false)">
+
+                        ➡️ No Swap
+
+                    </button>
+
+                </div>
+
+            </div>
+        }
+
+
+        <!-- =====================================================
+             FEEDBACK
+             ===================================================== -->
+
+        @if (Phase == GamePhase.Revealed)
+        {
+            <div class="bubble-sort-feedback
+                        @(LastGuessCorrect == true
+                            ? "correct"
+                            : "incorrect")">
+
+                <div class="bubble-sort-feedback-title">
+
+                    @(LastGuessCorrect == true
+                        ? "✅ Correct!"
+                        : "❌ Not quite")
+
+                </div>
+
+                <div>
+                    @FeedbackMessage
+                </div>
+
+
+                <div class="bubble-sort-feedback-rule">
+
+                    <strong>Bubble Sort rule:</strong>
+
+                    If the left value is greater than the
+                    right value, they swap.
+
+                </div>
+
+
+                <button type="button"
+                        class="btn btn-dark btn-sm mt-3"
+                        @onclick="Continue">
+
+                    Continue →
+
+                </button>
+
+            </div>
+        }
+
+
+        <!-- =====================================================
+             COMPLETED
+             ===================================================== -->
+
+        @if (Phase == GamePhase.Completed)
+        {
+            <div class="bubble-sort-result">
+
+                <div class="bubble-sort-result-title">
+                    🎉 Sorting Complete!
+                </div>
+
+                <p class="bubble-sort-result-summary">
+                    Great work! You predicted the Bubble Sort
+                    comparisons and followed the algorithm.
+                </p>
+
+
+                <div class="bubble-sort-result-score">
+
+                    <div>
+                        <span>Score</span>
+                        <strong>@Score</strong>
+                    </div>
+
+                    <div>
+                        <span>Accuracy</span>
+                        <strong>@Accuracy%</strong>
+                    </div>
+
+                    <div>
+                        <span>Best Streak</span>
+                        <strong>@BestStreak 🔥</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 MISTAKES
+                 ================================================= -->
+
+            @if (Mistakes.Count > 0)
+            {
+                <div class="bubble-sort-mistakes">
+
+                    <h6 class="fw-bold">
+                        🧠 Review your predictions
+                    </h6>
+
+                    <ul>
+                        @foreach (var mistake in Mistakes)
+                        {
+                            <li>
+                                @mistake
+                            </li>
+                        }
+                    </ul>
+
+                </div>
+            }
+
+
+            <!-- =================================================
+                 WHY IT MATTERS
+                 ================================================= -->
+
+            <div class="bubble-sort-explanation">
+
+                <div class="bubble-sort-explanation-title">
+                    💡 What did you learn?
+                </div>
+
+                <p>
+                    Bubble Sort repeatedly compares adjacent
+                    elements. When the left value is larger than
+                    the right value, the two values are swapped.
+                </p>
+
+                <p>
+                    After each pass, the largest remaining value
+                    moves toward the end of the array.
+                </p>
+
+                <p class="mb-0">
+                    Bubble Sort has
+                    <strong>O(n²)</strong>
+                    average and worst-case time complexity.
+                </p>
+
+            </div>
+        }
+
+
+        <!-- =====================================================
+             STATISTICS
+             ===================================================== -->
+
+        <div class="row bubble-sort-statistics">
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <div class="bubble-sort-stat">
+
+                    <span class="bubble-sort-stat-label">
+                        Score
+                    </span>
+
+                    <div class="bubble-sort-stat-value">
+                        @Score
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <div class="bubble-sort-stat">
+
+                    <span class="bubble-sort-stat-label">
+                        Streak
+                    </span>
+
+                    <div class="bubble-sort-stat-value">
+                        @Streak 🔥
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <div class="bubble-sort-stat">
+
+                    <span class="bubble-sort-stat-label">
+                        Comparisons
+                    </span>
+
+                    <div class="bubble-sort-stat-value">
+                        @ComparisonCount
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-md-3 mb-2">
+
+                <div class="bubble-sort-stat">
+
+                    <span class="bubble-sort-stat-label">
+                        Swaps
+                    </span>
+
+                    <div class="bubble-sort-stat-value">
+                        @SwapCount
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             ACTIONS
+             ===================================================== -->
+
+        <div class="bubble-sort-actions">
+
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    @onclick="Reset">
+
+                ↻ New Challenge
+
+            </button>
+
+            @if (Phase == GamePhase.Completed)
+            {
+                <button type="button"
+                        class="btn btn-primary"
+                        @onclick="StartGame">
+
+                    ▶ Try Again
+
+                </button>
+            }
+
+        </div>
+
+    }
+
+</div>
+
+
+@code {
+
+    // ============================================================
+    // ENUMS
+    // ============================================================
+
+    private enum GamePhase
+    {
+        Setup,
+        Predicting,
+        Revealed,
+        Completed
+    }
+
+    private enum ArrayPattern
+    {
+        Randomized,
+        NearlySorted,
+        Reversed
+    }
+
+
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+
+    private readonly int[] ArraySizes =
+    {
+        6,
+        8,
+        10
+    };
+
+
+    private GamePhase Phase =
+        GamePhase.Setup;
+
+    private ArrayPattern Pattern =
+        ArrayPattern.Randomized;
+
+    private int ArraySize = 6;
+
+
+    // ============================================================
+    // ARRAY STATE
+    // ============================================================
+
+    private List<int> Numbers = new();
+
+    private int CurrentPass;
+
+    private int CurrentIndex;
+
+    private int ComparingIndex = -1;
+
+    private bool PassHadSwap;
+
+
+    // ============================================================
+    // STATISTICS
+    // ============================================================
+
+    private int ComparisonCount;
+
+    private int SwapCount;
+
+    private int Score;
+
+    private int Streak;
+
+    private int BestStreak;
+
+    private int CorrectPredictions;
+
+    private int WrongPredictions;
+
+
+    // ============================================================
+    // FEEDBACK
+    // ============================================================
+
+    private bool? LastGuessCorrect;
+
+    private string FeedbackMessage =
+        string.Empty;
+
+    private List<string> Mistakes =
+        new();
+
+
+    // ============================================================
+    // CALCULATED VALUES
+    // ============================================================
+
+    private int Accuracy =>
+        CorrectPredictions + WrongPredictions == 0
+            ? 0
+            : (int)Math.Round(
+                100.0 *
+                CorrectPredictions /
+                (CorrectPredictions + WrongPredictions));
+
+
+    // ============================================================
+    // RANDOM
+    // ============================================================
+
+    private static readonly Random Rng =
+        new();
+
+
+    // ============================================================
+    // START GAME
+    // ============================================================
+
+    private void StartGame()
+    {
+        Numbers =
+            GenerateArray(
+                ArraySize,
+                Pattern);
+
+        CurrentPass = 1;
+
+        CurrentIndex = 0;
+
+        ComparingIndex = 0;
+
+        PassHadSwap = false;
+
+        ComparisonCount = 0;
+
+        SwapCount = 0;
+
+        Score = 0;
+
+        Streak = 0;
+
+        BestStreak = 0;
+
+        CorrectPredictions = 0;
+
+        WrongPredictions = 0;
+
+        LastGuessCorrect = null;
+
+        FeedbackMessage =
+            string.Empty;
+
+        Mistakes.Clear();
+
+        Phase =
+            GamePhase.Predicting;
+    }
+
+
+    // ============================================================
+    // GENERATE ARRAY
+    // ============================================================
+
+    private List<int> GenerateArray(
+        int size,
+        ArrayPattern pattern)
+    {
+        var numbers =
+            Enumerable
+                .Range(1, size)
+                .ToList();
+
+
+        switch (pattern)
+        {
+            case ArrayPattern.Reversed:
+
+                numbers.Reverse();
+
+                return numbers;
+
+
+            case ArrayPattern.NearlySorted:
+
+                var swaps =
+                    Math.Max(
+                        1,
+                        size / 4);
+
+                for (var i = 0; i < swaps; i++)
+                {
+                    var index =
+                        Rng.Next(
+                            0,
+                            size - 1);
+
+                    (
+                        numbers[index],
+                        numbers[index + 1]
+                    ) =
+                    (
+                        numbers[index + 1],
+                        numbers[index]
+                    );
+                }
+
+                return numbers;
+
+
+            default:
+
+                return numbers
+                    .OrderBy(_ => Rng.Next())
+                    .ToList();
+        }
+    }
+
+
+    // ============================================================
+    // SUBMIT PREDICTION
+    // ============================================================
+
+    private void SubmitGuess(
+        bool guessSwap)
+    {
+        if (ComparingIndex < 0 ||
+            ComparingIndex + 1 >= Numbers.Count)
+        {
+            return;
+        }
+
+
+        var left =
+            Numbers[ComparingIndex];
+
+        var right =
+            Numbers[ComparingIndex + 1];
+
+
+        var actualSwap =
+            left > right;
+
+
+        ComparisonCount++;
+
+
+        // ========================================================
+        // CORRECT
+        // ========================================================
+
+        if (guessSwap == actualSwap)
+        {
+            LastGuessCorrect =
+                true;
+
+            CorrectPredictions++;
+
+            Streak++;
+
+            BestStreak =
+                Math.Max(
+                    BestStreak,
+                    Streak);
+
+            Score +=
+                10 + Streak;
+
+
+            FeedbackMessage =
+                actualSwap
+                    ? $"{left} is greater than {right}, so the values swap."
+
+                    : $"{left} is already smaller than {right}, so no swap is needed.";
+        }
+
+
+        // ========================================================
+        // WRONG
+        // ========================================================
+
+        else
+        {
+            LastGuessCorrect =
+                false;
+
+            WrongPredictions++;
+
+            Streak = 0;
+
+
+            FeedbackMessage =
+                actualSwap
+                    ? $"{left} is greater than {right}, so they must swap."
+
+                    : $"{left} is smaller than {right}, so they stay in the same order.";
+
+
+            Mistakes.Add(
+                $"Comparison {ComparisonCount}: " +
+                $"@{left} and {right} → " +
+                $"you predicted {(guessSwap ? "swap" : "no swap")}, " +
+                $"but the correct answer was {(actualSwap ? "swap" : "no swap")}.");
+        }
+
+
+        // ========================================================
+        // PERFORM ACTUAL BUBBLE SORT OPERATION
+        // ========================================================
+
+        if (actualSwap)
+        {
+            (
+                Numbers[ComparingIndex],
+                Numbers[ComparingIndex + 1]
+            ) =
+            (
+                Numbers[ComparingIndex + 1],
+                Numbers[ComparingIndex]
+            );
+
+
+            SwapCount++;
+
+            PassHadSwap = true;
+        }
+
+
+        Phase =
+            GamePhase.Revealed;
+    }
+
+
+    // ============================================================
+    // CONTINUE
+    // ============================================================
+
+    private void Continue()
+    {
+        AdvanceToNextComparison();
+    }
+
+
+    // ============================================================
+    // NEXT COMPARISON
+    // ============================================================
+
+    private void AdvanceToNextComparison()
+    {
+        CurrentIndex++;
+
+
+        // --------------------------------------------------------
+        // Still inside current pass
+        // --------------------------------------------------------
+
+        if (CurrentIndex <
+            Numbers.Count - CurrentPass)
+        {
+            ComparingIndex =
+                CurrentIndex;
+
+            Phase =
+                GamePhase.Predicting;
+
+            return;
+        }
+
+
+        // --------------------------------------------------------
+        // Current pass finished
+        // --------------------------------------------------------
+
+        if (!PassHadSwap)
+        {
+            CompleteGame();
+
+            return;
+        }
+
+
+        // --------------------------------------------------------
+        // Start next pass
+        // --------------------------------------------------------
+
+        CurrentPass++;
+
+        CurrentIndex = 0;
+
+        PassHadSwap = false;
+
+
+        // All elements are sorted
+        if (CurrentPass >= Numbers.Count)
+        {
+            CompleteGame();
+
+            return;
+        }
+
+
+        ComparingIndex = 0;
+
+        Phase =
+            GamePhase.Predicting;
+    }
+
+
+    // ============================================================
+    // COMPLETE GAME
+    // ============================================================
+
+    private void CompleteGame()
+    {
+        Phase =
+            GamePhase.Completed;
+
+        ComparingIndex = -1;
+    }
+
+
+    // ============================================================
+    // RESULT
+    // ============================================================
+
+    private BubbleSortResult BuildResult()
+    {
+        return new BubbleSortResult
+        {
+            Score = Score,
+
+            Accuracy = Accuracy,
+
+            ComparisonCount =
+                ComparisonCount,
+
+            SwapCount =
+                SwapCount,
+
+            CorrectPredictions =
+                CorrectPredictions,
+
+            WrongPredictions =
+                WrongPredictions,
+
+            BestStreak =
+                BestStreak,
+
+            ArraySize =
+                Numbers.Count
+        };
+    }
+
+
+    // ============================================================
+    // RESET
+    // ============================================================
+
+    private void Reset()
+    {
+        Phase =
+            GamePhase.Setup;
+
+        Numbers.Clear();
+
+        ComparingIndex = -1;
+
+        CurrentPass = 0;
+
+        CurrentIndex = 0;
+
+        ComparisonCount = 0;
+
+        SwapCount = 0;
+
+        Score = 0;
+
+        Streak = 0;
+
+        BestStreak = 0;
+
+        CorrectPredictions = 0;
+
+        WrongPredictions = 0;
+
+        LastGuessCorrect = null;
+
+        FeedbackMessage =
+            string.Empty;
+
+        Mistakes.Clear();
+    }
+
+}

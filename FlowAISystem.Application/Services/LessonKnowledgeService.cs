@@ -2,6 +2,7 @@ using FlowAISystem.Application.Interfaces.Repositories;
 using FlowAISystem.Application.Interfaces.Services;
 using FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
+
 namespace FlowAISystem.Application.Services;
 
 public class LessonKnowledgeService : ILessonKnowledgeService
@@ -15,9 +16,6 @@ public class LessonKnowledgeService : ILessonKnowledgeService
     {
         _repository = repository;
     }
-
-
-
     // ==================================================
     // Get All Lessons
     // ==================================================
@@ -27,9 +25,6 @@ public class LessonKnowledgeService : ILessonKnowledgeService
     {
         return await _repository.GetAllAsync(search);
     }
-
-
-
     // ==================================================
     // Get Lesson By Id
     // ==================================================
@@ -39,9 +34,6 @@ public class LessonKnowledgeService : ILessonKnowledgeService
     {
         return await _repository.GetByIdAsync(id);
     }
-
-
-
     // ==================================================
     // Create Lesson
     // ==================================================
@@ -66,9 +58,6 @@ public class LessonKnowledgeService : ILessonKnowledgeService
 
         await _repository.CreateAsync(dto);
     }
-
-
-
     // ==================================================
     // Update Lesson
     // ==================================================
@@ -86,9 +75,6 @@ public class LessonKnowledgeService : ILessonKnowledgeService
 
         await _repository.UpdateAsync(dto);
     }
-
-
-
     // ==================================================
     // Delete Lesson
     // ==================================================
@@ -107,8 +93,6 @@ public class LessonKnowledgeService : ILessonKnowledgeService
         await _repository.DeleteAsync(id);
     }
 
-
-
     // ==================================================
     // Teacher Lessons
     // ==================================================
@@ -122,31 +106,29 @@ public class LessonKnowledgeService : ILessonKnowledgeService
             .GetByTeacherAsync(teacherId);
 
     }
-
-
-
     // ==================================================
     // AI Search
     // ==================================================
 
-    public async Task<List<LessonKnowledgeDto>>
-        SearchAsync(
-            string keyword)
+    public async Task<List<LessonKnowledgeDto>> SearchAsync(
+        IEnumerable<string> keywords)
     {
-
-        if (string.IsNullOrWhiteSpace(keyword))
+        if (keywords == null)
         {
             return new List<LessonKnowledgeDto>();
         }
 
-
-        return await _repository
-            .SearchAsync(keyword);
-
+        return await _repository.SearchAsync(keywords);
     }
+    // ==================================================
+    // Tutorial Lessons
+    // ==================================================
 
-
-
+    public async Task<List<LessonKnowledgeDto>> GetAllForTutorialAsync(
+        LessonKnowledgeSearchDto search)
+    {
+        return await _repository.GetAllForTutorialAsync(search);
+    }// take it in short becase has impletment in repositoty 
     // ==================================================
     // Student AI Lesson Retrieval
     // ==================================================

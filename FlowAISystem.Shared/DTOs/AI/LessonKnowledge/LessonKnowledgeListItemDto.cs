@@ -1,3 +1,4 @@
+using FlowAISystem.Shared.Enums;
 namespace FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
 public class LessonKnowledgeListItemDto
@@ -17,6 +18,10 @@ public class LessonKnowledgeListItemDto
 
     public string Category { get; set; }
         = string.Empty;
+    public LessonDifficulty Difficulty { get; set; }
+    = LessonDifficulty.Beginner;
+    public string? ActivityType { get; set; }
+    public int Order { get; set; }
 
     // ==================================================
     // Teacher
@@ -31,7 +36,7 @@ public class LessonKnowledgeListItemDto
     // Course
     // ==================================================
 
-    public int CourseOfferingId { get; set; }
+    public int? CourseOfferingId { get; set; }
 
     public string CourseName { get; set; }
         = string.Empty;

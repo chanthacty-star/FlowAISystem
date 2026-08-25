@@ -1,0 +1,306 @@
+@using Microsoft.JSInterop
+
+@namespace FlowAISystem.Web.Components.Pages.Student.Tutorials
+
+@inject IJSRuntime JS
+
+
+<div class="code-example">
+
+    <div class="code-example-window">
+
+        <!-- =================================================
+             Header
+             ================================================= -->
+
+        <div class="code-example-header">
+
+            <div class="code-example-title">
+
+                <span class="code-example-icon">
+                    💻
+                </span>
+
+                <span>
+                    @Title
+                </span>
+
+            </div>
+
+
+            <div class="code-example-actions">
+
+                @if (ShowCopy)
+                {
+                    <button type="button"
+                            class="code-example-button"
+                            title="Copy code"
+                            @onclick="CopyCode">
+
+                        <span>
+                            📋
+                        </span>
+
+                        <span>
+                            @(isCopied ? "Copied!" : "Copy")
+                        </span>
+
+                    </button>
+                }
+
+
+                @if (ShowRun)
+                {
+                    <button type="button"
+                            class="code-example-button run"
+                            title="Run code"
+                            disabled="@(!CanRun)"
+                            @onclick="RunCode">
+
+                        <span>
+                            ▶
+                        </span>
+
+                        <span>
+                            Run
+                        </span>
+
+                    </button>
+                }
+
+
+                <button type="button"
+                        class="code-example-icon-button"
+                        title="Minimize"
+                        @onclick="ToggleMinimize">
+
+                    @(isMinimized ? "＋" : "−")
+
+                </button>
+
+
+                @if (ShowClose)
+                {
+                    <button type="button"
+                            class="code-example-icon-button close"
+                            title="Close"
+                            @onclick="Close">
+
+                        ×
+
+                    </button>
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             Body
+             ================================================= -->
+
+        @if (!isMinimized)
+        {
+            <div class="code-example-body">
+
+                <div class="code-example-language">
+                    @Language
+                </div>
+
+
+                <div class="code-example-code-wrapper">
+
+                    <pre class="code-example-pre"><code @ref="codeElement"
+                            class="language-@PrismLanguage">@Code</code></pre>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+@code
+{
+    [Parameter]
+    public string Title { get; set; }
+        = "Code Example";
+
+
+    [Parameter]
+    public string Language { get; set; }
+        = "C#";
+
+
+    [Parameter]
+    public string Code { get; set; }
+        = string.Empty;
+
+
+    [Parameter]
+    public bool ShowCopy { get; set; }
+        = true;
+
+
+    [Parameter]
+    public bool ShowRun { get; set; }
+        = false;
+
+
+    [Parameter]
+    public bool ShowClose { get; set; }
+        = true;
+
+
+    [Parameter]
+    public bool CanRun { get; set; }
+        = false;
+
+
+    [Parameter]
+    public EventCallback<string> OnCopy { get; set; }
+
+
+    [Parameter]
+    public EventCallback<string> OnRun { get; set; }
+
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+
+    private bool isCopied;
+
+    private bool isMinimized;
+
+    private bool isVisible = true;
+
+    private ElementReference codeElement;
+
+
+    private string PrismLanguage =>
+        Language?.Trim().ToLowerInvariant() switch
+        {
+            "c#" => "csharp",
+            "csharp" => "csharp",
+            "cs" => "csharp",
+
+            "javascript" => "javascript",
+            "js" => "javascript",
+
+            "typescript" => "typescript",
+            "ts" => "typescript",
+
+            "python" => "python",
+            "py" => "python",
+
+            "java" => "java",
+
+            "c++" => "cpp",
+            "cpp" => "cpp",
+
+            "sql" => "sql",
+
+            "html" => "markup",
+            "xml" => "markup",
+
+            "css" => "css",
+
+            "json" => "json",
+
+            "bash" => "bash",
+            "shell" => "bash",
+
+            _ => "none"
+        };
+
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
+    {
+        if (isVisible &&
+            !isMinimized &&
+            !string.IsNullOrWhiteSpace(Code))
+        {
+            await JS.InvokeVoidAsync(
+                "codeExample.highlightElement",
+                codeElement);
+        }
+    }
+
+
+    private async Task CopyCode()
+    {
+        if (OnCopy.HasDelegate)
+        {
+            await OnCopy.InvokeAsync(Code);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync(
+                "navigator.clipboard.writeText",
+                Code);
+        }
+
+
+        isCopied = true;
+
+        await InvokeAsync(
+            StateHasChanged);
+
+
+        await Task.Delay(1200);
+
+
+        isCopied = false;
+
+        await InvokeAsync(
+            StateHasChanged);
+    }
+
+
+    private async Task RunCode()
+    {
+        if (!CanRun)
+        {
+            return;
+        }
+
+
+        if (OnRun.HasDelegate)
+        {
+            await OnRun.InvokeAsync(Code);
+        }
+    }
+
+
+    private void ToggleMinimize()
+    {
+        isMinimized =
+            !isMinimized;
+    }
+
+
+    private async Task Close()
+    {
+        isVisible = false;
+
+
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+
+    private void Restore()
+    {
+        isVisible = true;
+
+        isMinimized = false;
+    }
+}

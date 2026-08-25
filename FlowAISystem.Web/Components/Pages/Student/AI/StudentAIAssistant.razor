@@ -1,105 +1,82 @@
 @page "/student/ai-chat"
-@* ChatMessage reference
-@using FlowAISystem.Web.Models   *@
-@using FlowAISystem.Application.Interfaces.Services
-@using FlowAISystem.Application.AI.Interfaces
-@using FlowAISystem.Shared.DTOs.AI
-@using FlowAISystem.Web.Components.Pages.Student.AI.Components
 
+@using FlowAISystem.Application.AI.Interfaces
+@using FlowAISystem.Application.AI.Student.Quiz.Interfaces
+@using FlowAISystem.Application.AI.Student.Quiz.Models
+@using FlowAISystem.Application.Interfaces.Services
+@using FlowAISystem.Shared.DTOs.AI
+@using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
+@using FlowAISystem.Web.Components.Pages.Student.AI.Components
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
 @using System.Security.Claims
 
-@* voice parr *@
-@using Microsoft.JSInterop
-
+@inject ILessonKnowledgeService LessonKnowledgeService
+@inject IQuizGenerator QuizGenerator
 @inject IJSRuntime JS
-@implements IAsyncDisposable // auton voice
-
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
 @inject IAIConversationService ConversationService
-
 @inject IStudentAIService StudentAIService
-
 @inject IStudentService StudentService
 
+@implements IAsyncDisposable
 
 @attribute [Authorize(Roles = "Student")]
 
 
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
 
-<PageTitle>
-    Student AI Assistant
-</PageTitle>
+<div class="ai-header mb-3">
 
+    <div class="d-flex
+                align-items-center
+                justify-content-between">
 
+        <div>
 
-<div class="student-ai-page">
+            <h2 class="ai-title">
+                🤖 FlowAI Student Assistant
+            </h2>
 
-
-    <!-- Header -->
-
-    <div class="ai-header mb-3">
-
-
-        <div class="d-flex 
-                    align-items-center 
-                    justify-content-between">
-
-
-            <div>
-
-                <h2 class="ai-title">
-
-                    🤖 FlowAI Student Assistant
-
-                </h2>
-
-
-                <p class="ai-subtitle">
-
-                    Your personal AI learning assistant.
-
-                </p>
-
-            </div>
-
-
-            <div>
-
-                <span class="status-indicator"></span>
-
-                <span class="text-muted">
-
-                    FlowAI Engine Active
-
-                </span>
-
-            </div>
-
+            <p class="ai-subtitle">
+                Your personal AI learning assistant.
+            </p>
 
         </div>
 
+        <div>
+
+            <span class="status-indicator"></span>
+
+            <span class="text-muted">
+                FlowAI Engine Active
+            </span>
+
+        </div>
 
     </div>
 
+</div>
 
 
+<!-- ========================================================= -->
+<!-- MAIN AREA -->
+<!-- ========================================================= -->
+
+<div class="row g-0">
 
 
-    <!-- MAIN AREA -->
-
-    <div class="row g-0">
-
-
-    <!-- Conversation Sidebar -->
+    <!-- ===================================================== -->
+    <!-- CONVERSATION SIDEBAR -->
+    <!-- ===================================================== -->
 
     <div class="col-lg-3 border-end">
 
-
         <div class="ai-card h-100">
-
 
             <AIConversationSidebar
 
@@ -115,658 +92,846 @@
 
                 OnDeleteConversation="OpenDeleteModal" />
 
-
-
         </div>
-
 
     </div>
 
 
-        <!-- CHAT AREA -->
+    <!-- ===================================================== -->
+    <!-- CHAT AREA -->
+    <!-- ===================================================== -->
 
-        <div class="col-lg-6">
+    <div class="col-lg-6">
 
+        <div class="ai-card">
 
-            <div class="ai-card">
+            <div class="ai-chat">
 
 
-                <div class="ai-chat">
+                <!-- ================================================= -->
+                <!-- CHAT HEADER -->
+                <!-- ================================================= -->
 
+                <div class="ai-chat-header">
 
+                    <div class="d-flex align-items-center gap-2">
 
-        <!-- Chat Header -->
+                        <span>
+                            💬
+                        </span>
 
-        <div class="ai-chat-header">
+                        <strong>
 
+                            @(currentConversationId == null
+                                ? "New Conversation"
+                                : conversations
+                                    .FirstOrDefault(x =>
+                                        x.Id == currentConversationId)
+                                    ?.Title
+                                    ?? "Conversation")
 
-            <div class="d-flex align-items-center gap-2">
-
-
-                <span>
-                    💬
-                </span>
-
-
-                <strong>
-
-                    @(currentConversationId == null
-                        ? "New Conversation"
-                        : conversations
-                            .FirstOrDefault(x =>
-                                x.Id == currentConversationId)
-                            ?.Title
-                            ?? "Conversation")
-
-                </strong>
-
-
-            </div>
-
-
-
-
-
-            <div class="d-flex gap-2">
-
-
-                <button class="btn btn-sm btn-primary"
-                        @onclick="NewChat">
-
-                    + New Chat
-
-                </button>
-
-
-
-
-
-                @if(chats.Any())
-                {
-
-                    <button class="btn btn-sm btn-outline-secondary"
-                            @onclick="ClearChat">
-
-                        Clear
-
-                    </button>
-
-                }
-
-
-
-
-            </div>
-
-
-        </div>
-
-
-                    <!-- Messages -->
-
-
-                    @* <div class="ai-messages"
-                         @ref="chatScrollContainer"> *@
-                         <div class="ai-messages chat-scroll"
-                                @ref="chatScrollContainer">
-
-
-
-                        @if(!chats.Any())
-                        {
-
-                            <AIWelcomeMessage />
-
-                        }
-                        else
-                        {
-
-                            @foreach(var chat in chats)
-                            {
-                                <AIMessageBubble
-
-                                    IsStudent="@chat.IsStudent"
-
-                                    Message="@chat.Message"
-
-                                    StudentName="@studentName"
-                                    studentProfileImage="@studentProfileImage"  
-
-                                    Response="@chat.Response"
-
-                                    EnableTyping="@chat.EnableTyping" />
-
-                            }
-
-
-                        }
-
-
-                        @if(isLoading)
-                        {
-
-                            <AIThinkingIndicator />
-
-                        }
-
+                        </strong>
 
                     </div>
 
 
-                    <!-- Input -->
+                    <div class="d-flex gap-2">
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-primary"
+                            @onclick="NewChat">
+
+                            + New Chat
+
+                        </button>
 
 
-                    <div class="ai-input">
-
-
-                        <div class="ai-input-box">
-
-
-
-                            <textarea
-
-                                class="form-control"
-
-                                rows="1"
-
-                                placeholder="Ask FlowAI anything..."
-
-                                @bind="question"
-
-                                @bind:event="oninput"
-
-                                @onkeyup="HandleKeyDown">
-
-                            </textarea>
-
-
+                        @if (chats.Any())
+                        {
 
                             <button
-                                class="btn ai-send-btn"
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                @onclick="ClearChat">
 
-                                disabled="@(isLoading 
-                                    || isSending
-                                    || string.IsNullOrWhiteSpace(question))"
-
-                                @onclick="SendMessage">
-
-
-                                @(isSending
-                                    ? "Sending..."
-                                    : isLoading
-                                        ? "Thinking..."
-                                        : "🚀 Send")
-
+                                Clear
 
                             </button>
 
-                            @* Voice Control *@
-
-                            <div class="voice-controls d-flex gap-2">
-
-
-                                @* Main Voice Button *@
-                                <button class="btn btn-outline-secondary"
-                                        @onclick="ToggleVoice">
-
-                                    @if (isListening)
-                                    {
-                                        <span>
-                                            🛑 Stop
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span>
-                                            🎤 Voice
-                                        </span>
-                                    }
-
-                                </button>
-
-
-
-                                @* Pause / Resume *@
-                                @if (isListening || isPaused)
-                                {
-
-                                    @if (!isPaused)
-                                    {
-
-                                        <button class="btn btn-warning"
-                                                @onclick="PauseVoice">
-
-                                            ⏸ Pause
-
-                                        </button>
-
-                                    }
-                                    else
-                                    {
-
-                                        <button class="btn btn-success"
-                                                @onclick="ResumeVoice">
-
-                                            ▶ Resume
-
-                                        </button>
-
-                                    }
-
-                                }
-
-                                <div>
-                                    Voice:
-    
-                                    @if(isListening)
-                                    {
-                                        <span class="text-success">
-                                            Listening...
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-secondary">
-                                            Off
-                                        </span>
-                                    }
-
-                                </div>
-
-
-                            </div>
-
-
-
-                            @* Live Speech Preview *@
-
-                            @if(!string.IsNullOrWhiteSpace(liveSpeech))
-                            {
-
-                                <div class="voice-preview mt-2">
-
-                                    🎙️ @liveSpeech
-
-                                </div>
-
-                            }
-
-
-                        </div>
-
+                        }
 
                     </div>
-
-
 
                 </div>
 
 
-            </div>
+                <!-- ================================================= -->
+                <!-- MESSAGES -->
+                <!-- ================================================= -->
 
+                <div
+                    class="ai-messages chat-scroll"
+                    @ref="chatScrollContainer">
+
+
+                    <!-- ================================================= -->
+                    <!-- QUIZ -->
+                    <!-- ================================================= -->
+
+                    @if (currentQuiz != null && !quizCompleted)
+                    {
+
+                        var quizQuestion = CurrentQuizQuestion;
+
+
+                        @if (quizQuestion != null)
+                        {
+
+                            <div class="quiz-card">
+
+                                <h4>
+                                    📝 @currentQuiz.Topic
+                                </h4>
+
+
+                                <p>
+
+                                    Question
+                                    @(currentQuizIndex + 1)
+                                    /
+                                    @currentQuiz.Questions.Count
+
+                                </p>
+
+
+                                <h5>
+                                    @quizQuestion.Question
+                                </h5>
+
+
+                                <!-- OPTIONS -->
+
+                                @foreach (var option in quizQuestion.Options)
+                                {
+
+                                    <button
+                                        type="button"
+                                        class="quiz-option
+                                               @(selectedQuizAnswer == option
+                                                   ? "selected"
+                                                   : "")"
+                                        disabled="@quizAnswerSubmitted"
+                                        @onclick="async () =>
+                                            await SelectQuizAnswer(option)">
+
+                                        @option
+
+                                    </button>
+
+                                }
+
+
+                                <!-- SUBMIT -->
+
+                                @if (!quizAnswerSubmitted)
+                                {
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary mt-2"
+                                        disabled="@string.IsNullOrWhiteSpace(selectedQuizAnswer)"
+                                        @onclick="SubmitQuizAnswer">
+
+                                        Submit Answer
+
+                                    </button>
+
+                                }
+
+
+                                <!-- RESULT -->
+
+                                @if (quizAnswerSubmitted)
+                                {
+
+                                    var isCorrect =
+                                        string.Equals(
+                                            selectedQuizAnswer,
+                                            quizQuestion.CorrectAnswer,
+                                            StringComparison.OrdinalIgnoreCase);
+
+
+                                    <div class="quiz-result mt-3">
+
+
+                                        @if (isCorrect)
+                                        {
+
+                                            <div>
+                                                ✅ Correct!
+                                            </div>
+
+                                        }
+                                        else
+                                        {
+
+                                            <div>
+                                                ❌ Wrong!
+                                            </div>
+
+
+                                            <div>
+
+                                                Correct answer:
+
+                                                <strong>
+                                                    @quizQuestion.CorrectAnswer
+                                                </strong>
+
+                                            </div>
+
+                                        }
+
+
+                                        <p>
+                                            💡 @quizQuestion.Explanation
+                                        </p>
+
+                                    </div>
+
+
+                                    <!-- NEXT / FINISH -->
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary mt-2"
+                                        @onclick="NextQuizQuestion">
+
+                                        @(currentQuizIndex ==
+                                            currentQuiz.Questions.Count - 1
+                                            ? "Finish Quiz"
+                                            : "Next")
+
+                                    </button>
+
+                                }
+
+                            </div>
+
+                        }
+
+                    }
+
+
+                    <!-- ================================================= -->
+                    <!-- QUIZ COMPLETED -->
+                    <!-- ================================================= -->
+
+                    @if (currentQuiz != null && quizCompleted)
+                    {
+
+                        <div class="quiz-result">
+
+                            <h3>
+                                🎉 Quiz Completed!
+                            </h3>
+
+
+                            <p>
+
+                                Topic:
+
+                                <strong>
+                                    @currentQuiz.Topic
+                                </strong>
+
+                            </p>
+
+
+                            <p>
+
+                                Score:
+
+                                <strong>
+                                    @quizScore /
+                                    @currentQuiz.Questions.Count
+                                </strong>
+
+                            </p>
+
+
+                            <p>
+                                @GetQuizResultMessage()
+                            </p>
+
+
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                @onclick="StartQuiz">
+
+                                Try Again
+
+                            </button>
+
+                        </div>
+
+                    }
+
+
+                    <!-- ================================================= -->
+                    <!-- CHAT MESSAGES -->
+                    <!-- ================================================= -->
+
+                    @if (!chats.Any())
+                    {
+
+                        <AIWelcomeMessage
+                            StudentName="@studentName" />
+
+                    }
+                    else
+                    {
+
+                        @for (var i = 0; i < chats.Count; i++)
+                        {
+                            var chat = chats[i];
+
+                            var isLatestAIMessage =
+                                !chat.IsStudent &&
+                                i == chats.FindLastIndex(
+                                    x => !x.IsStudent);
+
+                            <AIMessageBubble
+                                IsStudent="@chat.IsStudent"
+                                Message="@chat.Message"
+                                StudentName="@studentName"
+                                StudentProfileImage="@studentProfileImage"
+                                Response="@chat.Response"
+                                EnableTyping="@chat.EnableTyping"
+                                IsLatestMessage="@isLatestAIMessage"
+                                OnFollowUpSelected="HandleFollowUp" />
+                        }
+
+                    }
+
+
+                    <!-- ================================================= -->
+                    <!-- THINKING -->
+                    <!-- ================================================= -->
+
+                    @if (isLoading)
+                    {
+
+                        <AIThinkingIndicator />
+
+                    }
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- INPUT -->
+                <!-- ================================================= -->
+
+                <div class="ai-input">
+
+                    <div class="ai-input-box">
+
+
+                        <textarea
+                            class="form-control"
+                            rows="1"
+                            placeholder="Ask FlowAI anything..."
+                            @bind="question"
+                            @bind:event="oninput"
+                            @onkeyup="HandleKeyDown">
+                        </textarea>
+
+
+                        <button
+                            type="button"
+                            class="btn ai-send-btn"
+                            disabled="@(isLoading ||
+                                       isSending ||
+                                       string.IsNullOrWhiteSpace(question))"
+                            @onclick="SendMessage">
+
+                            @(isSending
+                                ? "Sending..."
+                                : isLoading
+                                    ? "Thinking..."
+                                    : "🚀 Send")
+
+                        </button>
+
+
+                        <!-- VOICE -->
+
+                        <div class="voice-controls d-flex gap-2">
+
+
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                @onclick="ToggleVoice">
+
+                                @if (isListening)
+                                {
+                                    <span>🛑 Stop</span>
+                                }
+                                else
+                                {
+                                    <span>🎤 Voice</span>
+                                }
+
+                            </button>
+
+
+                            @if (isListening || isPaused)
+                            {
+
+                                @if (!isPaused)
+                                {
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-warning"
+                                        @onclick="PauseVoice">
+
+                                        ⏸ Pause
+
+                                    </button>
+
+                                }
+                                else
+                                {
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-success"
+                                        @onclick="ResumeVoice">
+
+                                        ▶ Resume
+
+                                    </button>
+
+                                }
+
+                            }
+
+
+                            <div>
+
+                                Voice:
+
+                                @if (isListening)
+                                {
+                                    <span class="text-success">
+                                        Listening...
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">
+                                        Off
+                                    </span>
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        @if (!string.IsNullOrWhiteSpace(liveSpeech))
+                        {
+
+                            <div class="voice-preview mt-2">
+
+                                🎙️ @liveSpeech
+
+                            </div>
+
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
-
-        <!-- CONTEXT SIDEBAR -->
-
-        <div class="col-lg-3">
+    </div>
 
 
-            <div class="ai-sidebar">
+    <!-- ===================================================== -->
+    <!-- LEARNING CONTEXT SIDEBAR -->
+    <!-- ===================================================== -->
+
+    <div class="col-lg-3">
+
+        <div class="ai-sidebar">
 
 
+            <!-- ================================================= -->
+            <!-- LEARNING CONTEXT -->
+            <!-- ================================================= -->
 
-                <div class="ai-side-card">
+            <div class="ai-side-card">
+
+                <h5 class="ai-side-title">
+                    📚 Learning Context
+                </h5>
 
 
-                    <h5 class="ai-side-title">
-
-                        📚 Learning Context
-
-                    </h5>
-
-
-
+                @if (currentLesson != null)
+                {
 
                     <div class="context-section">
 
-
                         <span class="context-label">
-
-                            Current Topic
-
+                            Selected Lesson
                         </span>
 
+
+                        <div class="context-value">
+                            @currentLesson.Title
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm mt-3"
+                            @onclick="StartQuiz">
+
+                            📝 Test Interactive Quiz
+
+                        </button>
+
+                    </div>
+
+                }
+                else
+                {
+
+                    <div class="context-section">
+
+                        <span class="context-label">
+                            Current Topic
+                        </span>
 
 
                         <div class="context-value">
 
-
                             @(chats
-                                .LastOrDefault(x => x.IsStudent) //?.Message
+                                .LastOrDefault(x => x.IsStudent)
                                 ?.Message
-                                ??
-                                "Waiting for question...")
-
+                                ?? "Waiting for question...")
 
                         </div>
 
 
+                        <small class="text-muted d-block mt-2">
+
+                            Ask FlowAI about a lesson to load
+                            the learning context.
+
+                        </small>
+
                     </div>
 
-
-
-                </div>
-
-
-
-
-
-
-
-                <div class="ai-side-card">
-
-
-                    <h5 class="ai-side-title">
-
-                        💡 Suggested Questions
-
-                    </h5>
-
-
-
-                    <AIQuickQuestion
-
-                        Text="Explain Binary Search"
-
-                        Icon="⚡"
-
-                        OnQuestionSelected="SetQuestion" />
-
-
-
-                    <AIQuickQuestion
-
-                        Text="Explain Python List"
-
-                        Icon="⚡"
-
-                        OnQuestionSelected="SetQuestion" />
-
-
-
-                    <AIQuickQuestion
-
-                        Text="Explain Database Normalization"
-
-                        Icon="⚡"
-
-                        OnQuestionSelected="SetQuestion" />
-
-
-
-                </div>
-
-
+                }
 
             </div>
 
 
+            <!-- ================================================= -->
+            <!-- SUGGESTED QUESTIONS -->
+            <!-- ================================================= -->
+
+            <div class="ai-side-card">
+
+                <h5 class="ai-side-title">
+                    💡 Suggested Questions
+                </h5>
+
+
+                <AIQuickQuestion
+                    Text="Explain Binary Search"
+                    Icon="⚡"
+                    OnQuestionSelected="SetQuestion" />
+
+
+                <AIQuickQuestion
+                    Text="Explain Python List"
+                    Icon="⚡"
+                    OnQuestionSelected="SetQuestion" />
+
+
+                <AIQuickQuestion
+                    Text="Explain Database Normalization"
+                    Icon="⚡"
+                    OnQuestionSelected="SetQuestion" />
+
+            </div>
+
         </div>
-
-
 
     </div>
-
-
-
-        <!-- Delete Modal -->
-      @if(showDeleteModal)
-        {
-
-            <div class="modal-backdrop fade show"></div>
-
-
-            <div class="modal fade show d-block"
-                 tabindex="-1">
-
-
-                <div class="modal-dialog modal-dialog-centered">
-
-
-                    <div class="modal-content">
-
-
-                        <div class="modal-header">
-
-                            <h5 class="modal-title">
-                                Delete Conversation
-                            </h5>
-
-
-                            <button type="button"
-                                    class="btn-close"
-                                    @onclick="CancelDelete">
-                            </button>
-
-                        </div>
-
-
-
-
-                        <div class="modal-body">
-
-                            <p>
-                                Are you sure you want to delete this conversation?
-                            </p>
-
-                        </div>
-
-
-
-
-                        <div class="modal-footer">
-
-
-                            <button class="btn btn-secondary"
-                                    @onclick="CancelDelete">
-
-                                Cancel
-
-                            </button>
-
-
-
-                            <button class="btn btn-danger"
-                                    @onclick="ConfirmDelete">
-
-                                🗑 Delete
-
-                            </button>
-
-
-                        </div>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
-        }
-
-    @if(showRenameModal)
-    {
-
-        <div class="modal-backdrop fade show"></div>
-
-
-
-        <div class="modal fade show d-block"
-             tabindex="-1">
-
-
-
-            <div class="modal-dialog modal-dialog-centered">
-
-
-
-                <div class="modal-content">
-
-
-
-                    <div class="modal-header">
-
-
-                        <h5 class="modal-title">
-
-                            Rename Conversation
-
-                        </h5>
-
-
-
-                        <button type="button"
-                                class="btn-close"
-                                @onclick="CancelRename">
-
-                        </button>
-
-
-                    </div>
-
-
-
-
-                    <div class="modal-body">
-
-
-                        <label class="form-label">
-
-                            Conversation title
-
-                        </label>
-
-
-
-                        <input class="form-control"
-                               @bind="renameTitle"
-                               placeholder="Enter title..." />
-
-
-
-                    </div>
-
-
-
-
-
-                    <div class="modal-footer">
-
-
-                        <button class="btn btn-secondary"
-                                @onclick="CancelRename">
-
-                            Cancel
-
-                        </button>
-
-
-
-
-                        <button class="btn btn-primary"
-                                @onclick="ConfirmRename">
-
-                            💾 Save
-
-                        </button>
-
-
-                    </div>
-
-
-
-                </div>
-
-
-
-            </div>
-
-
-
-        </div>
-
-    }
 
 </div>
 
 
+<!-- ========================================================= -->
+<!-- DELETE MODAL -->
+<!-- ========================================================= -->
 
-@code
+@if (showDeleteModal)
 {
-    // ===============================
-    // Voice State
+
+    <div class="modal-backdrop fade show"></div>
+
+    <div
+        class="modal fade show d-block"
+        tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Delete Conversation
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        @onclick="CancelDelete">
+                    </button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <p>
+                        Are you sure you want to delete this conversation?
+                    </p>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        @onclick="CancelDelete">
+
+                        Cancel
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-danger"
+                        @onclick="ConfirmDelete">
+
+                        🗑 Delete
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+}
+
+
+<!-- ========================================================= -->
+<!-- RENAME MODAL -->
+<!-- ========================================================= -->
+
+@if (showRenameModal)
+{
+
+    <div class="modal-backdrop fade show"></div>
+
+    <div
+        class="modal fade show d-block"
+        tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Rename Conversation
+                    </h5>
+
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        @onclick="CancelRename">
+                    </button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <label class="form-label">
+                        Conversation title
+                    </label>
+
+
+                    <input
+                        class="form-control"
+                        @bind="renameTitle"
+                        placeholder="Enter title..." />
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        @onclick="CancelRename">
+
+                        Cancel
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        @onclick="ConfirmRename">
+
+                        💾 Save
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+}
+
+
+@code {
+
+    // =========================================================
+    // VOICE STATE
+    // =========================================================
 
     private DotNetObjectReference<StudentAIAssistant>? voiceRef;
 
-    private bool voiceInitialized = false;
+    private bool voiceInitialized;
 
-    private bool isListening = false;
+    private bool isListening;
 
-    private bool isPaused = false;
+    private bool isPaused;
 
-    private bool disposed = false;
+    private bool disposed;
 
     private string liveSpeech = string.Empty;
 
     private string voiceLanguage = "en-US";
-    //end voic feature
+
+
+    // =========================================================
+    // CONVERSATION
+    // =========================================================
 
     private bool showDeleteModal;
 
     private bool showRenameModal;
 
-
     private int selectedConversationId;
 
-     // student 
+    private string renameTitle = string.Empty;
+
+    private int? currentConversationId;
+
+    private List<AIConversationDto> conversations = new();
+
+
+    // =========================================================
+    // STUDENT
+    // =========================================================
 
     private int currentUserId;
 
     private int currentStudentId;
-    
-    private string studentName = string.Empty; // connect to student profile from AIMessageBubble.razor
-    private string? studentProfileImage; // connect to student profile from AIMessageBubble.razor
 
-    private string renameTitle = string.Empty;
-    /////
+    private string studentName = string.Empty;
+
+    private string? studentProfileImage;
+
+
+    // =========================================================
+    // CHAT
+    // =========================================================
 
     private string question = string.Empty;
-
 
     private bool isLoading;
 
     private bool isSending;
 
-
     private ElementReference chatScrollContainer;
-
-
 
     private List<ChatMessage> chats = new();
 
 
+    // =========================================================
+    // LESSON CONTEXT
+    // =========================================================
 
-    private List<AIConversationDto> conversations = new();
+    private int? currentLessonId;
+
+    private LessonKnowledgeDto? currentLesson;
 
 
+    // =========================================================
+    // QUIZ
+    // =========================================================
 
-    private int? currentConversationId;
+    private QuizResult? currentQuiz;
 
+    private int currentQuizIndex;
+
+    private int quizScore;
+
+    private string? selectedQuizAnswer;
+
+    private bool quizAnswerSubmitted;
+
+    private bool quizCompleted;
+
+
+    // =========================================================
+    // INITIALIZATION
+    // =========================================================
 
     protected override async Task OnInitializedAsync()
     {
@@ -774,839 +939,983 @@
             await AuthenticationStateProvider
                 .GetAuthenticationStateAsync();
 
-
-        var user =
-            authState.User;
-
+        var user = authState.User;
 
         var userIdClaim =
             user.FindFirst("UserId")
-            ??
-            user.FindFirst(
+            ?? user.FindFirst(
                 ClaimTypes.NameIdentifier);
 
-
-        if(userIdClaim == null)
+        if (userIdClaim == null)
+        {
             return;
+        }
+
+        if (!int.TryParse(
+                userIdClaim.Value,
+                out currentUserId))
+        {
+            return;
+        }
 
 
-        currentUserId =
-            int.Parse(userIdClaim.Value);
+        await LoadStudent();
+
+        await LoadConversations();
+    }
 
 
+    // =========================================================
+    // LOAD STUDENT
+    // =========================================================
 
-        // Get Student Profile
-        var student =
+    private async Task LoadStudent()
+    {
+        var profile =
             await StudentService
-                .GetProfileAsync(
-                    currentUserId);
+                .GetProfileAsync(currentUserId);
 
-
-
-        if(student != null)
+        if (profile == null)
         {
-            currentStudentId =
-                student.Id;
-        }
-
-
-        await LoadStudent(); // Load student info calling 
-        await LoadConversations();
-    }
-
-    private async Task LoadStudent() // for all student info, name, profile image, etc. to connect to AIMessageBubble.razor
-    {
-        var authState =
-            await AuthenticationStateProvider
-                .GetAuthenticationStateAsync();
-
-        var user =
-            authState.User;
-
-
-        var userIdClaim =
-            user.FindFirst("sub");
-
-
-        if(userIdClaim != null)
-        {
-            currentUserId =
-                int.Parse(userIdClaim.Value);
-
-
-            var profile =
-                await StudentService
-                    .GetProfileAsync(currentUserId);
-
-
-            if(profile != null)
-            {
-                currentStudentId =
-                    profile.Id;
-
-
-            studentName =
-                $"{profile.FirstName} {profile.LastName}"; // connect to student profile from AIMessageBubble.razor
-
-
-            studentProfileImage =
-                profile.ProfileImage; // connect to student profile from AIMessageBubble.razor
-            }
-        }
-    }
-
-
-    private async Task LoadConversations()
-    {
-
-        conversations =
-            await ConversationService
-                .GetUserConversationsAsync(
-                    currentUserId);
-
-    }
-
-
-    private async Task CreateConversation()
-    {
-
-        if(currentConversationId != null)
             return;
+        }
 
+        currentStudentId = profile.Id;
 
+        studentName =
+            $"{profile.FirstName} {profile.LastName}";
 
-        currentConversationId =
-            await ConversationService
-                .CreateConversationAsync(
-                    currentUserId);
-
-
-
-        await LoadConversations();
-
+        studentProfileImage =
+            profile.ProfileImage;
     }
 
 
-   private async Task AskAI(
+    // =========================================================
+    // LOAD LESSON
+    // =========================================================
+
+    private async Task SelectLesson(int lessonId)
+    {
+        if (lessonId <= 0)
+        {
+            return;
+        }
+
+        currentLessonId = lessonId;
+
+        currentLesson =
+            await LessonKnowledgeService
+                .GetLessonForAIAsync(lessonId);
+
+        ResetQuiz();
+
+        await InvokeAsync(
+            StateHasChanged);
+    }
+
+
+    // =========================================================
+    // START QUIZ
+    // =========================================================
+
+    private async Task StartQuiz()
+    {
+        Console.WriteLine("=== START QUIZ ===");
+
+        if (currentLesson == null)
+        {
+            Console.WriteLine(
+                "Cannot start quiz: currentLesson is null.");
+
+            return;
+        }
+
+        currentQuiz =
+            await QuizGenerator.GenerateAsync(
+                currentLesson,
+                5,
+                "Beginner");
+
+        currentQuizIndex = 0;
+
+        quizScore = 0;
+
+        selectedQuizAnswer = null;
+
+        quizAnswerSubmitted = false;
+
+        quizCompleted = false;
+
+        await InvokeAsync(
+            StateHasChanged);
+    }
+
+
+    // =========================================================
+    // CURRENT QUESTION
+    // =========================================================
+
+    private QuizQuestion? CurrentQuizQuestion =>
+        currentQuiz?
+            .Questions
+            .ElementAtOrDefault(
+                currentQuizIndex);
+
+
+    // =========================================================
+    // SELECT ANSWER
+    // =========================================================
+
+    private async Task SelectQuizAnswer(
+        string answer)
+    {
+        if (currentQuiz == null)
+        {
+            return;
+        }
+
+        if (quizAnswerSubmitted)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(answer))
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                selectedQuizAnswer))
+        {
+            return;
+        }
+
+        selectedQuizAnswer =
+            answer.Trim();
+
+        await InvokeAsync(
+            StateHasChanged);
+    }
+
+
+    // =========================================================
+    // SUBMIT ANSWER
+    // =========================================================
+
+    private void SubmitQuizAnswer()
+    {
+        var currentQuestion =
+            CurrentQuizQuestion;
+
+        if (currentQuestion == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(
+                selectedQuizAnswer))
+        {
+            return;
+        }
+
+        if (quizAnswerSubmitted)
+        {
+            return;
+        }
+
+        quizAnswerSubmitted = true;
+
+
+        var isCorrect =
+            string.Equals(
+                selectedQuizAnswer,
+                currentQuestion.CorrectAnswer,
+                StringComparison.OrdinalIgnoreCase);
+
+
+        if (isCorrect)
+        {
+            quizScore++;
+        }
+    }
+
+
+    // =========================================================
+    // NEXT QUESTION
+    // =========================================================
+
+    private void NextQuizQuestion()
+    {
+        if (currentQuiz == null)
+        {
+            return;
+        }
+
+        if (!quizAnswerSubmitted)
+        {
+            return;
+        }
+
+        if (currentQuizIndex >=
+            currentQuiz.Questions.Count - 1)
+        {
+            quizCompleted = true;
+
+            return;
+        }
+
+        currentQuizIndex++;
+
+        selectedQuizAnswer = null;
+
+        quizAnswerSubmitted = false;
+    }
+
+
+    // =========================================================
+    // RESET QUIZ
+    // =========================================================
+
+    private void ResetQuiz()
+    {
+        currentQuiz = null;
+
+        currentQuizIndex = 0;
+
+        quizScore = 0;
+
+        selectedQuizAnswer = null;
+
+        quizAnswerSubmitted = false;
+
+        quizCompleted = false;
+    }
+
+
+    // =========================================================
+    // RESULT MESSAGE
+    // =========================================================
+
+    private string GetQuizResultMessage()
+    {
+        if (currentQuiz == null ||
+            currentQuiz.Questions.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var percentage =
+            (double)quizScore /
+            currentQuiz.Questions.Count *
+            100;
+
+        if (percentage >= 80)
+        {
+            return "Excellent work! 🎉";
+        }
+
+        if (percentage >= 60)
+        {
+            return "Good job! Keep practicing. 👍";
+        }
+
+        return "Keep studying and try again. 📚";
+    }
+
+
+    // =========================================================
+    // ASK AI
+    // =========================================================
+
+    private async Task AskAI(
         string? voiceText = null,
         string? language = null)
     {
-
-        if(
-            string.IsNullOrWhiteSpace(question)
-            &&
-            string.IsNullOrWhiteSpace(voiceText)
-        )
+        if (string.IsNullOrWhiteSpace(question) &&
+            string.IsNullOrWhiteSpace(voiceText))
+        {
             return;
+        }
 
-
-
-        if(isLoading || isSending)
+        if (isLoading || isSending)
+        {
             return;
+        }
 
-
-
-        isSending=true;
-
-
+        isSending = true;
+        isLoading = true;
 
         var currentQuestion =
             !string.IsNullOrWhiteSpace(voiceText)
-            ?
-            voiceText.Trim()
-            :
-            question.Trim();
+                ? voiceText.Trim()
+                : question.Trim();
 
+        question = string.Empty;
 
-
-        question=string.Empty;
-
-
-        isLoading=true;
-
-
-        await InvokeAsync(
-            StateHasChanged
-        );
-
-
+        await InvokeAsync(StateHasChanged);
 
         try
         {
+            // =================================================
+            // 1. CREATE CONVERSATION ONLY IF NEEDED
+            // =================================================
 
-            await CreateConversation();
+            if (!currentConversationId.HasValue)
+            {
+                await CreateConversation();
+            }
+
+            if (!currentConversationId.HasValue)
+            {
+                return;
+            }
 
 
+            // =================================================
+            // 2. SAVE USER MESSAGE
+            // =================================================
 
-            await ConversationService
-                .AddMessageAsync(
-                    currentConversationId!.Value,
-                    "User",
-                    currentQuestion
-                );
+            await ConversationService.AddMessageAsync(
+                currentConversationId.Value,
+                "User",
+                currentQuestion);
 
 
-            // student message
             chats.Add(new ChatMessage
             {
                 IsStudent = true,
+
                 Message = currentQuestion,
+
                 EnableTyping = false,
+
                 Time = DateTime.Now
             });
 
-
-            // AI repond
             await InvokeAsync(
-                StateHasChanged
-            );
+                StateHasChanged);
 
 
+            // =================================================
+            // 3. DETECT LANGUAGE
+            // =================================================
 
             var detectedLanguage =
+                language ??
                 DetectLanguage(currentQuestion);
+
+
+            // =================================================
+            // 4. ASK STUDENT AI
+            // =================================================
 
             var response =
                 await StudentAIService.AskAsync(
                     new StudentAIRequestDto
                     {
                         Question = currentQuestion,
+
                         Language = detectedLanguage,
+
                         StudentId = currentStudentId,
-                        ConversationId = currentConversationId
+
+                        ConversationId =
+                            currentConversationId,
+
+                        LessonId =
+                            currentLessonId
                     });
 
 
+            // =================================================
+            // 5. UPDATE CURRENT LESSON
+            // =================================================
 
-                await ConversationService
-                    .AddMessageAsync(
-                        currentConversationId.Value,
-                        "Assistant",
-                        response.Answer
-                    );
-
-                //AI message // do not need student img
-                chats.Add(new ChatMessage
-                {
-                    IsStudent = false,
-                    Message = response.Answer,
-                    Response = response,
-                    EnableTyping = true,
-                    Time = DateTime.Now
-                });
+            if (response.LessonId.HasValue)
+            {
+                await SelectLesson(
+                    response.LessonId.Value);
+            }
 
 
+            // =================================================
+            // 6. SAVE AI RESPONSE
+            // =================================================
+
+            await ConversationService.AddMessageAsync(
+                currentConversationId.Value,
+                "Assistant",
+                response.Answer);
+
+
+            // =================================================
+            // 6.1 REFRESH CONVERSATION SIDEBAR
+            // =================================================
+
+            await LoadConversations();
+
+
+            // =================================================
+            // 7. ADD AI MESSAGE TO UI
+            // =================================================
+
+            chats.Add(new ChatMessage
+            {
+                IsStudent = false,
+
+                Message = response.Answer,
+
+                Response = response,
+
+                EnableTyping = true,
+
+                Time = DateTime.Now
+            });
+
+            await InvokeAsync(StateHasChanged);
+
+
+            // =================================================
+            // 8. REFRESH CONVERSATION SIDEBAR
+            // =================================================
+
+            await LoadConversations();
+
+
+            // =================================================
+            // 9. REFRESH UI
+            // =================================================
 
             await InvokeAsync(
-                StateHasChanged
-            );
+                StateHasChanged);
 
 
+            // =================================================
+            // 10. VOICE
+            // =================================================
 
             await Task.Delay(500);
-
-
 
             await SafeVoiceJS(
                 "flowAIVoice.speak",
                 response.Answer,
-                detectedLanguage
-            );
-
+                detectedLanguage);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-
             Console.WriteLine(
-                $"AskAI Error: {ex.Message}"
-            );
+                $"AskAI Error: {ex}");
 
+            chats.Add(new ChatMessage
+            {
+                IsStudent = false,
+
+                Message =
+                    "Sorry, I couldn't process your request.",
+
+                EnableTyping = false,
+
+                Time = DateTime.Now
+            });
         }
         finally
         {
+            isLoading = false;
 
-            isLoading=false;
-
-            isSending=false;
-
+            isSending = false;
 
             await InvokeAsync(
-                StateHasChanged
-            );
-
+                StateHasChanged);
         }
+    }
 
+    // =========================================================
+    // CONVERSATIONS
+    // =========================================================
+
+    private async Task LoadConversations()
+    {
+        conversations =
+            await ConversationService
+                .GetUserConversationsAsync(
+                    currentUserId);
     }
 
 
-    private async Task LoadConversation(int id) // for load conversation and messages for spacific student by Id
+    // =========================================================
+    // CREATE CONVERSATION
+    // =========================================================
+
+    private async Task CreateConversation()
     {
+        // Already inside an active conversation.
+        // Never create a new conversation for every message.
+        if (currentConversationId.HasValue)
+        {
+            return;
+        }
+
+        currentConversationId =
+            await ConversationService
+                .CreateConversationAsync(
+                    currentUserId);
+
+        await LoadConversations();
+    }
+
+
+    // =========================================================
+    // LOAD EXISTING CONVERSATION
+    // =========================================================
+
+    private async Task LoadConversation(int id)
+    {
+        if (id <= 0)
+        {
+            return;
+        }
+
+        // =====================================================
+        // 1. Switch conversation
+        // =====================================================
+
         currentConversationId = id;
 
+        // =====================================================
+        // 2. Clear current UI state
+        // =====================================================
+
+        chats.Clear();
+
+        question = string.Empty;
+
+        currentLessonId = null;
+        currentLesson = null;
+
+        ResetQuiz();
+
+        // =====================================================
+        // 3. Load conversation
+        // =====================================================
 
         var conversation =
             await ConversationService
                 .GetConversationAsync(id);
 
-
-
-        chats.Clear();
-
-
-
-        if(conversation == null)
-            return;
-
-
-
-        foreach(var message in conversation.Messages)
+        if (conversation == null)
         {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        // =====================================================
+        // 4. Restore messages
+        // =====================================================
+
+        foreach (var message in conversation.Messages
+            .OrderBy(x => x.CreatedAt))
+        {
+            var isStudent =
+                message.Role.Equals(
+                    "User",
+                    StringComparison.OrdinalIgnoreCase);
+
             chats.Add(new ChatMessage
             {
-                IsStudent =
-                    message.Role == "User",
+                IsStudent = isStudent,
 
+                Message = message.Content,
 
-                Message =
-                    message.Content,
+                Time = message.CreatedAt,
 
+                // Historical messages should not type again.
+                EnableTyping = false,
 
-                Time =
-                    message.CreatedAt,
-
-
-                EnableTyping = false
+                // Metadata is not currently persisted in
+                // AIMessageDto.
+                Response = null
             });
         }
 
+        // =====================================================
+        // 5. Render
+        // =====================================================
 
+        await InvokeAsync(StateHasChanged);
 
-        StateHasChanged();
-
-
+        // Give Blazor time to render before scrolling.
+        await Task.Yield();
 
         await ScrollToBottom();
     }
 
-
-
-    private void NewChat()
+    private async Task NewChat()
     {
-
-        chats.Clear();
-
+        // =====================================================
+        // 1. Clear current conversation
+        // =====================================================
 
         currentConversationId = null;
 
-
-        question = string.Empty;
-
-
-    }
-
-
-
-    private void ClearChat()
-    {
+        // =====================================================
+        // 2. Clear visible messages
+        // =====================================================
 
         chats.Clear();
 
+        // =====================================================
+        // 3. Clear input
+        // =====================================================
+
+        question = string.Empty;
+
+        // =====================================================
+        // 4. Clear lesson state
+        // =====================================================
+
+        currentLessonId = null;
+        currentLesson = null;
+
+        // =====================================================
+        // 5. Clear quiz state
+        // =====================================================
+
+        ResetQuiz();
+
+        // =====================================================
+        // 6. Reset temporary UI state
+        // =====================================================
+
+        isLoading = false;
+        isSending = false;
+
+        await InvokeAsync(StateHasChanged);
     }
 
+    private void ClearChat()
+    {
+        chats.Clear();
+    }
+
+
+    // =========================================================
+    // INPUT
+    // =========================================================
 
     private void SetQuestion(string text)
     {
-
         question = text;
-
     }
-
-
 
     private async Task HandleKeyDown(
         KeyboardEventArgs e)
     {
-
-        if(
-            e.Key=="Enter"
-            &&
-            !e.ShiftKey
-        )
+        if (e.Key == "Enter" &&
+            !e.ShiftKey)
         {
-
             await SafeVoiceJS(
-                "flowAIVoice.pause"
-            );
-
+                "flowAIVoice.pause");
 
             await AskAI();
-
         }
-
     }
 
-    // Voice method Initialize
-    // ==========================
-    // VOICE INITIALIZE
-    // ==========================
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    // =========================================================
+    // FOLLOW-UP
+    // =========================================================
+    private async Task SendMessage()
     {
+        await AskAI();
+    }
+    private async Task HandleFollowUp(string action)
+    {
+        question = action switch
+        {
+            "Explain More" =>
+                "Explain the previous answer in more detail.",
 
-        if(!firstRender)
+            "Show Example" =>
+                "Show example",
+
+            "Create Quiz" =>
+                "Create a quiz",
+
+            "Translate" =>
+                "Translate the previous answer to Khmer.",
+
+            _ => action
+        };
+
+        await AskAI();
+    }
+
+    // =========================================================
+    // LANGUAGE
+    // =========================================================
+
+    private string DetectLanguage(
+        string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return "en-US";
+        }
+
+        return text.Any(c =>
+            c >= '\u1780' &&
+            c <= '\u17FF')
+            ? "km-KH"
+            : "en-US";
+    }
+
+
+    // =========================================================
+    // VOICE INITIALIZATION
+    // =========================================================
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
+    {
+        if (!firstRender ||
+            disposed ||
+            voiceInitialized)
+        {
             return;
-
-
-        if(disposed)
-            return;
-
-
-        if(voiceInitialized)
-            return;
-
-
+        }
 
         voiceRef =
-            DotNetObjectReference.Create(this);
-
-
+            DotNetObjectReference
+                .Create(this);
 
         try
         {
-
             await JS.InvokeVoidAsync(
                 "flowAIVoice.initialize",
-                voiceRef
-            );
-
+                voiceRef);
 
             await JS.InvokeVoidAsync(
-                "flowAIVoice.startBackgroundListening"
-            );
+                "flowAIVoice.startBackgroundListening");
 
-
-            voiceInitialized=true;
-
-
+            voiceInitialized = true;
         }
-        catch(JSDisconnectedException)
+        catch (JSDisconnectedException)
         {
-
             Console.WriteLine(
-                "Circuit disconnected during voice init"
-            );
-
+                "Circuit disconnected during voice init.");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-
             Console.WriteLine(
-                $"Voice init error: {ex.Message}"
-            );
-
+                $"Voice init error: {ex.Message}");
         }
-
     }
 
 
-
-    // ==========================
-    // VOICE STARTED
-    // ==========================
+    // =========================================================
+    // VOICE CALLBACKS
+    // =========================================================
 
     [JSInvokable]
     public Task VoiceStarted()
     {
-
         isListening = true;
 
-
-        InvokeAsync(
-            StateHasChanged
-        );
-
-
-        return Task.CompletedTask;
-
+        return InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // VOICE STOPPED
-    // ==========================
 
     [JSInvokable]
     public Task VoiceStopped()
     {
-
         isListening = false;
 
-
-
-        if(!isPaused)
+        if (!isPaused)
         {
             liveSpeech = string.Empty;
         }
 
-
-
-        InvokeAsync(
-            StateHasChanged
-        );
-
-
-        return Task.CompletedTask;
-
+        return InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // VOICE ERROR
-    // ==========================
 
     [JSInvokable]
-    public Task VoiceError(string error)
+    public Task VoiceError(
+        string error)
     {
-
         isListening = false;
 
-
         Console.WriteLine(
-            $"Voice Error: {error}"
-        );
+            $"Voice Error: {error}");
 
-
-        InvokeAsync(
-            StateHasChanged
-        );
-
-
-        return Task.CompletedTask;
-
+        return InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // LIVE SPEECH STREAMING
-    // ==========================
 
     [JSInvokable]
     public Task SpeechStreaming(
         string text,
         string language)
     {
-
-
         liveSpeech = text;
-
 
         voiceLanguage = language;
 
-
-
-        InvokeAsync(
-            StateHasChanged
-        );
-
-
-        return Task.CompletedTask;
-
+        return InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // FINAL SPEECH
-    // AUTO SEND TO AI
-    // ==========================
 
     [JSInvokable]
     public async Task SpeechCompleted(
         string text,
         string language)
     {
-
-        Console.WriteLine(
-            $"Voice Question: {text}"
-        );
-
-
-        if(string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrWhiteSpace(text))
+        {
             return;
-
+        }
 
         voiceLanguage = language;
 
         liveSpeech = string.Empty;
 
-
         await InvokeAsync(
-            StateHasChanged
-        );
+            StateHasChanged);
 
-
-        await InvokeAsync(async () =>
-        {
-            await AskAI(text,  language);
-        });
-
+        await AskAI(
+            text,
+            language);
     }
 
-
-
-    // ==========================
-    // WAKE WORD DETECTED
-    // ==========================
 
     [JSInvokable]
     public async Task WakeWordDetected()
     {
-
-
         isListening = true;
 
-
-
         await InvokeAsync(
-            StateHasChanged
-        );
-
-
+            StateHasChanged);
 
         try
         {
-
             await JS.InvokeVoidAsync(
-                "flowAIVoice.start"
-            );
-
+                "flowAIVoice.start");
         }
-        catch(JSDisconnectedException)
+        catch (JSDisconnectedException)
         {
-
         }
-
     }
 
-
-
-    // ==========================
-    // AI SPEAK START
-    // ==========================
 
     [JSInvokable]
     public Task AISpeakingStarted()
     {
-
         isListening = false;
 
-
-        InvokeAsync(
-            StateHasChanged
-        );
-
-
-        return Task.CompletedTask;
-
+        return InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // AI SPEAK FINISHED
-    // ==========================
 
     [JSInvokable]
     public async Task AISpeakingFinished()
     {
-
         await InvokeAsync(
-            StateHasChanged
-        );
+            StateHasChanged);
 
-
-
-        if(!isPaused)
+        if (!isPaused)
         {
-
-            try
-            {
-
-                await JS.InvokeVoidAsync(
-                    "flowAIVoice.resume"
-                );
-
-            }
-            catch(JSDisconnectedException)
-            {
-
-            }
-
+            await SafeVoiceJS(
+                "flowAIVoice.resume");
         }
-
     }
 
 
-
-    // ==========================
-    // TOGGLE VOICE BUTTON
-    // ==========================
+    // =========================================================
+    // VOICE CONTROLS
+    // =========================================================
 
     private async Task ToggleVoice()
     {
-
-        if(isListening)
+        if (isListening)
         {
+            isPaused = true;
 
-            isPaused=true;
-
-            isListening=false;
-
+            isListening = false;
 
             await SafeVoiceJS(
-                "flowAIVoice.stop"
-            );
-
+                "flowAIVoice.stop");
         }
         else
         {
-
-            isPaused=false;
-
+            isPaused = false;
 
             await SafeVoiceJS(
-                "flowAIVoice.startBackgroundListening"
-            );
-
+                "flowAIVoice.startBackgroundListening");
         }
 
-
-        StateHasChanged();
-
+        await InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // PAUSE VOICE
-    // ==========================
 
     private async Task PauseVoice()
     {
-
         isPaused = true;
 
-
         await SafeVoiceJS(
-            "flowAIVoice.pause"
-        );
+            "flowAIVoice.pause");
 
-
-        StateHasChanged();
-
+        await InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // RESUME VOICE
-    // ==========================
 
     private async Task ResumeVoice()
     {
-
         isPaused = false;
 
-
-
         await SafeVoiceJS(
-            "flowAIVoice.resume"
-        );
+            "flowAIVoice.resume");
 
-
-        StateHasChanged();
-
+        await InvokeAsync(
+            StateHasChanged);
     }
 
-
-
-    // ==========================
-    // SAFE JS CALL
-    // ==========================
 
     private async Task SafeVoiceJS(
         string function,
         params object[] args)
     {
-
         try
         {
-
             await JS.InvokeVoidAsync(
                 function,
-                args
-            );
-
+                args);
         }
-        catch(JSDisconnectedException)
+        catch (JSDisconnectedException)
         {
-
             Console.WriteLine(
-                "JS circuit disconnected"
-            );
-
+                "JS circuit disconnected.");
         }
-        catch(ObjectDisposedException)
+        catch (ObjectDisposedException)
         {
-
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-
             Console.WriteLine(
-                $"Voice JS Error: {ex.Message}"
-            );
-
+                $"Voice JS Error: {ex.Message}");
         }
-
     }
 
 
-
-    // ==========================
-    // DISPOSE
-    // ==========================
-
-    public async ValueTask DisposeAsync()
-    {
-
-        try
-        {
-
-            await SafeVoiceJS(
-                "flowAIVoice.stop"
-            );
-
-        }
-        catch(Exception ex)
-        {
-
-            Console.WriteLine(
-                "Voice Dispose Error: " + ex.Message
-            );
-
-        }
-
-
-
-        voiceRef?.Dispose();
-
-    }
-
-    //end//==
+    // =========================================================
+    // DELETE
+    // =========================================================
 
     private void OpenDeleteModal(int id)
     {
@@ -1616,17 +1925,15 @@
     }
 
 
-
     private async Task ConfirmDelete()
     {
-
         await ConversationService
             .DeleteConversationAsync(
                 selectedConversationId);
 
 
-
-        if(currentConversationId == selectedConversationId)
+        if (currentConversationId ==
+            selectedConversationId)
         {
             currentConversationId = null;
 
@@ -1634,18 +1941,13 @@
         }
 
 
-
         await LoadConversations();
-
-
 
         showDeleteModal = false;
 
-
-        StateHasChanged();
-
+        await InvokeAsync(
+            StateHasChanged);
     }
-
 
 
     private void CancelDelete()
@@ -1654,64 +1956,48 @@
     }
 
 
+    // =========================================================
+    // RENAME
+    // =========================================================
 
     private void OpenRenameModal(int id)
     {
-
         selectedConversationId = id;
-
 
         var conversation =
             conversations
-            .FirstOrDefault(
-                x => x.Id == id);
-
-
+                .FirstOrDefault(
+                    x => x.Id == id);
 
         renameTitle =
             conversation?.Title
-            ?? "";
-
-
+            ?? string.Empty;
 
         showRenameModal = true;
-
     }
-
-
 
 
     private async Task ConfirmRename()
     {
-
-        if(string.IsNullOrWhiteSpace(renameTitle))
+        if (string.IsNullOrWhiteSpace(
+                renameTitle))
+        {
             return;
-
-
+        }
 
         await ConversationService
             .RenameConversationAsync(
-
                 selectedConversationId,
-
-                renameTitle.Trim()
-
-            );
-
+                renameTitle.Trim());
 
 
         await LoadConversations();
 
-
-
         showRenameModal = false;
 
-
-        StateHasChanged();
-
+        await InvokeAsync(
+            StateHasChanged);
     }
-
-
 
 
     private void CancelRename()
@@ -1719,33 +2005,30 @@
         showRenameModal = false;
     }
 
+
+    // =========================================================
+    // CHAT MESSAGE MODEL
+    // =========================================================
+
     private class ChatMessage
     {
-
-
         public bool IsStudent { get; set; }
-
-        // public string StudentName { get; set; } = string.Empty; // no 
 
         public string Message { get; set; }
             = string.Empty;
 
-
         public StudentAIResponseDto? Response { get; set; }
-
-
-
 
         public DateTime Time { get; set; }
             = DateTime.Now;
 
-
-
-
         public bool EnableTyping { get; set; }
-
-
     }
+
+
+    // =========================================================
+    // SCROLL
+    // =========================================================
 
     private async Task ScrollToBottom()
     {
@@ -1753,25 +2036,27 @@
             "scrollChatBottom",
             chatScrollContainer);
     }
-    // send 
-    private async Task SendMessage()
+
+
+    // =========================================================
+    // DISPOSE
+    // =========================================================
+
+    public async ValueTask DisposeAsync()
     {
-        await AskAI();
+        disposed = true;
+
+        try
+        {
+            await SafeVoiceJS(
+                "flowAIVoice.stop");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Voice Dispose Error: {ex.Message}");
+        }
+
+        voiceRef?.Dispose();
     }
-
-    private string DetectLanguage(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return "en-US";
-
-
-        return text.Any(c =>
-            c >= '\u1780' &&
-            c <= '\u17FF')
-            ?
-            "km-KH"
-            :
-            "en-US";
-    }
-
 }

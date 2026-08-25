@@ -1,4 +1,5 @@
 using FlowAISystem.Domain.Common;
+using FlowAISystem.Shared.Enums;
 
 namespace FlowAISystem.Domain.Entities;
 
@@ -24,15 +25,16 @@ public class LessonKnowledge : BaseEntity
     // ==================================================
     // AI Knowledge
     // ==================================================
+    public string Category { get; set; }
+        = string.Empty;
 
     public string Keywords { get; set; }
         = string.Empty;
 
-
-    public string Category { get; set; }
-        = string.Empty;
-
-
+    public LessonDifficulty Difficulty { get; set; }
+        = LessonDifficulty.Beginner;
+    public string? ActivityType { get; set; }
+    public int Order {  get; set; }
 
     // ==================================================
     // Teacher Owner

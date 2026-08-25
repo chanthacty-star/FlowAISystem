@@ -1,0 +1,431 @@
+@using System.Net.Http.Json
+@using FlowAISystem.Shared.DTOs.CodeExecution
+
+@inject HttpClient Http
+
+<div class="interactive-playground">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <div class="playground-header">
+
+        <div class="playground-title">
+
+            <span class="playground-icon">
+                🧪
+            </span>
+
+            <span>
+                @Title
+            </span>
+
+        </div>
+
+        <span class="playground-language">
+            @Language
+        </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         Editor Header
+         ===================================================== -->
+
+    <div class="playground-editor-header">
+
+        <span class="playground-editor-title">
+            ✍️ Code Editor
+        </span>
+
+        <button type="button"
+                class="playground-reset-button"
+                @onclick="ResetCode"
+                disabled="@isRunning">
+
+            ↻ Reset
+
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         Editor
+         ===================================================== -->
+
+    <div class="playground-editor">
+
+        <div class="playground-line-numbers">
+
+            @for (var i = 1; i <= LineCount; i++)
+            {
+                <div class="playground-line-number">
+                    @i
+                </div>
+            }
+
+        </div>
+
+
+        <textarea class="playground-textarea"
+                  @bind="editableCode"
+                  @bind:event="oninput"
+                  spellcheck="false"
+                  disabled="@isRunning"></textarea>
+
+    </div>
+
+
+    <!-- =====================================================
+         Run Bar
+         ===================================================== -->
+
+    <div class="playground-run-bar">
+
+        <button type="button"
+                class="playground-run-button"
+                @onclick="RunCode"
+                disabled="@isRunning">
+
+            @if (isRunning)
+            {
+                <span>⏳ Running...</span>
+            }
+            else
+            {
+                <span>▶ Run</span>
+            }
+
+        </button>
+
+
+        <button type="button"
+                class="playground-clear-button"
+                @onclick="ClearOutput"
+                disabled="@isRunning">
+
+            Clear
+
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         Output
+         ===================================================== -->
+
+    <div class="playground-output">
+
+        <div class="playground-output-header">
+            🖥 Output
+        </div>
+
+
+        <div class="playground-output-body">
+
+            @if (isRunning)
+            {
+                <div class="playground-output-placeholder">
+                    Running your C# code...
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(executionError))
+            {
+                <pre>@executionError</pre>
+            }
+            else if (!hasExecuted)
+            {
+                <div class="playground-output-placeholder">
+                    Click ▶ Run to execute your code.
+                </div>
+            }
+            else if (string.IsNullOrWhiteSpace(output))
+            {
+                <div class="playground-output-placeholder">
+                    Program finished with no output.
+                </div>
+            }
+            else
+            {
+                <pre>@output</pre>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@code
+{
+    // =========================================================
+    // Parameters
+    // =========================================================
+
+    [Parameter]
+    public string Title { get; set; }
+        = "Try It Yourself";
+
+
+    [Parameter]
+    public string Language { get; set; }
+        = "C#";
+
+
+    [Parameter]
+    public string Code { get; set; }
+        = string.Empty;
+
+
+    // =========================================================
+    // State
+    // =========================================================
+
+    private string editableCode = string.Empty;
+
+    private string output = string.Empty;
+
+    private string executionError = string.Empty;
+
+    private bool isRunning;
+
+    private bool hasExecuted;
+
+
+    // =========================================================
+    // Line Count
+    // =========================================================
+
+    private int LineCount
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(editableCode))
+            {
+                return 1;
+            }
+
+            return editableCode.Count(
+                c => c == '\n') + 1;
+        }
+    }
+
+
+    // =========================================================
+    // Initialize / Parameters
+    // =========================================================
+
+    protected override void OnParametersSet()
+    {
+        /*
+         * Initialize the editor from Lesson.Content
+         * only when the editor has not been initialized yet.
+         *
+         * This allows the student to edit the code without
+         * the lesson re-render resetting their changes.
+         */
+
+        if (string.IsNullOrEmpty(editableCode))
+        {
+            editableCode =
+                Code ?? string.Empty;
+        }
+    }
+
+
+    // =========================================================
+    // Run Code
+    // =========================================================
+
+    private async Task RunCode()
+    {
+        if (isRunning)
+        {
+            return;
+        }
+
+
+        if (string.IsNullOrWhiteSpace(editableCode))
+        {
+            output = string.Empty;
+
+            executionError =
+                "Code cannot be empty.";
+
+            hasExecuted = true;
+
+            return;
+        }
+
+
+        // -----------------------------------------------------
+        // Prepare state
+        // -----------------------------------------------------
+
+        output = string.Empty;
+
+        executionError = string.Empty;
+
+        isRunning = true;
+
+        hasExecuted = false;
+
+
+        try
+        {
+            // -------------------------------------------------
+            // Create shared execution request
+            // -------------------------------------------------
+
+            var request =
+                new FlowAISystem.Shared.DTOs.CodeExecution.CodeExecutionRequest
+                {
+                    Code = editableCode,
+
+                    TimeoutSeconds = 5
+                };
+
+
+            // -------------------------------------------------
+            // Send code to CodeRunner
+            // -------------------------------------------------
+
+            var response =
+                await Http.PostAsJsonAsync(
+                    "http://localhost:5250/execute",
+                    request);
+
+
+            // -------------------------------------------------
+            // HTTP error
+            // -------------------------------------------------
+
+            if (!response.IsSuccessStatusCode)
+            {
+                executionError =
+                    $"CodeRunner returned HTTP {(int)response.StatusCode}.";
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // Read execution result
+            // -------------------------------------------------
+
+            var result =
+                await response.Content
+                    .ReadFromJsonAsync<
+                        FlowAISystem.Shared.DTOs.CodeExecution.CodeExecutionResult
+                    >();
+
+
+            if (result == null)
+            {
+                executionError =
+                    "CodeRunner returned an empty response.";
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // Successful execution
+            // -------------------------------------------------
+
+            if (result.Success)
+            {
+                output =
+                    result.Output ?? string.Empty;
+
+                executionError = string.Empty;
+            }
+
+            // -------------------------------------------------
+            // C# compilation/runtime error
+            // -------------------------------------------------
+
+            else
+            {
+                output =
+                    result.Output ?? string.Empty;
+
+                executionError =
+                    string.IsNullOrWhiteSpace(result.Error)
+                        ? "Code execution failed."
+                        : result.Error;
+            }
+        }
+
+        // -----------------------------------------------------
+        // CodeRunner unavailable
+        // -----------------------------------------------------
+
+        catch (HttpRequestException)
+        {
+            executionError =
+                "Cannot connect to FlowAISystem.CodeRunner.\n\n" +
+                "Make sure CodeRunner is running on:\n" +
+                "http://localhost:5250";
+        }
+
+        // -----------------------------------------------------
+        // Unexpected error
+        // -----------------------------------------------------
+
+        catch (Exception ex)
+        {
+            executionError =
+                $"Unexpected error: {ex.Message}";
+        }
+
+        finally
+        {
+            isRunning = false;
+
+            hasExecuted = true;
+        }
+    }
+
+
+    // =========================================================
+    // Reset
+    // =========================================================
+
+    private void ResetCode()
+    {
+        editableCode =
+            Code ?? string.Empty;
+
+        output =
+            string.Empty;
+
+        executionError =
+            string.Empty;
+
+        hasExecuted =
+            false;
+    }
+
+
+    // =========================================================
+    // Clear Output
+    // =========================================================
+
+    private void ClearOutput()
+    {
+        output =
+            string.Empty;
+
+        executionError =
+            string.Empty;
+
+        hasExecuted =
+            false;
+    }
+}

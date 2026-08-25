@@ -1,0 +1,70 @@
+@using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
+
+<div class="tutorial-sidebar">
+
+    <div class="tutorial-sidebar-header">
+
+        <span>
+            📚
+        </span>
+
+        <strong>
+            C# Tutorial
+        </strong>
+
+    </div>
+
+
+    <div class="tutorial-sidebar-lessons">
+
+        @foreach (var lesson in Lessons.OrderBy(x => x.Order))
+        {
+            var isSelected =
+                SelectedLesson?.Order == lesson.Order;
+
+
+            <button type="button"
+                    class="tutorial-sidebar-item @(isSelected ? "active" : "")"
+                    @onclick="() => SelectLesson(lesson)">
+
+                <span class="tutorial-sidebar-order">
+                    @lesson.Order
+                </span>
+
+                <span class="tutorial-sidebar-title">
+                    @lesson.Title
+                </span>
+
+            </button>
+        }
+
+    </div>
+
+</div>
+
+
+@code
+{
+    [Parameter]
+    public List<LessonKnowledgeDto> Lessons { get; set; }
+        = new();
+
+
+    [Parameter]
+    public LessonKnowledgeDto? SelectedLesson { get; set; }
+
+
+    [Parameter]
+    public EventCallback<LessonKnowledgeDto> OnLessonSelected { get; set; }
+
+
+    private async Task SelectLesson(
+        LessonKnowledgeDto lesson)
+    {
+        if (OnLessonSelected.HasDelegate)
+        {
+            await OnLessonSelected
+                .InvokeAsync(lesson);
+        }
+    }
+}

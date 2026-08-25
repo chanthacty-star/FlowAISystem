@@ -1,0 +1,216 @@
+@page "/student/tutorials"
+
+@using FlowAISystem.Shared.DTOs.AI.LessonKnowledge
+
+<PageTitle>C# Tutorial</PageTitle>
+
+<div class="student-tutorials">
+
+    <!-- =====================================================
+         TOP HEADER
+         ===================================================== -->
+
+    <header class="student-tutorials-header">
+
+        <div class="student-tutorials-brand">
+
+            <div class="student-tutorials-brand-icon">
+                💻
+            </div>
+
+            <div>
+                <h1>
+                    C# Tutorial
+                </h1>
+
+                <p>
+                    Learn C# step by step
+                </p>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         MAIN LAYOUT
+         ===================================================== -->
+
+    <div class="student-tutorials-layout">
+
+        <!-- =================================================
+             SIDEBAR
+             ================================================= -->
+
+        <aside class="student-tutorials-sidebar">
+
+            <TutorialSidebar
+                Lessons="@Lessons"
+                SelectedLesson="@SelectedLesson"
+                OnLessonSelected="SelectLesson" />
+
+        </aside>
+
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <main class="student-tutorials-main">
+
+            <TutorialContent
+                Lesson="@SelectedLesson" />
+
+            <TutorialNavigation
+                Lessons="@Lessons"
+                CurrentLesson="@SelectedLesson"
+                OnLessonChanged="SelectLesson" />
+
+        </main>
+
+    </div>
+
+</div>
+
+
+@code
+{
+    // =========================================================
+    // State
+    // =========================================================
+
+    private List<LessonKnowledgeDto> Lessons =
+        new();
+
+    private LessonKnowledgeDto? SelectedLesson;
+
+
+    // =========================================================
+    // Initialization
+    // =========================================================
+
+    protected override void OnInitialized()
+    {
+        /*
+         * Replace this later with your real
+         * LessonKnowledgeService.
+         *
+         * The component structure does not depend
+         * on where the lessons come from.
+         */
+
+        Lessons = GetDemoLessons();
+
+        SelectedLesson =
+            Lessons.FirstOrDefault();
+    }
+
+
+    // =========================================================
+    // Select Lesson
+    // =========================================================
+
+    private void SelectLesson(
+        LessonKnowledgeDto lesson)
+    {
+        SelectedLesson =
+            lesson;
+    }
+
+
+    // =========================================================
+    // Demo Lessons
+    // =========================================================
+
+    private List<LessonKnowledgeDto> GetDemoLessons()
+    {
+        return new List<LessonKnowledgeDto>
+        {
+            new LessonKnowledgeDto
+            {
+                Order = 1,
+                Title = "C# Introduction",
+                Description =
+                    "Learn what C# is and how a simple C# program works.",
+                Category = "C# Basics",
+                Content =
+                    """
+                    # C# Introduction
+
+                    C# is a modern programming language developed by Microsoft.
+
+                    ```csharp
+                    Console.WriteLine("Hello World!");
+                    ```
+
+                    [interactive-code language="csharp"]
+                    Console.WriteLine("Hello World!");
+                    [/interactive-code]
+                    """
+            },
+
+            new LessonKnowledgeDto
+            {
+                Order = 2,
+                Title = "C# Syntax",
+                Description =
+                    "Learn the basic structure and syntax of a C# program.",
+                Category = "C# Basics",
+                Content =
+                    """
+                    # C# Syntax
+
+                    Every C# program contains statements.
+
+                    ```csharp
+                    Console.WriteLine("Hello World!");
+                    ```
+
+                    [interactive-code language="csharp"]
+                    Console.WriteLine("Hello World!");
+                    [/interactive-code]
+                    """
+            },
+
+            new LessonKnowledgeDto
+            {
+                Order = 3,
+                Title = "C# Variables",
+                Description =
+                    "Learn how variables store different kinds of information.",
+                Category = "C# Basics",
+                Content =
+                    """
+                    # C# Variables
+
+                    Variables are used to store data.
+
+                    ```csharp
+                    string studentName = "Chantha";
+                    int age = 20;
+                    double score = 95.5;
+
+                    Console.WriteLine(studentName);
+                    Console.WriteLine(age);
+                    Console.WriteLine(score);
+                    ```
+
+                    ## Try It Yourself
+
+                    Use the interactive playground below to experiment with variables.
+
+                    [interactive-code language="csharp"]
+                    string studentName = "Chantha";
+                    int age = 20;
+                    double score = 95.5;
+
+                    Console.WriteLine(studentName);
+                    Console.WriteLine(age);
+                    Console.WriteLine(score);
+                    [/interactive-code]
+                    """
+            }
+        };
+    }
+}

@@ -1,3 +1,4 @@
+using FlowAISystem.Shared.Enums;
 namespace FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
 public class UpdateLessonKnowledgeDto
@@ -30,6 +31,10 @@ public class UpdateLessonKnowledgeDto
 
     public string Category { get; set; }
         = string.Empty;
+    public LessonDifficulty Difficulty { get; set; }
+    = LessonDifficulty.Beginner;
+    public string? ActivityType { get; set; }
+    public int Order { get; set; }
 
     // ==================================================
     // Academic Information
