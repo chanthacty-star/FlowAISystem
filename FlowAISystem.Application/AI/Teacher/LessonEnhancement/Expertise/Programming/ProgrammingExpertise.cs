@@ -1,5 +1,6 @@
 using FlowAISystem.Application.AI.Teacher.LessonEnhancement.Expertise.Interfaces;
 using FlowAISystem.Application.AI.Teacher.LessonEnhancement.Expertise.Models;
+using FlowAISystem.Application.AI.Teacher.LessonEnhancement.Models;
 using FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
 namespace FlowAISystem.Application.AI.Teacher.LessonEnhancement.Expertise.Programming;
@@ -209,7 +210,82 @@ public class ProgrammingExpertise : ISubjectExpertise
                 -20,
                 10);
     }
+    //Improve method after analyzsis 
+    public void Improve(
+    LessonKnowledgeDto lesson,
+    LessonImprovementResult result)
+    {
+        if (lesson == null || result == null)
+        {
+            return;
+        }
 
+        var content =
+            lesson.Content?.Trim()
+            ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "Programming Content",
+                Message = "Add programming explanation and code examples.",
+                Priority = "High"
+            });
+
+            return;
+        }
+
+        // ------------------------------------------
+        // Code Example
+        // ------------------------------------------
+
+        if (!content.Contains(
+                "```",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "Programming Code Example",
+                Message = "Add a programming code example that demonstrates the main concept.",
+                Priority = "Medium"
+            });
+        }
+
+        // ------------------------------------------
+        // Programming Practice
+        // ------------------------------------------
+
+        if (!content.Contains(
+                "practice",
+                StringComparison.OrdinalIgnoreCase)
+            &&
+            !content.Contains(
+                "exercise",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "Programming Practice",
+                Message = "Add a short programming exercise so students can apply the concept.",
+                Priority = "Medium"
+            });
+        }
+
+        // ------------------------------------------
+        // Explanation Depth
+        // ------------------------------------------
+
+        if (content.Length < 500)
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "Programming Explanation",
+                Message = "Add more explanation around the programming concept.",
+                Priority = "Medium"
+            });
+        }
+    }
 
     // ==================================================
     // Helpers

@@ -1,0 +1,110 @@
+@page "/Game-Ds/array-packer"
+
+<div class="game-wrapper">
+    <h2>📦 Game 1: The Warehouse Packer (Arrays)</h2>
+    <p class="subtitle">Arrays require continuous memory blocks! Try to allocate variables without hitting buffer limits.</p>
+
+    <div class="controls-panel">
+        <label>Variable Name: </label>
+        <input @bind="varName" class="input-field" placeholder="e.g. Arr1" />
+        
+        <label>Size (Blocks): </label>
+        <input type="number" @bind="varSize" min="1" max="8" class="input-field number-input" />
+
+        <button class="btn btn-allocate" @onclick="Allocate">Allocate Contiguous Array 🟢</button>
+        <button class="btn btn-reset" @onclick="ResetMemory">Clear Memory 🔄</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="status-alert @(isSuccess ? "success" : "danger")">@statusMessage</div>
+    }
+
+    <div class="ram-container">
+        <h3>RAM Memory Strip (16 Contiguous Blocks)</h3>
+        <div class="ram-grid">
+            @for (int i = 0; i < ramGrid.Length; i++)
+            {
+                var index = i;
+                <div class="ram-slot @(ramGrid[index] != null ? "occupied" : "free")">
+                    <span class="slot-idx">[@index]</span>
+                    <span class="slot-val">@(ramGrid[index] ?? "FREE")</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+.game-wrapper { max-width: 900px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+.controls-panel { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.input-field { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.number-input { width: 70px; }
+.btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; }
+.btn-allocate { background-color: #28a745; }
+.btn-reset { background-color: #6c757d; }
+.status-alert { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; }
+.status-alert.success { background-color: #d4edda; color: #155724; }
+.status-alert.danger { background-color: #f8d7da; color: #721c24; }
+.ram-container { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+.ram-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-top: 15px; }
+.ram-slot { height: 70px; border: 2px dashed #bbb; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; }
+.ram-slot.occupied { border: 2px solid #007bff; background: #e7f1ff; color: #004085; font-weight: bold; }
+.slot-idx { font-size: 0.75rem; color: #666; }
+.slot-val { font-size: 0.9rem; margin-top: 4px; }
+</style>
+
+@code {
+    private string[] ramGrid = new string[16];
+    private string varName = "DataArr";
+    private int varSize = 3;
+    private string statusMessage = "";
+    private bool isSuccess = true;
+
+    private void Allocate()
+    {
+        if (string.IsNullOrWhiteSpace(varName)) { SetStatus("Enter a valid variable name!", false); return; }
+        
+        int consecutiveFree = 0;
+        int startIdx = -1;
+
+        for (int i = 0; i < ramGrid.Length; i++)
+        {
+            if (ramGrid[i] == null)
+            {
+                if (consecutiveFree == 0) startIdx = i;
+                consecutiveFree++;
+                if (consecutiveFree == varSize) break;
+            }
+            else
+            {
+                consecutiveFree = 0;
+            }
+        }
+
+        if (consecutiveFree >= varSize)
+        {
+            for (int j = startIdx; j < startIdx + varSize; j++)
+            {
+                ramGrid[j] = $"{varName}";
+            }
+            SetStatus($"Successfully allocated '{varName}' across indices [{startIdx}] to [{startIdx + varSize - 1}]!", true);
+        }
+        else
+        {
+            SetStatus($"MemoryAllocationException: Cannot find {varSize} contiguous free slots for '{varName}'!", false);
+        }
+    }
+
+    private void ResetMemory()
+    {
+        ramGrid = new string[16];
+        statusMessage = "";
+    }
+
+    private void SetStatus(string msg, bool success)
+    {
+        statusMessage = msg;
+        isSuccess = success;
+    }
+}

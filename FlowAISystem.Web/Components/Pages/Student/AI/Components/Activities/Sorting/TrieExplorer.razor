@@ -1,0 +1,78 @@
+@page "/Game-Ds/trie-explorer"
+
+<div class="game-wrapper">
+    <h2>🔤 Game 10: The Folder Explorer (Trie / Prefix Tree)</h2>
+    <p class="subtitle">Prefix Trees share common character nodes to optimize auto-complete and search queries.</p>
+
+    <div class="actions">
+        <input @bind="wordInput" class="input-field" placeholder="Word to insert (e.g. CAT)" />
+        <button class="btn btn-trie" @onclick="InsertWord">Insert into Trie 🌲</button>
+    </div>
+
+    <div class="trie-display">
+        <h3>Stored Trie Root & Branches</h3>
+        <ul class="trie-tree">
+            <li><strong>[ROOT]</strong></li>
+            @foreach (var key in root.Children.Keys)
+            {
+                @RenderTrieNode(root.Children[key])
+            }
+        </ul>
+    </div>
+</div>
+
+<style>
+.game-wrapper { max-width: 800px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+.actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.input-field { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1; text-transform: uppercase; }
+.btn-trie { background: #6c5ce7; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+.trie-display { background: #f8f9fa; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+.trie-tree { list-style-type: none; padding-left: 20px; }
+.node-char { background: #00b894; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; display: inline-block; margin: 2px 0; }
+.end-word { background: #d63031; }
+</style>
+
+@code {
+    private class TrieNode
+    {
+        public char Character;
+        public Dictionary<char, TrieNode> Children = new();
+        public bool IsEnd;
+        public TrieNode(char c) => Character = c;
+    }
+
+    private TrieNode root = new TrieNode(' ');
+    private string wordInput = "CAT";
+
+    private void InsertWord()
+    {
+        if (string.IsNullOrWhiteSpace(wordInput)) return;
+        var current = root;
+        foreach (char c in wordInput.ToUpper())
+        {
+            if (!current.Children.ContainsKey(c))
+            {
+                current.Children[c] = new TrieNode(c);
+            }
+            current = current.Children[c];
+        }
+        current.IsEnd = true;
+        wordInput = "";
+    }
+
+    private RenderFragment RenderTrieNode(TrieNode node) => __builder =>
+    {
+        <li>
+            <span class="node-char @(node.IsEnd ? "end-word" : "")">@node.Character</span>
+            @if (node.Children.Count > 0)
+            {
+                <ul>
+                    @foreach (var childKey in node.Children.Keys)
+                    {
+                        @RenderTrieNode(node.Children[childKey])
+                    }
+                </ul>
+            }
+        </li>
+    };
+}

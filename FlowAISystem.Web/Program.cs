@@ -10,6 +10,10 @@ using FlowAISystem.Application.AI.Handlers;
 using FlowAISystem.Application.AI.Student.Interfaces;
 using FlowAISystem.Application.AI.Student.Services;
 
+//Teacher AI Assistant
+using FlowAISystem.Application.AI.Teacher.TeacherAssistant;
+using FlowAISystem.Application.AI.Teacher.TeacherAssistant.Interfaces;
+
 using FlowAISystem.Application.Interfaces.Services.Reports;
 using FlowAISystem.Application.Services.Reports;
 using FlowAISystem.Application.Interfaces.Export;
@@ -139,6 +143,8 @@ builder.Services.AddScoped<IStudentAIService, StudentAIService>();
 builder.Services.AddScoped<IStudentIntentDetector, StudentIntentDetector>();
 
 builder.Services.AddScoped<IKeywordExtractor, KeywordExtractor>();
+//Teacher AI Assistant
+builder.Services.AddScoped<ITeacherAssistant, TeacherAssistant>();
 
 // Blazor Authentication
 builder.Services.AddScoped<TokenStorage>();

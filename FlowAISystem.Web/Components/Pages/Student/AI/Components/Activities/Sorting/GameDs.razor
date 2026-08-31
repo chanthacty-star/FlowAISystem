@@ -1,0 +1,150 @@
+@page "/Game-Ds"
+@inject NavigationManager Navigation
+
+<PageTitle>Data Structure Learning Games 🎮</PageTitle>
+
+<div class="hub-container">
+    <div class="hub-header text-center my-4">
+        <h1 class="display-4 font-weight-bold">🎮 Data Structure Games Hub</h1>
+        <p class="lead text-muted">Master essential data structures step-by-step through interactive web games!</p>
+    </div>
+
+    <!-- Stage 1: Beginner Games -->
+    <section class="stage-section mb-5">
+        <div class="stage-header beginner-header mb-3">
+            <h2>🟢 Stage 1: Beginner (Linear & Contiguous Memory)</h2>
+            <p>Master basic memory layout, indexing, LIFO, and FIFO mechanics.</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var game in GetGamesByStage(1))
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 game-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary">@game.DataStructure</span>
+                                <span class="badge bg-secondary">Game #@game.Id</span>
+                            </div>
+                            <h5 class="card-title font-weight-bold">@game.Icon @game.Title</h5>
+                            <p class="card-text text-muted flex-grow-1">@game.Description</p>
+                            <div class="mb-3">
+                                <small class="text-primary font-weight-bold">Style:</small>
+                                <span class="small text-secondary">@game.Style</span>
+                            </div>
+                            <button class="btn btn-outline-primary w-100 mt-auto" @onclick="() => NavigateToGame(game.Route)">
+                                Play Game 🚀
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Stage 2: Intermediate Games -->
+    <section class="stage-section mb-5">
+        <div class="stage-header intermediate-header mb-3">
+            <h2>🟡 Stage 2: Intermediate (Pointers, Hashes & Search Trees)</h2>
+            <p>Explore node links, key-value mappings, collisions, and tree balance.</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var game in GetGamesByStage(2))
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 game-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-warning text-dark">@game.DataStructure</span>
+                                <span class="badge bg-secondary">Game #@game.Id</span>
+                            </div>
+                            <h5 class="card-title font-weight-bold">@game.Icon @game.Title</h5>
+                            <p class="card-text text-muted flex-grow-1">@game.Description</p>
+                            <div class="mb-3">
+                                <small class="text-primary font-weight-bold">Style:</small>
+                                <span class="small text-secondary">@game.Style</span>
+                            </div>
+                            <button class="btn btn-outline-warning text-dark w-100 mt-auto" @onclick="() => NavigateToGame(game.Route)">
+                                Play Game 🚀
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Stage 3: Advanced Games -->
+    <section class="stage-section mb-5">
+        <div class="stage-header advanced-header mb-3">
+            <h2>🔴 Stage 3: Advanced (Priority Queues, Graphs & Tries)</h2>
+            <p>Tackle priority heaps, graph matrices, search algorithms, and prefix trees.</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var game in GetGamesByStage(3))
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 game-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-danger">@game.DataStructure</span>
+                                <span class="badge bg-secondary">Game #@game.Id</span>
+                            </div>
+                            <h5 class="card-title font-weight-bold">@game.Icon @game.Title</h5>
+                            <p class="card-text text-muted flex-grow-1">@game.Description</p>
+                            <div class="mb-3">
+                                <small class="text-primary font-weight-bold">Style:</small>
+                                <span class="small text-secondary">@game.Style</span>
+                            </div>
+                            <button class="btn btn-outline-danger w-100 mt-auto" @onclick="() => NavigateToGame(game.Route)">
+                                Play Game 🚀
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    public class GameItem
+    {
+        public int Id { get; set; }
+        public int Stage { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string DataStructure { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Style { get; set; } = string.Empty;
+        public string Route { get; set; } = string.Empty;
+    }
+
+    private List<GameItem> gameList = new()
+    {
+        // Stage 1
+        new GameItem { Id = 1, Stage = 1, Title = "The Warehouse Packer", DataStructure = "Array", Icon = "📦", Style = "Grid Memory Allocation Puzzle", Description = "Learn contiguous RAM allocation, zero-indexing, and array bounds by packing variables into memory slots.", Route = "/Game-Ds/array-packer" },
+        new GameItem { Id = 3, Stage = 1, Title = "Undo/Redo Workshop", DataStructure = "Stack", Icon = "🥞", Style = "Vertical Tube Assembly", Description = "Master LIFO (Last-In, First-Out) operations by pushing/popping assembly items without exceeding call stack limits.", Route = "/Game-Ds/stack-workshop" },
+        new GameItem { Id = 4, Stage = 1, Title = "Ticket Booth Rush", DataStructure = "Queue", Icon = "🎟️", Style = "FIFO Time Management Sim", Description = "Practice FIFO (First-In, First-Out) service rules by managing enqueue and dequeue requests for waiting customers.", Route = "/Game-Ds/queue-rush" },
+
+        // Stage 2
+        new GameItem { Id = 2, Stage = 2, Title = "Treasure Hunt Pointers", DataStructure = "Linked List", Icon = "🔗", Style = "Pointer Connection Puzzle", Description = "Understand Head, Next, and Prev references by linking room nodes together without breaking the chain.", Route = "/Game-Ds/linkedlist-hunt" },
+        new GameItem { Id = 5, Stage = 2, Title = "Hash City Traffic Controller", DataStructure = "Hash Table", Icon = "🏷️", Style = "Modulo Hash & Parking Manager", Description = "Handle hash functions h(k) and resolve collisions using Linear Probing and Chaining strategies.", Route = "/Game-Ds/hashtable-city" },
+        new GameItem { Id = 6, Stage = 2, Title = "Balance the Binary Tree", DataStructure = "BST", Icon = "🌳", Style = "Physics Balance & Rotation", Description = "Maintain Left < Root < Right invariants and practice single/double tree rotations to keep AVL balance.", Route = "/Game-Ds/bst-balancer" },
+
+        // Stage 3
+        new GameItem { Id = 7, Stage = 3, Title = "Emergency Room Triage", DataStructure = "Heap / Priority Queue", Icon = "🏥", Style = "Max-Heap Priority Scheduler", Description = "Operate Heapify-Up and Heapify-Down routines to organize patient severity ratings in a binary tree array.", Route = "/Game-Ds/heap-triage" },
+        // new GameItem { Id = 8, Stage = 3, GameItem = "Advanced", Title = "Network Constructor", DataStructure = "Graph", Icon = "🕸️", Style = "Adjacency Matrix vs List Builder", Description = "Construct city transit networks while comparing memory consumption between Adjacency Matrices and Lists.", Route = "/Game-Ds/graph-builder" },
+        new GameItem { Id = 9, Stage = 3, Title = "Maze Navigator", DataStructure = "BFS / DFS Traversal", Icon = "🧩", Style = "Pathfinding Bot Simulator", Description = "Program a maze explorer to compare Queue-based BFS (concentric) vs Stack-based DFS (deep diving) algorithms.", Route = "/Game-Ds/maze-traversal" },
+        new GameItem { Id = 10, Stage = 3, Title = "The Folder Explorer", DataStructure = "Trie", Icon = "🔤", Style = "Prefix Tree Auto-Complete", Description = "Construct word branches character-by-character to learn how search engines perform O(L) auto-completes.", Route = "/Game-Ds/trie-explorer" }
+    };
+
+    private IEnumerable<GameItem> GetGamesByStage(int stage)
+    {
+        return gameList.Where(g => g.Stage == stage);
+    }
+
+    private void NavigateToGame(string route)
+    {
+        Navigation.NavigateTo(route);
+    }
+}

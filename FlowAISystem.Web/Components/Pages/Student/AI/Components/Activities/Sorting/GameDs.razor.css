@@ -1,0 +1,37 @@
+.hub-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.stage-header {
+    padding: 15px 20px;
+    border-radius: 8px;
+}
+
+.beginner-header {
+    background-color: #e8f5e9;
+    border-left: 5px solid #2e7d32;
+    color: #1b5e20;
+}
+
+.intermediate-header {
+    background-color: #fffde7;
+    border-left: 5px solid #fbc02d;
+    color: #f57f17;
+}
+
+.advanced-header {
+    background-color: #ffebee;
+    border-left: 5px solid #c62828;
+    color: #b71c1c;
+}
+
+.game-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}

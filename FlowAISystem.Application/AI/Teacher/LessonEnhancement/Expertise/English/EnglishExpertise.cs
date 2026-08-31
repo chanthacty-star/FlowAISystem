@@ -1,5 +1,6 @@
 using FlowAISystem.Application.AI.Teacher.LessonEnhancement.Expertise.Interfaces;
 using FlowAISystem.Application.AI.Teacher.LessonEnhancement.Expertise.Models;
+using FlowAISystem.Application.AI.Teacher.LessonEnhancement.Models;
 using FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
 namespace FlowAISystem.Application.AI.Teacher.LessonEnhancement.Expertise.English;
@@ -302,5 +303,69 @@ public class EnglishExpertise : ISubjectExpertise
             content.Contains(
                 "verb",
                 StringComparison.OrdinalIgnoreCase);
+    }
+    //Improve method after analysis
+    public void Improve(
+    LessonKnowledgeDto lesson,
+    LessonImprovementResult result)
+    {
+        if (lesson == null || result == null)
+        {
+            return;
+        }
+
+        var content =
+            lesson.Content?.Trim()
+            ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "English Content",
+                Message = "Add an English explanation with clear examples.",
+                Priority = "High"
+            });
+
+            return;
+        }
+
+        if (!content.Contains(
+                "example",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "English Examples",
+                Message = "Add clear English examples to demonstrate the language concept.",
+                Priority = "Medium"
+            });
+        }
+
+        if (!content.Contains(
+                "practice",
+                StringComparison.OrdinalIgnoreCase)
+            &&
+            !content.Contains(
+                "exercise",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "English Practice",
+                Message = "Add a short language practice exercise for students.",
+                Priority = "Medium"
+            });
+        }
+
+        if (content.Length < 500)
+        {
+            result.Suggestions.Add(new LessonSuggestion
+            {
+                Area = "English Explanation",
+                Message = "Add more explanation and examples around the language concept.",
+                Priority = "Medium"
+            });
+        }
     }
 }

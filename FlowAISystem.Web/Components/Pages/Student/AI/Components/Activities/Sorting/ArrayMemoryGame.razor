@@ -1,0 +1,33 @@
+@* // ArrayMemoryGame.razor
+public class MemorySlot
+{
+    public int Address { get; set; } // Index 0 to N-1
+    public string? VariableName { get; set; }
+    public bool IsOccupied => VariableName != null;
+}
+
+public List<MemorySlot> RamGrid = Enumerable.Range(0, 16)
+    .Select(i => new MemorySlot { Address = i }).ToList();
+
+public bool AllocateArray(string name, int size)
+{
+    // Search for continuous 'size' free slots
+    int freeCount = 0, startIdx = -1;
+    for (int i = 0; i < RamGrid.Count; i++)
+    {
+        if (!RamGrid[i].IsOccupied)
+        {
+            if (freeCount == 0) startIdx = i;
+            freeCount++;
+            if (freeCount == size)
+            {
+                // Assign slots contiguous
+                for (int j = startIdx; j < startIdx + size; j++)
+                    RamGrid[j].VariableName = name;
+                return true; // Success
+            }
+        }
+        else { freeCount = 0; }
+    }
+    return false; // Memory Allocation Exception (De-frag or Reallocate required)
+} *@

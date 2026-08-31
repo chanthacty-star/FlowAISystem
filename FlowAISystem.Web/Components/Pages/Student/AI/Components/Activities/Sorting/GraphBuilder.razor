@@ -1,0 +1,92 @@
+@page "/Game-Ds/graph-builder"
+
+<div class="game-wrapper">
+    <h2>🕸️ Game 8: Network Constructor (Graph)</h2>
+    <p class="subtitle">Compares Adjacency Matrix (2D Grid) vs. Adjacency List for storing directed edges.</p>
+
+    <div class="actions">
+        <label>From: </label>
+        <select @bind="fromNode" class="select-box">
+            <option value="0">Node A (0)</option>
+            <option value="1">Node B (1)</option>
+            <option value="2">Node C (2)</option>
+        </select>
+
+        <label>To: </label>
+        <select @bind="toNode" class="select-box">
+            <option value="0">Node A (0)</option>
+            <option value="1">Node B (1)</option>
+            <option value="2">Node C (2)</option>
+        </select>
+
+        <button class="btn btn-edge" @onclick="AddEdge">Add Directed Edge ➡️</button>
+    </div>
+
+    <div class="views-grid">
+        <div class="view-panel">
+            <h3>Adjacency Matrix [3x3]</h3>
+            <table class="matrix-table">
+                @for (int r = 0; r < 3; r++)
+                {
+                    var row = r;
+                    <tr>
+                        @for (int c = 0; c < 3; c++)
+                        {
+                            var col = c;
+                            <td class="@(matrix[row, col] == 1 ? "active" : "")">@matrix[row, col]</td>
+                        }
+                    </tr>
+                }
+            </table>
+        </div>
+
+        <div class="view-panel">
+            <h3>Adjacency List</h3>
+            <ul class="adj-list">
+                @for (int i = 0; i < 3; i++)
+                {
+                    var nodeIdx = i;
+                    <li>
+                        <strong>Node @((char)('A' + nodeIdx)):</strong> 
+                        ➔ [@string.Join(", ", adjList[nodeIdx].Select(n => (char)('A' + n)))]
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.game-wrapper { max-width: 850px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+.actions { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+.select-box { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+.btn-edge { background: #6c5ce7; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+.views-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.view-panel { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+.matrix-table { margin: 0 auto; border-collapse: collapse; }
+.matrix-table td { width: 40px; height: 40px; border: 1px solid #ccc; text-align: center; font-weight: bold; background: white; }
+.matrix-table td.active { background: #00b894; color: white; }
+.adj-list { list-style: none; padding: 0; }
+.adj-list li { padding: 8px; background: white; border: 1px solid #eee; margin-bottom: 5px; border-radius: 4px; }
+</style>
+
+@code {
+    private int[,] matrix = new int[3, 3];
+    private List<int>[] adjList = new List<int>[3];
+    private int fromNode = 0;
+    private int toNode = 1;
+
+    protected override void OnInitialized()
+    {
+        for (int i = 0; i < 3; i++) adjList[i] = new List<int>();
+    }
+
+    private void AddEdge()
+    {
+        matrix[fromNode, toNode] = 1;
+        if (!adjList[fromNode].Contains(toNode))
+        {
+            adjList[fromNode].Add(toNode);
+        }
+    }
+}

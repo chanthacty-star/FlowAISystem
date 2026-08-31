@@ -1,0 +1,638 @@
+@page "/teacher/ai-assistant"
+
+@using FlowAISystem.Application.AI.Teacher.TeacherAssistant.Interfaces
+@using FlowAISystem.Application.AI.Teacher.TeacherAssistant.Models
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+
+@inject ITeacherAssistant TeacherAssistant
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Teacher AI Assistant</PageTitle>
+
+<div class="teacher-ai-page">
+
+    <!-- Header -->
+    <header class="teacher-ai-header">
+        <div class="header-title">
+            <span class="bot-icon" aria-hidden="true">🤖</span>
+
+            <div>
+                <h1>Teacher AI Assistant</h1>
+                <span class="header-subtitle">
+                    Your teaching assistant
+                </span>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button type="button"
+                    class="new-chat-button"
+                    @onclick="NewConversation"
+                    disabled="@IsProcessing">
+                <span aria-hidden="true">＋</span>
+                New Chat
+            </button>
+
+            <span class="user-avatar"
+                  title="Teacher Profile"
+                  aria-label="Teacher Profile">
+                👤
+            </span>
+        </div>
+    </header>
+
+
+    <!-- Chat -->
+    <main class="teacher-ai-chat">
+
+        <div class="teacher-ai-messages"
+             @ref="_chatContainer"
+             role="log"
+             aria-live="polite"
+             aria-label="Teacher AI conversation">
+
+            @if (!Messages.Any() && !IsProcessing)
+            {
+                <!-- Empty State -->
+                <section class="teacher-ai-welcome">
+
+                    <div class="welcome-icon" aria-hidden="true">
+                        🤖
+                    </div>
+
+                    <h2>Teacher AI Assistant</h2>
+
+                    <p>
+                        How can I help improve your lesson?
+                    </p>
+
+                    <div class="suggested-prompts">
+
+                        <button type="button"
+                                class="prompt-chip"
+                                @onclick='() => UsePrompt("Improve my C# Variables lesson for beginners.")'>
+                            <span aria-hidden="true">✨</span>
+                            Improve a lesson
+                        </button>
+
+                        <button type="button"
+                                class="prompt-chip"
+                                @onclick='() => UsePrompt("Generate beginner-friendly examples for my lesson.")'>
+                            <span aria-hidden="true">📚</span>
+                            Generate examples
+                        </button>
+
+                        <button type="button"
+                                class="prompt-chip"
+                                @onclick='() => UsePrompt("Create a short practice activity.")'>
+                            <span aria-hidden="true">💡</span>
+                            Create practice activity
+                        </button>
+
+                        <button type="button"
+                                class="prompt-chip"
+                                @onclick='() => UsePrompt("Explain a concept simply.")'>
+                            <span aria-hidden="true">❓</span>
+                            Explain a concept
+                        </button>
+
+                    </div>
+                </section>
+            }
+            else
+            {
+                @foreach (var message in Messages)
+                {
+                    <article class="message-row @(message.IsTeacher ? "teacher-message" : "ai-message")">
+
+                        <div class="message-avatar"
+                             aria-hidden="true">
+                            @(message.IsTeacher ? "👤" : "🤖")
+                        </div>
+
+                        <div class="message-content">
+
+                            <div class="message-sender">
+                                @(message.IsTeacher ? "Teacher" : "Teacher AI")
+
+                                @if (!message.IsTeacher &&
+                                     !string.IsNullOrWhiteSpace(message.Capability))
+                                {
+                                    <span class="capability-badge">
+                                        @message.Capability
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="message-bubble">
+
+                                @if (!string.IsNullOrWhiteSpace(message.Text))
+                                {
+                                    <p class="message-text">
+                                        @message.Text
+                                    </p>
+                                }
+
+                                @if (!message.IsTeacher &&
+                                     message.Suggestions.Any())
+                                {
+                                    <div class="suggestions-section">
+
+                                        <div class="suggestions-title">
+                                            Improvement opportunities
+                                        </div>
+
+                                        <ul class="suggestions-list">
+                                            @foreach (var suggestion in message.Suggestions)
+                                            {
+                                                <li>
+                                                    <span class="check-icon"
+                                                          aria-hidden="true">
+                                                        ✓
+                                                    </span>
+
+                                                    <span>
+                                                        @suggestion
+                                                    </span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+
+                                    <div class="action-buttons">
+
+                                        <button type="button"
+                                                class="action-button primary-action"
+                                                @onclick="() => ApplySuggestions(message)">
+                                            Apply Suggestions
+                                        </button>
+
+                                        <button type="button"
+                                                class="action-button secondary-action"
+                                                @onclick="() => ReviewSuggestions(message)">
+                                            Review
+                                        </button>
+
+                                        <button type="button"
+                                                class="action-button tertiary-action"
+                                                @onclick="FocusInput">
+                                            Ask AI
+                                        </button>
+
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+
+
+            <!-- Loading -->
+            @if (IsProcessing)
+            {
+                <article class="message-row ai-message">
+
+                    <div class="message-avatar"
+                         aria-hidden="true">
+                        🤖
+                    </div>
+
+                    <div class="message-content">
+
+                        <div class="message-sender">
+                            Teacher AI
+                        </div>
+
+                        <div class="message-bubble typing">
+                            <span>Thinking</span>
+
+                            <span class="typing-dots"
+                                  aria-hidden="true">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </span>
+                        </div>
+
+                    </div>
+                </article>
+            }
+
+
+            <!-- Error -->
+            @if (HasError)
+            {
+                <div class="error-banner"
+                     role="alert">
+
+                    <span aria-hidden="true">⚠️</span>
+
+                    <span>
+                        Sorry, I couldn't process that request.
+                        Please try again.
+                    </span>
+
+                    <button type="button"
+                            class="error-dismiss"
+                            @onclick="ClearError"
+                            aria-label="Dismiss error">
+                        ×
+                    </button>
+
+                </div>
+            }
+
+        </div>
+
+
+        <!-- Composer -->
+        <div class="teacher-ai-composer">
+
+            <div class="input-wrapper">
+
+                <textarea @ref="_inputElement"
+                          @bind="Message"
+                          @bind:event="oninput"
+                          @onkeydown="HandleKeyDown"
+                          placeholder="Ask Teacher AI..."
+                          rows="1"
+                          disabled="@IsProcessing"
+                          aria-label="Ask Teacher AI">
+                </textarea>
+
+                <div class="composer-actions">
+
+                    <button type="button"
+                            class="icon-button voice-button"
+                            title="Voice Input"
+                            aria-label="Voice Input"
+                            disabled="@IsProcessing">
+                        🎤
+                    </button>
+
+                    <button type="button"
+                            class="send-button"
+                            title="Send message"
+                            aria-label="Send message"
+                            disabled="@(IsProcessing || string.IsNullOrWhiteSpace(Message))"
+                            @onclick="SendMessage">
+                        ➤
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="composer-hint">
+                <span>Enter to send</span>
+                <span>Shift + Enter for a new line</span>
+            </div>
+
+        </div>
+
+
+        <div class="teacher-ai-disclaimer">
+            Teacher AI provides assistance. Review AI-generated suggestions before applying them.
+        </div>
+
+    </main>
+
+</div>
+
+
+@code {
+
+    private ElementReference _inputElement;
+    private ElementReference _chatContainer;
+
+    private string Message = string.Empty;
+
+    private bool IsProcessing;
+    private bool HasError;
+
+    private readonly List<ChatMessage> Messages = new();
+
+
+    private async Task SendMessage()
+    {
+        if (IsProcessing || string.IsNullOrWhiteSpace(Message))
+        {
+            return;
+        }
+
+        HasError = false;
+
+        var userMessage = Message.Trim();
+
+        Message = string.Empty;
+
+        Messages.Add(new ChatMessage
+        {
+            Text = userMessage,
+            IsTeacher = true
+        });
+
+        IsProcessing = true;
+
+        await InvokeAsync(StateHasChanged);
+
+        await ScrollToBottomAsync();
+
+        try
+        {
+            var request = new TeacherAssistantRequest
+            {
+                Message = userMessage,
+
+                // Temporary lesson context retained from the
+                // existing Teacher AI Assistant implementation.
+                LessonId = 11
+            };
+
+            var response =
+                await TeacherAssistant.AskAsync(request);
+
+            if (response == null)
+            {
+                throw new InvalidOperationException(
+                    "Teacher AI returned no response.");
+            }
+
+            var parsedSuggestions =
+                ExtractSuggestionsFromMessage(response.Message);
+
+            Messages.Add(new ChatMessage
+            {
+                Text = CleanMessageText(
+                    response.Message,
+                    parsedSuggestions),
+
+                IsTeacher = false,
+
+                Capability = response.Capability,
+
+                Suggestions = parsedSuggestions
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"[Teacher AI Assistant UI Error]: {ex}");
+
+            HasError = true;
+        }
+        finally
+        {
+            IsProcessing = false;
+
+            await InvokeAsync(StateHasChanged);
+
+            await ScrollToBottomAsync();
+        }
+    }
+
+
+    private List<string> ExtractSuggestionsFromMessage(
+        string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return new List<string>();
+        }
+
+        var lines =
+            message.Split(
+                new[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.RemoveEmptyEntries);
+
+        return lines
+            .Select(line => line.Trim())
+            .Where(line =>
+                line.StartsWith("✓") ||
+                line.StartsWith("•") ||
+                line.StartsWith("-") ||
+                line.StartsWith("*"))
+            .Select(line =>
+                line.TrimStart(
+                    '✓',
+                    '•',
+                    '-',
+                    '*',
+                    ' '))
+            .Where(line =>
+                !string.IsNullOrWhiteSpace(line))
+            .ToList();
+    }
+
+
+    private string CleanMessageText(
+        string? message,
+        List<string> suggestions)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return string.Empty;
+        }
+
+        if (!suggestions.Any())
+        {
+            return message.Trim();
+        }
+
+        var lines =
+            message.Split(
+                new[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None);
+
+        var headerLines =
+            lines.TakeWhile(line =>
+                !IsSuggestionLine(line));
+
+        return string.Join(
+                Environment.NewLine,
+                headerLines)
+            .Trim();
+    }
+
+
+    private bool IsSuggestionLine(string line)
+    {
+        var value = line.Trim();
+
+        return value.StartsWith("✓") ||
+               value.StartsWith("•") ||
+               value.StartsWith("-") ||
+               value.StartsWith("*");
+    }
+
+
+    private async Task UsePrompt(string prompt)
+    {
+        Message = prompt;
+
+        await FocusInput();
+    }
+
+
+    private async Task NewConversation()
+    {
+        Messages.Clear();
+
+        Message = string.Empty;
+
+        HasError = false;
+
+        await InvokeAsync(StateHasChanged);
+
+        await FocusInput();
+    }
+
+
+    private async Task HandleKeyDown(
+        KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage();
+        }
+    }
+
+
+    private async Task FocusInput()
+    {
+        try
+        {
+            await _inputElement.FocusAsync();
+        }
+        catch
+        {
+            // Element may not yet be rendered.
+        }
+    }
+
+
+    // private Task ApplySuggestions(
+    //     ChatMessage message)
+    // {
+    //     Integration boundary only.
+        
+    //     TeacherAssistant currently exposes AskAsync()
+    //     but does not expose an ApplySuggestions operation.
+        
+    //     Do NOT call LessonEnhancementService directly from
+    //     this UI component.
+        
+    //     Future implementation should extend the existing
+    //     TeacherAssistant application layer when the backend
+    //     supports applying an improvement.
+
+    //     Console.WriteLine(
+    //         "[Teacher AI Assistant UI] Apply Suggestions requested.");
+
+    //     return Task.CompletedTask;
+    // }
+    private async Task ApplySuggestions(ChatMessage message)
+    {
+        if (IsProcessing)
+        {
+            return;
+        }
+
+        HasError = false;
+        IsProcessing = true;
+
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var response =
+                await TeacherAssistant.ApplySuggestionsAsync(11);
+
+            if (response == null)
+            {
+                throw new InvalidOperationException(
+                    "Teacher AI returned no response.");
+            }
+
+            Messages.Add(new ChatMessage
+            {
+                Text = response.Message,
+                IsTeacher = false
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"[Teacher AI Assistant Apply Error]: {ex}");
+
+            HasError = true;
+        }
+        finally
+        {
+            IsProcessing = false;
+
+            await InvokeAsync(StateHasChanged);
+
+            await ScrollToBottomAsync();
+        }
+    }
+
+
+    private Task ReviewSuggestions(
+        ChatMessage message)
+    {
+        // Integration boundary only.
+        //
+        // Future implementation can open a detailed review
+        // panel/modal using the existing lesson improvement
+        // result without duplicating enhancement logic.
+
+        Console.WriteLine(
+            "[Teacher AI Assistant UI] Review requested.");
+
+        return Task.CompletedTask;
+    }
+
+
+    private void ClearError()
+    {
+        HasError = false;
+    }
+
+
+    private async Task ScrollToBottomAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync(
+                "eval",
+                """
+                const el = document.querySelector('.teacher-ai-messages');
+                if (el) {
+                    el.scrollTop = el.scrollHeight;
+                }
+                """);
+        }
+        catch
+        {
+            // Scrolling is a UI enhancement and should not
+            // interrupt the Teacher AI workflow.
+        }
+    }
+
+
+    private sealed class ChatMessage
+    {
+        public string Text { get; set; } = string.Empty;
+
+        public bool IsTeacher { get; set; }
+
+        public string Capability { get; set; } = string.Empty;
+
+        public List<string> Suggestions { get; set; } = new();
+    }
+}
+

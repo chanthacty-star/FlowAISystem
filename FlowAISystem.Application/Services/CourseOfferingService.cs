@@ -26,9 +26,6 @@ public class CourseOfferingService : ICourseOfferingService
     }
 
 
-
-
-
     public async Task<CourseOfferingDto?> GetByIdAsync(
         int id)
     {

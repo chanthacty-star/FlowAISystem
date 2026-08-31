@@ -1,0 +1,64 @@
+@page "/Game-Ds/hashtable-city"
+
+<div class="game-wrapper">
+    <h2>🏷️ Game 5: Hash City Traffic Controller (Hash Table)</h2>
+    <p class="subtitle">Maps Keys to Buckets via a Hash Function h(k) = Key.Length % 7 for fast O(1) average lookup.</p>
+
+    <div class="actions">
+        <input @bind="keyInput" class="input-field" placeholder="Enter Key (e.g. Car123)" />
+        <button class="btn btn-hash" @onclick="InsertKey">Compute Hash & Insert ⚡</button>
+    </div>
+
+    <div class="buckets-grid">
+        @for (int i = 0; i < 7; i++)
+        {
+            var bucketIdx = i;
+            <div class="bucket-card">
+                <div class="bucket-header">Bucket [@bucketIdx]</div>
+                <div class="bucket-body">
+                    @if (buckets[bucketIdx].Count == 0)
+                    {
+                        <span class="empty-text">Empty</span>
+                    }
+                    else
+                    {
+                        @foreach (var val in buckets[bucketIdx])
+                        {
+                            <div class="key-tag">@val</div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+.game-wrapper { max-width: 900px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+.actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.input-field { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1; }
+.btn-hash { background: #fd79a8; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+.buckets-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+.bucket-card { background: white; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
+.bucket-header { background: #6c5ce7; color: white; text-align: center; font-size: 0.8rem; padding: 4px; font-weight: bold; }
+.bucket-body { padding: 8px; min-height: 100px; display: flex; flex-direction: column; gap: 5px; }
+.key-tag { background: #e17055; color: white; padding: 4px; border-radius: 4px; font-size: 0.75rem; text-align: center; font-weight: bold; word-break: break-all; }
+.empty-text { color: #ccc; font-size: 0.8rem; text-align: center; margin-top: 20px; }
+</style>
+
+@code {
+    private List<string>[] buckets = new List<string>[7];
+    private string keyInput = "BMW";
+
+    protected override void OnInitialized()
+    {
+        for (int i = 0; i < 7; i++) buckets[i] = new List<string>();
+    }
+
+    private void InsertKey()
+    {
+        if (string.IsNullOrWhiteSpace(keyInput)) return;
+        int hashIndex = Math.Abs(keyInput.GetHashCode()) % 7;
+        buckets[hashIndex].Add(keyInput);
+    }
+}

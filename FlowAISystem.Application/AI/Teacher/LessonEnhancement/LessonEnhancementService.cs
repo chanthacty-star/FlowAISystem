@@ -246,4 +246,31 @@ public class LessonEnhancementService : ILessonEnhancementService
         return await _lessonEnhancementAgent
             .GenerateSummaryAsync(lesson);
     }
+
+    //public async Task<string?> ApllySuggestionAsync(
+    //    int lessonId)
+    //{
+    //    Console.WriteLine($"[Teacher AI Suggestios: ] Applying Lesson for display. ");
+
+    //    var lesson = await _lessonKnowledgeService.GetByIdAsync(lessonId);
+    //    if (lesson == null)
+    //    {
+    //        return new TeacherAssistantRespont
+    //        {
+    //            Message = "I Could not find the respond for suggestion (Have no Knowledge yet.)",
+    //            Capability = "Lesson Knowledge"
+    //        };
+    //    }
+    //    var result = await _lessonEnhancementAgent;
+    //    if (result == null)
+    //    {
+    //        return new TeacherAssistantRespont
+    //        {
+    //            Message = "I Couln't find the result to improve lesson yet (haven't Knowledge)",
+    //            Capabilty = "Apply LessonSuggeton "
+    //        };
+    //    }
+
+    //}
+
 }

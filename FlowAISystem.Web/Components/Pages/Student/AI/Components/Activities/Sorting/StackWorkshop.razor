@@ -1,0 +1,90 @@
+@page "/Game-Ds/stack-workshop"
+
+<div class="game-wrapper">
+    <h2>🥞 Game 3: Undo/Redo Workshop (Stack)</h2>
+    <p class="subtitle">Stacks operate on LIFO (Last-In, First-Out). Elements can only be added or removed from the Top.</p>
+
+    <div class="controls">
+        <input @bind="newItem" class="input-field" placeholder="Action name (e.g. Type Text)" />
+        <button class="btn btn-push" @onclick="PushItem">Push (Action) ⬇️</button>
+        <button class="btn btn-pop" @onclick="PopItem">Pop (Undo) ⬆️</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert danger">@errorMessage</div>
+    }
+
+    <div class="stack-display">
+        <h3>Call Stack Container (Max: 5)</h3>
+        <div class="tube">
+            @if (stackList.Count == 0)
+            {
+                <div class="empty-msg">[ Stack is Empty ]</div>
+            }
+            else
+            {
+                @for (int i = stackList.Count - 1; i >= 0; i--)
+                {
+                    <div class="stack-item @(i == stackList.Count - 1 ? "top-item" : "")">
+                        <span>@stackList[i]</span>
+                        @if (i == stackList.Count - 1)
+                        {
+                            <span class="top-badge">👈 TOP</span>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+.game-wrapper { max-width: 800px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+.controls { display: flex; gap: 10px; margin-bottom: 20px; }
+.input-field { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1; }
+.btn { padding: 8px 16px; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; }
+.btn-push { background-color: #007bff; }
+.btn-pop { background-color: #dc3545; }
+.alert.danger { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+.stack-display { background: #f4f4f9; padding: 20px; border-radius: 8px; }
+.tube { width: 300px; min-height: 250px; border: 3px solid #333; border-top: none; margin: 0 auto; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; background: white; border-radius: 0 0 10px 10px; }
+.stack-item { background: #6c5ce7; color: white; padding: 12px; margin-top: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+.stack-item.top-item { background: #fd79a8; }
+.top-badge { font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; }
+.empty-msg { text-align: center; color: #888; margin-top: auto; }
+</style>
+
+@code {
+    private List<string> stackList = new();
+    private string newItem = "";
+    private string errorMessage = "";
+    private const int MaxCapacity = 5;
+
+    private void PushItem()
+    {
+        errorMessage = "";
+        if (string.IsNullOrWhiteSpace(newItem)) return;
+
+        if (stackList.Count >= MaxCapacity)
+        {
+            errorMessage = "StackOverflowException! Stack capacity reached limit of 5.";
+            return;
+        }
+
+        stackList.Add(newItem);
+        newItem = "";
+    }
+
+    private void PopItem()
+    {
+        errorMessage = "";
+        if (stackList.Count == 0)
+        {
+            errorMessage = "StackUnderflowException! Cannot pop from an empty stack.";
+            return;
+        }
+
+        stackList.RemoveAt(stackList.Count - 1);
+    }
+}

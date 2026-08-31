@@ -1,0 +1,73 @@
+@page "/Game-Ds/linkedlist-hunt"
+
+<div class="game-wrapper">
+    <h2>🔗 Game 2: Treasure Hunt Pointers (Linked List)</h2>
+    <p class="subtitle">Nodes store values and dynamic memory references (Pointers) to the next node.</p>
+
+    <div class="actions">
+        <input @bind="nodeValue" class="input-field" placeholder="Node Value (e.g. Gold)" />
+        <button class="btn btn-add" @onclick="AddHead">Add as Head 🟢</button>
+        <button class="btn btn-tail" @onclick="AddTail">Append to Tail 🔵</button>
+    </div>
+
+    <div class="chain-display">
+        <div class="node-chain">
+            @if (nodes.Count == 0)
+            {
+                <span class="empty-list">List is empty (Head -> NULL)</span>
+            }
+            else
+            {
+                @for (int i = 0; i < nodes.Count; i++)
+                {
+                    var idx = i;
+                    <div class="node-box">
+                        <div class="node-header">@(idx == 0 ? "HEAD" : $"Node {idx}")</div>
+                        <div class="node-body">
+                            <div class="val">@nodes[idx]</div>
+                            <div class="ptr">next ➡️</div>
+                        </div>
+                    </div>
+                    <div class="arrow">➔</div>
+                }
+                <div class="null-box">NULL</div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+.game-wrapper { max-width: 950px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+.actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.input-field { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1; }
+.btn { padding: 8px 16px; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; }
+.btn-add { background-color: #28a745; }
+.btn-tail { background-color: #007bff; }
+.chain-display { background: #f4f4f9; padding: 25px; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; }
+.node-chain { display: flex; align-items: center; gap: 10px; }
+.node-box { background: white; border: 2px solid #6c5ce7; border-radius: 6px; width: 110px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.node-header { background: #6c5ce7; color: white; font-size: 0.75rem; text-align: center; padding: 2px; font-weight: bold; }
+.node-body { padding: 10px; text-align: center; }
+.val { font-weight: bold; font-size: 1rem; color: #2d3436; }
+.ptr { font-size: 0.75rem; color: #00b894; margin-top: 5px; }
+.arrow { font-size: 1.5rem; color: #a4b0be; }
+.null-box { background: #dcdde1; color: #2f3640; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+.empty-list { color: #888; font-style: italic; }
+</style>
+
+@code {
+    private List<string> nodes = new() { "Chest 1", "Chest 2" };
+    private string nodeValue = "Gold Gem";
+
+    private void AddHead()
+    {
+        if (string.IsNullOrWhiteSpace(nodeValue)) return;
+        nodes.Insert(0, nodeValue);
+    }
+
+    private void AddTail()
+    {
+        if (string.IsNullOrWhiteSpace(nodeValue)) return;
+        nodes.Add(nodeValue);
+    }
+}

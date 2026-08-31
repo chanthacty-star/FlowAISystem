@@ -1,0 +1,131 @@
+@page "/ds-game"
+
+<div class="game-container">
+    <h2>🎮 Data Structures Matching Game</h2>
+    <p>Match all 7 data structures with their correct definition or primary use case!</p>
+
+    <div class="stats">
+        <span><strong>Score:</strong> @score / 7</span>
+        <span><strong>Attempts:</strong> @attempts</span>
+        <button class="btn btn-secondary" @onclick="RestartGame">Restart 🔄</button>
+    </div>
+
+    @if (isGameWon)
+    {
+        <div class="alert alert-success mt-3">
+            🎉 <strong>Congratulations!</strong> You mastered the cheat sheet in @attempts attempts!
+        </div>
+    }
+
+    <div class="card-grid">
+        @foreach (var card in cards)
+        {
+            <div class="card-item @(card.IsFlipped ? "flipped" : "") @(card.IsMatched ? "matched" : "")"
+                 @onclick="() => SelectCard(card)">
+                <div class="card-inner">
+                    <div class="card-front">❓</div>
+                    <div class="card-back @card.Type.ToLower()">
+                        <small>@card.Category</small>
+                        <p>@card.Content</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private class Card
+    {
+        public int Id { get; set; }
+        public int MatchId { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty; // "Name" or "Property"
+        public bool IsFlipped { get; set; }
+        public bool IsMatched { get; set; }
+    }
+
+    private List<Card> cards = new();
+    private Card? firstSelected = null;
+    private Card? secondSelected = null;
+    private bool isBusy = false;
+    private int score = 0;
+    private int attempts = 0;
+    private bool isGameWon => score == 7;
+
+    protected override void OnInitialized()
+    {
+        RestartGame();
+    }
+
+    private void RestartGame()
+    {
+        score = 0;
+        attempts = 0;
+        firstSelected = null;
+        secondSelected = null;
+        isBusy = false;
+
+        var rawData = new (int Id, string Name, string Property)[]
+        {
+            (1, "Array", "Contiguous memory & O(1) fast index access"),
+            (2, "Linked List", "Nodes with pointers; efficient insert/delete"),
+            (3, "Stack", "LIFO principle; used for function calls & undo/redo"),
+            (4, "Queue", "FIFO principle; used for task scheduling & BFS"),
+            (5, "Hash Table", "Key-value pairs with O(1) average lookup time"),
+            (6, "Tree", "Hierarchical root/child structure; used in file systems"),
+            (7, "Graph", "Vertices & edges; models networks & shortest paths")
+        };
+
+        var deck = new List<Card>();
+        foreach (var item in rawData)
+        {
+            deck.Add(new Card { Id = item.Id * 2 - 1, MatchId = item.Id, Category = "Structure", Content = item.Name, Type = "Name" });
+            deck.Add(new Card { Id = item.Id * 2, MatchId = item.Id, Category = "Use Case / Rule", Content = item.Property, Type = "Property" });
+        }
+
+        // Shuffle deck
+        cards = deck.OrderBy(_ => Guid.NewGuid()).ToList();
+    }
+
+    private async Task SelectCard(Card card)
+    {
+        if (isBusy || card.IsFlipped || card.IsMatched) return;
+
+        card.IsFlipped = true;
+
+        if (firstSelected == null)
+        {
+            firstSelected = card;
+        }
+        else
+        {
+            secondSelected = card;
+            attempts++;
+            isBusy = true;
+
+            if (firstSelected.MatchId == secondSelected.MatchId)
+            {
+                firstSelected.IsMatched = true;
+                secondSelected.IsMatched = true;
+                score++;
+                ResetSelection();
+            }
+            else
+            {
+                await Task.Delay(1200);
+                firstSelected.IsFlipped = false;
+                secondSelected.IsFlipped = false;
+                ResetSelection();
+            }
+        }
+    }
+
+    private void ResetSelection()
+    {
+        firstSelected = null;
+        secondSelected = null;
+        isBusy = false;
+    }
+}

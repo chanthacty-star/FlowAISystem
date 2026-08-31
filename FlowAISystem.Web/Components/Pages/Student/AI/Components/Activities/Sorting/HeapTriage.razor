@@ -1,0 +1,94 @@
+@page "/Game-Ds/heap-triage"
+
+<div class="game-wrapper">
+    <h2>🏥 Game 7: Emergency Room Triage (Max-Heap)</h2>
+    <p class="subtitle">Max-Heaps ensure highest-priority (highest score) patients are always treated first at index [0].</p>
+
+    <div class="actions">
+        <input type="number" @bind="severity" class="input-field" placeholder="Severity (1-100)" />
+        <button class="btn btn-add" @onclick="InsertPatient">Add Patient (Heapify-Up) 🩺</button>
+        <button class="btn btn-treat" @onclick="ExtractMax">Treat Highest Priority 🚑</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(status))
+    {
+        <div class="status">@status</div>
+    }
+
+    <div class="heap-array">
+        <h3>Underlying Flat Array Representation</h3>
+        <div class="array-grid">
+            @for (int i = 0; i < heap.Count; i++)
+            {
+                var idx = i;
+                <div class="heap-cell @(idx == 0 ? "root" : "")">
+                    <span class="idx">[@idx]</span>
+                    <span class="val">@heap[idx]</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+.game-wrapper { max-width: 800px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+.actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.input-field { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 160px; }
+.btn { padding: 8px 16px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; }
+.btn-add { background: #e17055; }
+.btn-treat { background: #00b894; }
+.status { background: #e2e3e5; padding: 10px; border-radius: 4px; font-weight: bold; margin-bottom: 15px; }
+.heap-array { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+.array-grid { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
+.heap-cell { background: white; border: 2px solid #6c5ce7; border-radius: 6px; padding: 10px; text-align: center; min-width: 60px; }
+.heap-cell.root { border-color: #d63031; background: #ff7675; color: white; }
+.idx { font-size: 0.7rem; display: block; }
+.val { font-weight: bold; font-size: 1.1rem; }
+</style>
+
+@code {
+    private List<int> heap = new() { 90, 75, 60, 40 };
+    private int severity = 85;
+    private string status = "";
+
+    private void InsertPatient()
+    {
+        heap.Add(severity);
+        HeapifyUp(heap.Count - 1);
+        status = $"Added patient severity {severity} and Heapify-Up restored Max-Heap condition.";
+    }
+
+    private void HeapifyUp(int i)
+    {
+        while (i > 0)
+        {
+            int parent = (i - 1) / 2;
+            if (heap[i] <= heap[parent]) break;
+            (heap[i], heap[parent]) = (heap[parent], heap[i]);
+            i = parent;
+        }
+    }
+
+    private void ExtractMax()
+    {
+        if (heap.Count == 0) { status = "No patients to treat!"; return; }
+        int max = heap[0];
+        heap[0] = heap[heap.Count - 1];
+        heap.RemoveAt(heap.Count - 1);
+        HeapifyDown(0);
+        status = $"Treated highest priority patient (Severity: {max})!";
+    }
+
+    private void HeapifyDown(int i)
+    {
+        while (2 * i + 1 < heap.Count)
+        {
+            int left = 2 * i + 1, right = 2 * i + 2, largest = i;
+            if (heap[left] > heap[largest]) largest = left;
+            if (right < heap.Count && heap[right] > heap[largest]) largest = right;
+            if (largest == i) break;
+            (heap[i], heap[largest]) = (heap[largest], heap[i]);
+            i = largest;
+        }
+    }
+}
