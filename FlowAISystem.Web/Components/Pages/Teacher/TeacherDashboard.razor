@@ -1,6 +1,8 @@
 @page "/teacher-dashboard"
-
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization
+
+@layout TeacherMainLayout
 
 @attribute [Authorize(Roles = "Teacher")]
 
@@ -13,7 +15,7 @@
 <div class="alert alert-primary">
 
     <h5>
-        Welcome Teacher!
+        Welcome Teacher! ddd
     </h5>
 
     <p>
@@ -133,7 +135,7 @@
     <div class="col-md-3">
 
         <a class="btn btn-primary w-100"
-               href="/teacher-dashboard/teacher-profile">
+               href="/Teacher/profile">
 
             My Profile
 

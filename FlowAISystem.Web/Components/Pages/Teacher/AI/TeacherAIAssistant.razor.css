@@ -1,4 +1,3 @@
-```css
 .teacher-ai-page {
     display: flex;
     flex-direction: column;
@@ -381,6 +380,11 @@
     background: #e5e7eb;
 }
 
+.action-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 
 /* =========================================================
    Loading
@@ -666,4 +670,3 @@
         font-size: 0.62rem;
     }
 }
-```

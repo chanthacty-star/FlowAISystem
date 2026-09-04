@@ -191,4 +191,63 @@ public class TeacherAssistant : ITeacherAssistant
             Capability = "LessonImprovement"
         };
     }
+
+
+    public async Task<TeacherAssistantResponse> ReviewSuggestionsAsync(
+        int lessonId)
+    {
+        if (lessonId <= 0)
+        {
+            return new TeacherAssistantResponse
+            {
+                Message =
+                    "I need a valid lesson to review.",
+                Capability = "Review"
+            };
+        }
+
+        var lesson =
+            await _lessonKnowledgeService
+                .GetByIdAsync(lessonId);
+
+        if (lesson == null)
+        {
+            return new TeacherAssistantResponse
+            {
+                Message =
+                    "I couldn't find the lesson to review.",
+                Capability = "Review"
+            };
+        }
+
+        var result =
+            await _lessonEnhancementService
+                .ImproveAsync(lessonId);
+
+        if (result == null ||
+            string.IsNullOrWhiteSpace(result.ImprovedContent))
+        {
+            return new TeacherAssistantResponse
+            {
+                Message =
+                    $"Here is the current content of \"{lesson.Title}\":\n\n" +
+                    lesson.Content +
+                    "\n\nNo improved version is available yet.",
+                Capability = "Review"
+            };
+        }
+
+        var message =
+            $"Reviewing \"{lesson.Title}\" before you update it:\n\n" +
+            "— Current content —\n" +
+            lesson.Content +
+            "\n\n— Suggested updated content —\n" +
+            result.ImprovedContent;
+
+        return new TeacherAssistantResponse
+        {
+            Message = message,
+            Capability = "Review"
+        };
+    }
 }

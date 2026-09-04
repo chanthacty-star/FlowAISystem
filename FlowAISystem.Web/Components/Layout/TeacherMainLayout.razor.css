@@ -1,0 +1,61 @@
+.Teacher-page {
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+
+
+/* Sidebar */
+
+.Teacher-sidebar {
+
+    width:270px;
+
+    height:100vh;
+
+    overflow:hidden;
+
+    border-right:1px solid #ddd;
+
+    transition:width .3s ease;
+
+}
+
+
+
+/* Collapse */
+
+.Teacher-sidebar-collapsed .Teacher-sidebar {
+
+    width:0;
+
+}
+
+
+
+/* Main */
+
+.Teacher-main-content {
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+
+/* Content */
+
+.Teacher-content {
+
+    flex:1;
+
+    overflow:auto;
+
+}

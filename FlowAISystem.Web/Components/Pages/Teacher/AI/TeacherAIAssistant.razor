@@ -1,9 +1,11 @@
-@page "/teacher/ai-assistant"
+@page "/Teacher/ai-assistant"
 
 @using FlowAISystem.Application.AI.Teacher.TeacherAssistant.Interfaces
 @using FlowAISystem.Application.AI.Teacher.TeacherAssistant.Models
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.JSInterop
+
+@layout TeacherMainLayout // take TeacherNawMenu to /Teacher/ai-assistant
 
 @inject ITeacherAssistant TeacherAssistant
 @inject IJSRuntime JSRuntime
@@ -164,18 +166,21 @@
 
                                         <button type="button"
                                                 class="action-button primary-action"
+                                                disabled="@IsProcessing"
                                                 @onclick="() => ApplySuggestions(message)">
                                             Apply Suggestions
                                         </button>
 
                                         <button type="button"
                                                 class="action-button secondary-action"
+                                                disabled="@IsProcessing"
                                                 @onclick="() => ReviewSuggestions(message)">
                                             Review
                                         </button>
 
                                         <button type="button"
                                                 class="action-button tertiary-action"
+                                                disabled="@IsProcessing"
                                                 @onclick="FocusInput">
                                             Ask AI
                                         </button>
@@ -374,7 +379,9 @@
 
                 Capability = response.Capability,
 
-                Suggestions = parsedSuggestions
+                Suggestions = parsedSuggestions,
+
+                LessonId = request.LessonId ?? 0
             });
         }
         catch (Exception ex)
@@ -514,30 +521,19 @@
     }
 
 
-    // private Task ApplySuggestions(
-    //     ChatMessage message)
-    // {
-    //     Integration boundary only.
-        
-    //     TeacherAssistant currently exposes AskAsync()
-    //     but does not expose an ApplySuggestions operation.
-        
-    //     Do NOT call LessonEnhancementService directly from
-    //     this UI component.
-        
-    //     Future implementation should extend the existing
-    //     TeacherAssistant application layer when the backend
-    //     supports applying an improvement.
-
-    //     Console.WriteLine(
-    //         "[Teacher AI Assistant UI] Apply Suggestions requested.");
-
-    //     return Task.CompletedTask;
-    // }
     private async Task ApplySuggestions(ChatMessage message)
     {
         if (IsProcessing)
         {
+            return;
+        }
+
+        if (message.LessonId <= 0)
+        {
+            HasError = true;
+
+            await InvokeAsync(StateHasChanged);
+
             return;
         }
 
@@ -549,7 +545,8 @@
         try
         {
             var response =
-                await TeacherAssistant.ApplySuggestionsAsync(11);
+                await TeacherAssistant.ApplySuggestionsAsync(
+                    message.LessonId);
 
             if (response == null)
             {
@@ -581,19 +578,65 @@
     }
 
 
-    private Task ReviewSuggestions(
-        ChatMessage message)
+    private async Task ReviewSuggestions(ChatMessage message)
     {
-        // Integration boundary only.
-        //
-        // Future implementation can open a detailed review
-        // panel/modal using the existing lesson improvement
-        // result without duplicating enhancement logic.
+        if (IsProcessing)
+        {
+            return;
+        }
+
+        if (message.LessonId <= 0)
+        {
+            HasError = true;
+
+            await InvokeAsync(StateHasChanged);
+
+            return;
+        }
 
         Console.WriteLine(
             "[Teacher AI Assistant UI] Review requested.");
 
-        return Task.CompletedTask;
+        HasError = false;
+        IsProcessing = true;
+
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var response =
+                await TeacherAssistant.ReviewSuggestionsAsync(
+                    message.LessonId);
+
+            if (response == null)
+            {
+                throw new InvalidOperationException(
+                    "Teacher AI returned no response.");
+            }
+
+            Messages.Add(new ChatMessage
+            {
+                Text = response.Message,
+                IsTeacher = false,
+                Capability = response.Capability,
+                LessonId = message.LessonId
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"[Teacher AI Assistant Review Error]: {ex}");
+
+            HasError = true;
+        }
+        finally
+        {
+            IsProcessing = false;
+
+            await InvokeAsync(StateHasChanged);
+
+            await ScrollToBottomAsync();
+        }
     }
 
 
@@ -633,6 +676,8 @@
         public string Capability { get; set; } = string.Empty;
 
         public List<string> Suggestions { get; set; } = new();
+
+        public int LessonId { get; set; }
     }
 }
 

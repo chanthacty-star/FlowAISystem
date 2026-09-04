@@ -1,4 +1,4 @@
-@page "/teacher-dashboard/teacher-profile"
+@page "/Teacher/profile"
 @using Microsoft.AspNetCore.Components.Forms
 @inject IWebHostEnvironment Environment
 @using FlowAISystem.Application.Interfaces.Services
@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
+@layout TeacherMainLayout
 
 @attribute [Authorize(Roles="Teacher")]
 

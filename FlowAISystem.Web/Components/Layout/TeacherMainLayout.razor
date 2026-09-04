@@ -1,0 +1,178 @@
+@inherits LayoutComponentBase
+
+@using FlowAISystem.Web.Authentication
+@using FlowAISystem.Web.Components.Shared.Notifications
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<div class="Teacher-page @(isSidebarOpen ? "" : "Teacher-sidebar-collapsed")">
+
+
+    <!-- Sidebar -->
+
+    <aside class="Teacher-sidebar">
+
+        <TeacherNavMenu />
+
+    </aside>
+
+
+
+    <!-- Main -->
+
+    <main class="Teacher-main-content">
+
+
+        <!-- Top Navigation -->
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 sticky-top">
+
+
+            <!-- Toggle Button -->
+
+            <button class="btn btn-outline-secondary me-3"
+                    @onclick="ToggleSidebar">
+
+                ☰
+
+            </button>
+
+            <div>
+
+                <a class="navbar-brand fw-bold"
+                   href="/teacher-dashboard">
+
+                    FlowAISystem
+
+                </a>
+
+                <div class="text-muted small">
+
+                    teacher Portal
+
+                </div>
+
+            </div>
+
+            <div class="ms-auto">
+
+                <AuthorizeView>
+
+                    <Authorized>
+
+                        <div class="d-flex align-items-center">
+
+                            <a class="btn btn-outline-primary me-3"
+                               href="/Teacher/ai-assistant">
+
+                                🤖 Teacher AI Assistant
+
+                            </a>
+
+                            <div class="text-end me-3">
+
+                                <div class="fw-bold">
+
+                                    👤 @context.User.Identity?.Name
+
+                                </div>
+
+                                <small class="badge bg-primary">
+
+                                    🎓 Student -> now Teacher
+
+                                </small>
+
+                            </div>
+
+                            <button class="btn btn-outline-danger"
+                                    @onclick="Logout">
+
+                                🚪 Logout
+
+                            </button>
+
+                        </div>
+
+                    </Authorized>
+
+                    <NotAuthorized>
+
+                        <a class="btn btn-primary"
+                           href="/login">
+
+                            Login
+
+                        </a>
+
+                    </NotAuthorized>
+
+                </AuthorizeView>
+
+            </div>
+
+        </nav>
+
+
+
+        <!-- Content -->
+
+        <div class="flex-grow-1 overflow-auto bg-light">
+
+            <article class="container-fluid py-4">
+
+                @Body
+
+            </article>
+
+        </div>
+
+
+
+        <!-- Footer -->
+
+        <footer class="border-top bg-white text-center py-3">
+
+            <small class="text-muted">
+
+                © 2026 FlowAISystem • Teacher Portal
+
+            </small>
+
+        </footer>
+
+    </main>
+
+</div>
+
+<NotificationContainer />
+
+<ConfirmationDialog />
+
+@code {
+
+    private bool isSidebarOpen = true;
+
+
+    private void ToggleSidebar()
+    {
+        isSidebarOpen = !isSidebarOpen;
+    }
+
+
+    private async Task Logout()
+    {
+        await AuthProvider.NotifyUserLogout();
+
+        Navigation.NavigateTo("/login");
+    }
+
+}
