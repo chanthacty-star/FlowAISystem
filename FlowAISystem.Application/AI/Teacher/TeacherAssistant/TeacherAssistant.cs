@@ -92,6 +92,16 @@ public class TeacherAssistant : ITeacherAssistant
     public async Task<TeacherAssistantResponse> ApplySuggestionsAsync(
         int lessonId)
     {
+        if (lessonId <= 0)
+        {
+            return new TeacherAssistantResponse
+            {
+                Message =
+                    "I need a valid lesson to apply improvements to.",
+                Capability = "LessonImprovement"
+            };
+        }
+
         Console.WriteLine(
             $"[Teacher AI Assistant] Applying suggestions to lesson {lessonId}.");
 
@@ -133,6 +143,8 @@ public class TeacherAssistant : ITeacherAssistant
             };
         }
 
+        // Preserve every existing field from the loaded lesson;
+        // only Content is replaced by the AI improvement result.
         var updateDto = new UpdateLessonKnowledgeDto
         {
             Id = lesson.Id,
@@ -143,6 +155,7 @@ public class TeacherAssistant : ITeacherAssistant
             Category = lesson.Category,
             Difficulty = lesson.Difficulty,
             ActivityType = lesson.ActivityType,
+            Order = lesson.Order,
             TeacherId = lesson.TeacherId,
             CourseOfferingId = lesson.CourseOfferingId,
             ReferenceUrl = lesson.ReferenceUrl,
@@ -150,8 +163,23 @@ public class TeacherAssistant : ITeacherAssistant
             IsActive = lesson.IsActive
         };
 
-        await _lessonKnowledgeService
-            .UpdateAsync(updateDto);
+        try
+        {
+            await _lessonKnowledgeService
+                .UpdateAsync(updateDto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"[Teacher AI Assistant] Failed to update lesson {lessonId}: {ex.Message}");
+
+            return new TeacherAssistantResponse
+            {
+                Message =
+                    "I generated the improvement, but saving it to the lesson failed. Please try again.",
+                Capability = "LessonImprovement"
+            };
+        }
 
         Console.WriteLine(
             $"[Teacher AI Assistant] Lesson {lessonId} updated successfully.");
@@ -159,7 +187,7 @@ public class TeacherAssistant : ITeacherAssistant
         return new TeacherAssistantResponse
         {
             Message =
-                $"The improvements have been applied successfully to \"{lesson.Title}\".",
+                $"Your lesson \"{lesson.Title}\" has been updated.",
             Capability = "LessonImprovement"
         };
     }
