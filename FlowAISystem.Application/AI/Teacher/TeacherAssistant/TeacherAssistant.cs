@@ -19,14 +19,12 @@ public class TeacherAssistant : ITeacherAssistant
         _lessonKnowledgeService = lessonKnowledgeService;
     }
 
-    public async Task<TeacherAssistantResponse> AskAsync(
-        TeacherAssistantRequest request)
+    public async Task<TeacherAssistantResponse> AskAsync(TeacherAssistantRequest request) //add AskAsync to TeacherAssistantResponse
     {
         if (request == null)
         {
             throw new ArgumentNullException(nameof(request));
         }
-
         if (string.IsNullOrWhiteSpace(request.Message))
         {
             return new TeacherAssistantResponse
@@ -35,8 +33,8 @@ public class TeacherAssistant : ITeacherAssistant
                 Capability = "Question"
             };
         }
-
         Console.WriteLine(
+
             $"[Teacher AI Assistant] Request: '{request.Message}'");
 
         var isImprovementRequest =
@@ -44,22 +42,89 @@ public class TeacherAssistant : ITeacherAssistant
                 "improve",
                 StringComparison.OrdinalIgnoreCase);
 
-        if (isImprovementRequest && request.LessonId.HasValue)
+        if (isImprovementRequest) 
         {
+            int lessonId;
+
+            if (request.LessonId.HasValue && 
+                request.LessonId.Value > 0)
+
+            {
+                lessonId = request.LessonId.Value;
+            }
+            else
+            {
+                var titleHint =
+                    ExtractLessonTitleHint(request.Message);
+
+                if (string.IsNullOrWhiteSpace(titleHint))
+                {
+                    return new TeacherAssistantResponse
+                    {
+                        Message =
+                            "Whice Lesson would you like me to improve?" +
+                            "Please include its title.",
+                        Capability = "LessonImprovement" 
+                    };
+                }
+
+                var matches =
+                    await _lessonKnowledgeService.GetAllAsync(
+                        new LessonKnowledgeSearchDto
+                        {
+                            SearchTerm = titleHint,
+                            PageNumber = 1,
+                            PageSize = 5
+
+                        });
+
+                if (matches.Count == 0) // mean user type lesson out of lessonKnowledge
+                {
+                    return new TeacherAssistantResponse
+                    {
+                        Message =
+                            $"I Couldn't find a lesson titile \"{titleHint}\". " +
+                            "Please check the title lesson again.",
+                        Capability = "LessonImprovement"
+                    };
+                }
+
+                if(matches.Count > 1)
+                {
+                    var options =
+                        string.Join(
+                            "\n",
+                            matches.Select(
+                                match => $"* {match.Title}"));
+                    return new TeacherAssistantResponse
+                    {
+                        Message =
+                            $"I found a few lessons matching \"{titleHint}\":\n\n" +
+                            $"{options}\n\n" +
+                            "Could you tell me the exact title you mean?",
+                        Capability = "LessonImprovement"
+                    };
+
+                }
+                lessonId = matches[0].Id; // what this statement
+
+
+            } //end else condition
             var result =
                 await _lessonEnhancementService
-                    .ImproveAsync(request.LessonId.Value);
+                    .ImproveAsync(lessonId);//maybe have other
 
             if (result == null)
             {
                 return new TeacherAssistantResponse
                 {
                     Message =
-                        "I could not find the lesson to improve.",
-                    Capability = "LessonImprovement"
+                        "I Could not find lesson to imprve.",
+                    Capability = "LessonImprovement",
+                    LessonId = lessonId
+
                 };
             }
-
             var message =
                 result.Suggestions.Count == 0
                     ? "The lesson does not currently have any improvement suggestions."
@@ -67,43 +132,70 @@ public class TeacherAssistant : ITeacherAssistant
                       string.Join(
                           "\n",
                           result.Suggestions.Select(
-                              suggestion =>
-                                  $"• [{suggestion.Priority}] " +
-                                  $"{suggestion.Area}: " +
-                                  $"{suggestion.Message}"));
+                              suggestion => 
+                              $"* [{suggestion.Priority}]" +
+                              $"{suggestion.Area}: " +
+                              $"{suggestion.Message}"));
 
             return new TeacherAssistantResponse
             {
                 Message = message,
-                Capability = "LessonImprovement"
+                Capability = "LessonImprovement",
+                LessonId = lessonId
             };
         }
-
         return new TeacherAssistantResponse
         {
             Message =
-                "I can help you with your lessons. " +
-                "Try asking me to improve a lesson.",
-            Capability = "Question"
+                "I Can help you with your lesson. " +
+                "Try to ask me to improve a lesson. ",
+            Capability = "LessonImprovement"
         };
     }
+    //Heuistic only: strips common instruction/fillter words so the
+    // remainder is a reasonable guess at the lesson title the teacher
+    //typed. the actual matching is delegated entirely to
+    //IlessonKnowledgeService.GetAllAsync 's SearchTerm - this method
+    ////never talds to a repository or database directly.'
 
+    private static readonly string[] ImprovementFillerWords =
+    {
+        "improve", "please", "can", "you", "could", "would",
+        "my", "the", "a", "an", "lesson", "for", "on", "about",
+        "to", "of", "our"
+    };
+    ///
+    private static string ExtractLessonTitleHint(string message)
+    {
+        var words = message
+            .Split(
+                new[] { ' ', '\t', '\n', '\r' },
+                StringSplitOptions.RemoveEmptyEntries)
+            .Select(word => word.Trim('.', ',', '!', '?', '"', '\''))
+            .Where(word => !string.IsNullOrWhiteSpace(word))
+            .Where(word =>
+                !ImprovementFillerWords.Contains(
+                    word,
+                    StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        return string.Join(' ', words);
+    }
 
     public async Task<TeacherAssistantResponse> ApplySuggestionsAsync(
         int lessonId)
     {
-        if (lessonId <= 0)
+        if (lessonId == null)
         {
             return new TeacherAssistantResponse
             {
                 Message =
-                    "I need a valid lesson to apply improvements to.",
+                 "Invalid lesson to apply improvements to.",
                 Capability = "LessonImprovement"
             };
         }
-
         Console.WriteLine(
-            $"[Teacher AI Assistant] Applying suggestions to lesson {lessonId}.");
+            $"[Teacher AI Assistant] Applying Suggestions to lesson {lessonId}.");
 
         var lesson =
             await _lessonKnowledgeService
@@ -114,11 +206,11 @@ public class TeacherAssistant : ITeacherAssistant
             return new TeacherAssistantResponse
             {
                 Message =
-                    "I couldn't find the lesson to update.",
-                Capability = "LessonImprovement"
+                    "I could not find lesson to update",
+                Capability = "LessonImprovement",
+                LessonId = lessonId
             };
         }
-
         var result =
             await _lessonEnhancementService
                 .ImproveAsync(lessonId);
@@ -128,8 +220,9 @@ public class TeacherAssistant : ITeacherAssistant
             return new TeacherAssistantResponse
             {
                 Message =
-                    "I couldn't generate the lesson improvement.",
-                Capability = "LessonImprovement"
+                    "I Could not generate the lesson improvemet. ",
+                Capability = "Lessonmprovement",
+                LessonId = lessonId
             };
         }
 
@@ -138,13 +231,16 @@ public class TeacherAssistant : ITeacherAssistant
             return new TeacherAssistantResponse
             {
                 Message =
-                    "There are no improved lesson changes to apply.",
-                Capability = "LessonImprovement"
+                    "There an no improveent change to apply(meand user enter nothing)",
+                Capability = "Lessonimprovement",
+                LessonId = lessonId
             };
+
         }
 
-        // Preserve every existing field from the loaded lesson;
-        // only Content is replaced by the AI improvement result.
+        //prepar every existing field from the load lesson;
+        //only Content is replaced by AI improvement result.
+        //
         var updateDto = new UpdateLessonKnowledgeDto
         {
             Id = lesson.Id,
@@ -160,7 +256,7 @@ public class TeacherAssistant : ITeacherAssistant
             CourseOfferingId = lesson.CourseOfferingId,
             ReferenceUrl = lesson.ReferenceUrl,
             AttachmentPath = lesson.AttachmentPath,
-            IsActive = lesson.IsActive
+            IsActive = lesson.IsActive,
         };
 
         try
@@ -176,22 +272,23 @@ public class TeacherAssistant : ITeacherAssistant
             return new TeacherAssistantResponse
             {
                 Message =
-                    "I generated the improvement, but saving it to the lesson failed. Please try again.",
-                Capability = "LessonImprovement"
+                    "I generated the improvement, but saving it to the lesson faile. Please try to again.",
+                Capability = "LessonImprovement",
+                LessonId = lessonId
             };
         }
-
         Console.WriteLine(
             $"[Teacher AI Assistant] Lesson {lessonId} updated successfully.");
 
         return new TeacherAssistantResponse
         {
             Message =
-                $"Your lesson \"{lesson.Title}\" has been updated.",
-            Capability = "LessonImprovement"
+                $"Your lesson \"{lesson.Title}\" has been updated",
+            Capability = "LessonImprovement",
+            LessonId = lessonId
         };
-    }
 
+    } //end apply method
 
     public async Task<TeacherAssistantResponse> ReviewSuggestionsAsync(
         int lessonId)
@@ -201,12 +298,11 @@ public class TeacherAssistant : ITeacherAssistant
             return new TeacherAssistantResponse
             {
                 Message =
-                    "I need a valid lesson to review.",
+                    "I need a valid lesson to reviw.",
                 Capability = "Review"
             };
         }
-
-        var lesson =
+        var lesson = 
             await _lessonKnowledgeService
                 .GetByIdAsync(lessonId);
 
@@ -215,39 +311,42 @@ public class TeacherAssistant : ITeacherAssistant
             return new TeacherAssistantResponse
             {
                 Message =
-                    "I couldn't find the lesson to review.",
-                Capability = "Review"
+                    "I couldn't find lesson to review. can you apply lesson first?",
+                Capability = "Review",
+                LessonId  = lessonId
             };
         }
-
         var result =
             await _lessonEnhancementService
                 .ImproveAsync(lessonId);
 
-        if (result == null ||
-            string.IsNullOrWhiteSpace(result.ImprovedContent))
+        if (result == null || string.IsNullOrWhiteSpace(result.ImprovedContent))
         {
             return new TeacherAssistantResponse
             {
                 Message =
                     $"Here is the current content of \"{lesson.Title}\":\n\n" +
                     lesson.Content +
-                    "\n\nNo improved version is available yet.",
-                Capability = "Review"
+                    "\n\nNo improved version is aviable yet. ", // so, the future need to create agent for lesson improve context, but I had LessonEnhancement for (pp, En, act)?
+                Capability = "Lessonimprovement",
+                LessonId = lessonId
             };
-        }
 
+        }
         var message =
-            $"Reviewing \"{lesson.Title}\" before you update it:\n\n" +
-            "— Current content —\n" +
-            lesson.Content +
-            "\n\n— Suggested updated content —\n" +
+            $"Reviewing \"{lesson.Title}\" berfore you update it:\n\n " +
+            "- Current content -\n" +
+            lesson.Content + // take reall lesson to display
+            "\n\n- Suggested updated content -\n" +
             result.ImprovedContent;
 
         return new TeacherAssistantResponse
         {
             Message = message,
-            Capability = "Review"
+            Capability = "Reviw",
+            LessonId = lessonId
         };
+
+
     }
 }

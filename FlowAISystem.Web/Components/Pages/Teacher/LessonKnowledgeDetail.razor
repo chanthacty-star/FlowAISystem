@@ -1,6 +1,8 @@
 @page "/teacher/lesson-knowledge/{id:int}"
 @attribute [Authorize(Roles = "Teacher")]
 
+@layout TeacherMainLayout // take TeacherNawMenu to /Teacher/ai-assistant
+
 @using FlowAISystem.Shared.Enums
 @using FlowAISystem.Application.Interfaces.Services
 @using FlowAISystem.Application.AI.Teacher.LessonEnhancement.Interfaces

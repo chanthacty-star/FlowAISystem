@@ -1,11 +1,12 @@
-@page "/Teacher/ai-assistant"
+@page "/teacher/ai-assistant"
+
+@layout TeacherMainLayout // take TeacherNawMenu to /Teacher/ai-assistant
 
 @using FlowAISystem.Application.AI.Teacher.TeacherAssistant.Interfaces
 @using FlowAISystem.Application.AI.Teacher.TeacherAssistant.Models
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.JSInterop
 
-@layout TeacherMainLayout // take TeacherNawMenu to /Teacher/ai-assistant
 
 @inject ITeacherAssistant TeacherAssistant
 @inject IJSRuntime JSRuntime
@@ -137,46 +138,63 @@
                                 }
 
                                 @if (!message.IsTeacher &&
-                                     message.Suggestions.Any())
+                                     (message.Suggestions.Any() ||
+                                      message.LessonId > 0))
                                 {
-                                    <div class="suggestions-section">
+                                    @if (message.Suggestions.Any())
+                                    {
+                                        <div class="suggestions-section">
 
-                                        <div class="suggestions-title">
-                                            Improvement opportunities
+                                            <div class="suggestions-title">
+                                                Improvement opportunities
+                                            </div>
+
+                                            <ul class="suggestions-list">
+                                                @foreach (var suggestion in message.Suggestions)
+                                                {
+                                                    <li>
+                                                        <span class="check-icon"
+                                                              aria-hidden="true">
+                                                            ✓
+                                                        </span>
+
+                                                        <span>
+                                                            @suggestion
+                                                        </span>
+                                                    </li>
+                                                }
+                                            </ul>
                                         </div>
-
-                                        <ul class="suggestions-list">
-                                            @foreach (var suggestion in message.Suggestions)
-                                            {
-                                                <li>
-                                                    <span class="check-icon"
-                                                          aria-hidden="true">
-                                                        ✓
-                                                    </span>
-
-                                                    <span>
-                                                        @suggestion
-                                                    </span>
-                                                </li>
-                                            }
-                                        </ul>
-                                    </div>
+                                    }
 
                                     <div class="action-buttons">
 
-                                        <button type="button"
-                                                class="action-button primary-action"
-                                                disabled="@IsProcessing"
-                                                @onclick="() => ApplySuggestions(message)">
-                                            Apply Suggestions
-                                        </button>
+                                        @if (message.Suggestions.Any())
+                                        {
+                                            <button type="button"
+                                                    class="action-button primary-action"
+                                                    disabled="@IsProcessing"
+                                                    @onclick="() => ApplySuggestions(message)">
+                                                Apply Suggestions
+                                            </button>
 
-                                        <button type="button"
-                                                class="action-button secondary-action"
-                                                disabled="@IsProcessing"
-                                                @onclick="() => ReviewSuggestions(message)">
-                                            Review
-                                        </button>
+                                            <button type="button"
+                                                    class="action-button secondary-action"
+                                                    disabled="@IsProcessing"
+                                                    @onclick="() => ReviewSuggestions(message)">
+                                                Review
+                                            </button>
+                                        }
+
+                                        @if (message.LessonId > 0)
+                                        {
+                                            <a class="action-button tertiary-action"
+                                               href="@($"/teacher/lesson-knowledge/edit/{message.LessonId}")"
+                                               target="_blank"
+                                               rel="noopener noreferrer">
+                                                Open Lesson
+                                            </a>
+                                        }
 
                                         <button type="button"
                                                 class="action-button tertiary-action"
@@ -350,11 +368,12 @@
         {
             var request = new TeacherAssistantRequest
             {
-                Message = userMessage,
+                Message = userMessage
 
-                // Temporary lesson context retained from the
-                // existing Teacher AI Assistant implementation.
-                LessonId = 11
+                // No LessonId is sent here anymore — TeacherAssistant
+                // resolves the lesson from its title within the
+                // message text when the teacher doesn't reference
+                // one directly.
             };
 
             var response =
@@ -381,7 +400,7 @@
 
                 Suggestions = parsedSuggestions,
 
-                LessonId = request.LessonId ?? 0
+                LessonId = response.LessonId ?? 0
             });
         }
         catch (Exception ex)

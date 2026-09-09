@@ -1,5 +1,6 @@
 using FlowAISystem.Application.AI.Student.Interfaces;
 using FlowAISystem.Shared.Enums;
+using System.Text.RegularExpressions;
 
 namespace FlowAISystem.Application.AI.Student.Services;
 
@@ -221,26 +222,43 @@ public class StudentAIResponseFormatter : IStudentAIResponseFormatter
     }
 
     /// <summary>
-    /// Extracts the core explanation text up to the start of the "Steps:" section.
+    /// Extracts the core explanation text up to the first recognized section heading.
+    /// Falls back to the entire content only if no known heading exists at all.
     /// </summary>
     private string ExtractExplanation(string content)
     {
-        var index = content.IndexOf("Steps:", StringComparison.OrdinalIgnoreCase);
-
-        if (index > 0)
+        string[] knownSections =
         {
-            return content[..index].Trim();
+            "Steps",
+            "Example",
+            "Time Complexity",
+            "Complexity",
+            "Summary"
+        };
+
+        var earliestIndex = content.Length;
+
+        foreach (var section in knownSections)
+        {
+            var index = FindHeadingIndex(content, section);
+
+            if (index >= 0 && index < earliestIndex)
+            {
+                earliestIndex = index;
+            }
         }
 
-        return content.Trim();
+        return content[..earliestIndex].Trim();
     }
 
     /// <summary>
-    /// Locates and extracts text for a given section title using predefined delimiters.
+    /// Locates and extracts text for a given section title using
+    /// whole-word heading matches only — e.g. "Example" will NOT
+    /// match inside "Examples".
     /// </summary>
     private string ExtractSection(string content, string sectionName)
     {
-        var start = content.IndexOf(sectionName, StringComparison.OrdinalIgnoreCase);
+        var start = FindHeadingIndex(content, sectionName);
 
         if (start < 0)
         {
@@ -277,6 +295,23 @@ public class StudentAIResponseFormatter : IStudentAIResponseFormatter
         }
 
         return CleanText(content[start..end]);
+    }
+
+    /// <summary>
+    /// Finds the index of a section heading as a whole word — e.g. "Example"
+    /// will not match inside "Examples". Only matches when the heading is
+    /// immediately followed by ':', a line break, or the end of the string.
+    /// </summary>
+    private int FindHeadingIndex(string content, string sectionName)
+    {
+        var pattern = $@"\b{Regex.Escape(sectionName)}\b(?=\s*:|\r?\n|$)";
+
+        var match = Regex.Match(
+            content,
+            pattern,
+            RegexOptions.IgnoreCase);
+
+        return match.Success ? match.Index : -1;
     }
 
     /// <summary>

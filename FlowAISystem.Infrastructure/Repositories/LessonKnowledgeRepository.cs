@@ -332,8 +332,41 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
     // ==================================================
     // AI Lesson
     // ==================================================
+    //public async Task<LessonKnowledgeDto?> GetLessonForAIAsync(int lessonId)
+    //{
+    //    return await GetByIdAsync(lessonId);
+    //}
+    // ==================================================
+    // AI Lesson
+    // ==================================================
     public async Task<LessonKnowledgeDto?> GetLessonForAIAsync(int lessonId)
     {
-        return await GetByIdAsync(lessonId);
+        return await _context.LessonKnowledges
+            .AsNoTracking()
+            .Where(x => x.Id == lessonId && x.IsActive)
+            .Select(x => new LessonKnowledgeDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                Content = x.Content,
+                Difficulty = x.Difficulty,
+                ActivityType = x.ActivityType,
+                Order = x.Order,
+                Keywords = x.Keywords,
+                Category = x.Category,
+                TeacherId = x.TeacherId,
+                TeacherName = x.Teacher != null ? x.Teacher.Username : string.Empty,
+                CourseOfferingId = x.CourseOfferingId,
+                CourseName = x.CourseOffering != null && x.CourseOffering.Subject != null
+                    ? x.CourseOffering.Subject.Name
+                    : string.Empty,
+                ReferenceUrl = x.ReferenceUrl,
+                AttachmentPath = x.AttachmentPath,
+                IsActive = x.IsActive,
+                CreatedAt = x.CreatedAt,
+                UpdatedAt = x.UpdatedAt
+            })
+            .FirstOrDefaultAsync();
     }
 }

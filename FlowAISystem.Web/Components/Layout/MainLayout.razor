@@ -17,7 +17,6 @@
 
 <MudSnackbarProvider />
 
-
 <div class="page @(isSidebarOpen ? "" : "sidebar-collapsed")">
 
 
@@ -27,9 +26,7 @@
 
     </aside>
 
-
     <main class="main-content">
-
 
         <!-- Top Navbar -->
 
@@ -49,28 +46,19 @@
 
             </a>
 
-
-
             <div class="ms-auto">
-
 
                 <AuthorizeView>
 
-
                     <Authorized>
-
 
                         <span class="me-3">
 
-
                             👤
-
 
                             <strong>
                                 @context.User.Identity?.Name
                             </strong>
-
-
 
                             <span class="badge bg-secondary ms-2">
 
@@ -99,53 +87,32 @@
 
                     </Authorized>
 
-
-
                     <NotAuthorized>
-
 
                         <a class="btn btn-primary"
                            href="/login">
 
-
                             Login
-
 
                         </a>
 
-
                     </NotAuthorized>
-
-
 
                 </AuthorizeView>
 
-
             </div>
 
-
         </nav>
-
-
-
-
 
         <!-- Page Content -->
 
         <article class="content px-4">
 
-
             @Body
-
 
         </article>
 
-
-
-
-
         <!-- Global Services -->
-
 
         <NotificationContainer />
 
@@ -154,16 +121,11 @@
 
     </main>
 
-
 </div>
-
-
-
 
 @code {
 
     private bool isSidebarOpen = true;
-
 
     private async Task Logout()
     {
@@ -173,8 +135,6 @@
         Navigation.NavigateTo("/login");
 
     }
-
-
 
     private void ToggleSidebar()
     {

@@ -5,4 +5,6 @@ public class TeacherAssistantResponse
     public string Message { get; set; } = string.Empty;
 
     public string Capability { get; set; } = string.Empty;
+
+    public int? LessonId { get; set; }
 }
