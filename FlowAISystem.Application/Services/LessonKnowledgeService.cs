@@ -3,6 +3,8 @@ using FlowAISystem.Application.Interfaces.Services;
 using FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
 
 
+using FlowAISystem.Domain.Entities;
+
 namespace FlowAISystem.Application.Services;
 
 public class LessonKnowledgeService : ILessonKnowledgeService
@@ -142,5 +144,12 @@ public class LessonKnowledgeService : ILessonKnowledgeService
             .GetLessonForAIAsync(lessonId);
 
     }
+
+    public async Task<LessonKnowledgeDto?> GetNextLessonAsync(int courseOfferingId, int currentOrder)
+    {
+        return await _repository
+            .GetNextLessonAsync(courseOfferingId, currentOrder);
+    }
+
 
 }

@@ -1,136 +1,3 @@
-//using FlowAISystem.Application.AI.Student.Conversation.Interfaces;
-//using FlowAISystem.Application.AI.Student.Conversation.Enums;
-//using FlowAISystem.Application.AI.Student.Conversation.Models;
-//using FlowAISystem.Application.AI.Student.Enums;
-//using FlowAISystem.Application.AI.Student.Interfaces;
-//using FlowAISystem.Application.AI.Student.Handlers;
-//using FlowAISystem.Shared.DTOs.AI;
-
-//namespace FlowAISystem.Application.AI.Student.Conversation.Services;
-
-//public class ConversationHandler :
-//    IConversationHandler,
-//    IStudentAIWorkflowHandler
-//{
-//    private readonly IConversationContextBuilder _contextBuilder;
-//    private readonly IConversationActionDetector _actionDetector;
-//    private readonly IPromptBuilder _promptBuilder;
-//    private readonly IStudentAIGenerator _aiGenerator;
-
-//    public ConversationHandler(
-//        IConversationContextBuilder contextBuilder,
-//        IConversationActionDetector actionDetector,
-//        IPromptBuilder promptBuilder,
-//        IStudentAIGenerator aiGenerator)
-//    {
-//        _contextBuilder = contextBuilder;
-//        _actionDetector = actionDetector;
-//        _promptBuilder = promptBuilder;
-//        _aiGenerator = aiGenerator;
-//    }
-
-//    public StudentIntent Intent
-//        => StudentIntent.Conversation;
-
-//    public async Task<StudentAIResponseDto> HandleAsync(
-//        StudentAIRequestDto request)
-//    {
-//        return await HandleAsync(
-//            request,
-//            request.Language);
-//    }
-
-//    public async Task<StudentAIResponseDto> HandleAsync(
-//        StudentAIRequestDto request,
-//        string language)
-//    {
-//        if (!request.ConversationId.HasValue)
-//        {
-//            return new StudentAIResponseDto
-//            {
-//                Answer =
-//                    "I need previous conversation context.",
-//                Source = "Conversation",
-//                Confidence = 0.50m,
-//                CreatedAt = DateTime.UtcNow
-//            };
-//        }
-
-//        // 1. Build conversation context
-//        var context =
-//            await _contextBuilder.BuildAsync(
-//                request.ConversationId.Value,
-//                request.Question);
-
-//        if (!context.HasHistory)
-//        {
-//            return new StudentAIResponseDto
-//            {
-//                Answer =
-//                    "No previous conversation found.",
-//                Source = "Conversation",
-//                Confidence = 0.40m,
-//                CreatedAt = DateTime.UtcNow
-//            };
-//        }
-
-//        // 2. Detect conversation action
-//        var action =
-//            _actionDetector.Detect(
-//                request.Question);
-
-//        // 3. Build prompt
-//        var prompt =
-//            BuildPrompt(
-//                action,
-//                context);
-
-//        // 4. Generate AI response
-//        var answer =
-//            await _aiGenerator.GenerateAsync(prompt);
-
-//        // 5. Return response
-//        return new StudentAIResponseDto
-//        {
-//            Answer = answer,
-//            Source = "Conversation Memory",
-//            Confidence = 0.85m,
-//            CreatedAt = DateTime.UtcNow
-//        };
-//    }
-
-//    private string BuildPrompt(
-//        ConversationAction action,
-//        ConversationContext context)
-//    {
-//        return action switch
-//        {
-//            ConversationAction.ExplainMore =>
-//                _promptBuilder.BuildExplainMore(context),
-
-//            ConversationAction.ShowExample =>
-//                _promptBuilder.BuildExample(context),
-
-//            ConversationAction.CreateQuiz =>
-//                _promptBuilder.BuildQuiz(context),
-
-//            ConversationAction.Translate =>
-//                _promptBuilder.BuildTranslation(context),
-
-//            ConversationAction.Continue =>
-//                _promptBuilder.BuildContinue(context),
-
-//            ConversationAction.Compare =>
-//                _promptBuilder.BuildComparison(context),
-
-//            ConversationAction.Summarize =>
-//                _promptBuilder.BuildSummary(context),
-
-//            _ =>
-//                _promptBuilder.BuildContinue(context)
-//        };
-//    }
-//}
 using FlowAISystem.Application.AI.Student.Conversation.Enums;
 using FlowAISystem.Application.AI.Student.Conversation.Interfaces;
 using FlowAISystem.Application.AI.Student.Conversation.Models;
@@ -138,6 +5,7 @@ using FlowAISystem.Application.AI.Student.Enums;
 using FlowAISystem.Application.AI.Student.Handlers;
 using FlowAISystem.Application.AI.Student.Interfaces;
 using FlowAISystem.Shared.DTOs.AI;
+using FlowAISystem.Application.Interfaces.Services;
 
 namespace FlowAISystem.Application.AI.Student.Conversation.Services;
 
@@ -149,18 +17,26 @@ public class ConversationHandler :
     private readonly IConversationActionDetector _actionDetector;
     private readonly IPromptBuilder _promptBuilder;
     private readonly IStudentAIGenerator _aiGenerator;
-
+    private readonly IStudentAIResponseFormatter _formatter;
+    private readonly ILessonKnowledgeService _lessonService;
+    private readonly IRecommendationService _recommendationService;
 
     public ConversationHandler(
         IConversationContextBuilder contextBuilder,
         IConversationActionDetector actionDetector,
         IPromptBuilder promptBuilder,
-        IStudentAIGenerator aiGenerator)
+        IStudentAIGenerator aiGenerator,
+        IStudentAIResponseFormatter formatter,
+        ILessonKnowledgeService lessonService,
+        IRecommendationService recommendationService)
     {
         _contextBuilder = contextBuilder;
         _actionDetector = actionDetector;
         _promptBuilder = promptBuilder;
         _aiGenerator = aiGenerator;
+        _formatter = formatter;
+        _lessonService = lessonService;
+        _recommendationService = recommendationService;
     }
 
 
@@ -236,8 +112,6 @@ public class ConversationHandler :
                 "Conversation",
                 0.40m);
         }
-
-
         // ==========================================
         // 3. Detect Conversation Action
         // ==========================================
@@ -245,6 +119,20 @@ public class ConversationHandler :
         var action =
             _actionDetector.Detect(
                 request.Question);
+
+
+        // ==========================================
+        // 3b. Continue — grounded in actual lesson
+        // content, not freely generated by the AI.
+        // ==========================================
+
+        if (action == ConversationAction.Continue)
+        {
+            return await HandleContinueAsync(
+                request,
+                language,
+                context);
+        }
 
 
         // ==========================================
@@ -281,7 +169,7 @@ public class ConversationHandler :
     // Prompt Builder Router
     // ==========================================
 
-    private string BuildPrompt(
+    private string BuildPrompt( // but promt is AI can make decision itselfe 
         ConversationAction action,
         ConversationContext context)
     {
@@ -320,8 +208,6 @@ public class ConversationHandler :
                     context)
         };
     }
-
-
     // ==========================================
     // Response Builder
     // ==========================================
@@ -339,8 +225,6 @@ public class ConversationHandler :
             CreatedAt = DateTime.UtcNow
         };
     }
-
-
     // ==========================================
     // Language Normalization
     // ==========================================
@@ -362,8 +246,6 @@ public class ConversationHandler :
 
         return "en-US";
     }
-
-
     // ==========================================
     // Language Helper
     // ==========================================
@@ -378,4 +260,122 @@ public class ConversationHandler :
             ? khmer
             : english;
     }
+    // ==========================================
+    // Continue Handler
+    // ==========================================
+
+    private async Task<StudentAIResponseDto> HandleContinueAsync(
+        StudentAIRequestDto request,
+        string language,
+        ConversationContext context)
+    {
+        if (!request.LessonId.HasValue)
+        {
+            return CreateResponse(
+                GetText(
+                    language,
+                    "ខ្ញុំមិនដឹងថាមេរៀនណាដែលត្រូវបន្តទេ។",
+                    "I'm not sure which lesson to continue from."),
+                "Conversation",
+                0.50m);
+        }
+
+        var lesson =
+            await _lessonService.GetLessonForAIAsync(
+                request.LessonId.Value);
+
+        if (lesson == null)
+        {
+            return CreateResponse(
+                GetText(
+                    language,
+                    "ខ្ញុំរកមិនឃើញមេរៀននេះទេ។",
+                    "I couldn't find that lesson."),
+                "Conversation",
+                0.40m);
+        }
+
+        var allSections =
+            _formatter.GetAvailableSectionKeys(
+                lesson.Content,
+                lesson.Difficulty);
+
+        var shownSections =
+            GetShownSectionKeys(
+                context.PreviousAssistantMessage?.Content);
+
+        var nextSection =
+            allSections.FirstOrDefault(
+                s => !shownSections.Contains(s));
+
+        if (nextSection != null)
+        {
+            var moreAfterThis =
+                allSections
+                    .SkipWhile(s => s != nextSection)
+                    .Skip(1)
+                    .Any(s => !shownSections.Contains(s));
+
+            var chunk =
+                _formatter.FormatSection(
+                    nextSection,
+                    lesson.Content,
+                    language);
+
+            if (moreAfterThis)
+            {
+                chunk +=
+                    Environment.NewLine + Environment.NewLine +
+                    GetText(
+                        language,
+                        "👉 វាយ \"បន្ត\" ដើម្បីមើលបន្ថែម។",
+                        "👉 Type \"continue\" for more."); //tell user's next move and only lesson knowledge 
+            }
+            return new StudentAIResponseDto
+            {
+                Answer = chunk,
+                Source = "Teacher Lesson Knowledge",
+                LessonId = lesson.Id,
+                Confidence = 0.90m,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        // Nothing left in this lesson — hand off to Recommendation.
+        return await _recommendationService.GetNextAsync(
+            lesson,
+            language);
+    }
+    // ==========================================
+    // Section-Reveal Tracking
+    // ==========================================
+
+    private static readonly (string Key, string Marker)[] SectionMarkers =
+        {
+        ("Steps", "⚙️"),
+        ("Example", "💡"),
+        ("TimeComplexity", "⏱"),
+        ("Advanced", "🧠")
+    };
+
+    private HashSet<string> GetShownSectionKeys(string? previousAnswer)
+    {
+        var shown = new HashSet<string>(); // create obj show mean tell user what next step to do 
+
+        if (string.IsNullOrWhiteSpace(previousAnswer))
+        {
+            return shown;
+        }
+
+        foreach (var (key, marker) in SectionMarkers)
+        {
+            if (previousAnswer.Contains(marker))
+            {
+                shown.Add(key);
+            }
+        }
+
+        return shown;
+    }
+
 }

@@ -4,14 +4,11 @@ using FlowAISystem.Shared.DTOs.AI;
 
 namespace FlowAISystem.Application.AI.Student.Handlers;
 
-
 public class GreetingHandler: IStudentAIWorkflowHandler
 {
 
     public StudentIntent Intent
         => StudentIntent.Greeting;
-
-
 
     public Task<StudentAIResponseDto> HandleAsync(
         StudentAIRequestDto request)
@@ -23,8 +20,6 @@ public class GreetingHandler: IStudentAIWorkflowHandler
                     "km",
                     StringComparison.OrdinalIgnoreCase)
             == true;
-
-
 
         return Task.FromResult(
             new StudentAIResponseDto

@@ -17,7 +17,6 @@ public class StudentAIService : IStudentAIService
     private readonly IStudentAIResponseBuilder _responseBuilder;
 
 
-
     public StudentAIService(
         IStudentIntentDetector intentDetector,
         IEnumerable<IStudentAIWorkflowHandler> handlers,
@@ -27,8 +26,6 @@ public class StudentAIService : IStudentAIService
         _handlers = handlers;
         _responseBuilder = responseBuilder;
     }
-
-
 
     public async Task<StudentAIResponseDto> AskAsync(
         StudentAIRequestDto request)
@@ -45,8 +42,6 @@ public class StudentAIService : IStudentAIService
                 0.20m);
         }
 
-
-
         var question =
             request.Question.Trim();
 
@@ -55,33 +50,24 @@ public class StudentAIService : IStudentAIService
         var intent =
             _intentDetector.Detect(question);
 
-
-
         var handler =
             _handlers.FirstOrDefault(
                 h => h.Intent == intent);
 
-
-
-        if (handler == null)
+        if (handler == null) // this mean AI cannot handle the qu, mayby st qu longer, or error piece AI service, then return below will proces to protect
         {
             return _responseBuilder.Create(
                 GetText(
                     request.Language,
                     "ខ្ញុំមិនទាន់អាចឆ្លើយសំណួរនេះបានទេណា។",
-                    "I cannot handle this request yet."),
+                    //"I cannot handle this request yet.",
+                    $"I’m not sure what you mean by Are you asking about a programming topic, a lesson, or something else?"),
                 "Student AI",
                 0.50m);
         }
 
-
-
-        return await handler.HandleAsync(request);
+        return await handler.HandleAsync(request); // and if St AI got it, this statement will procesing and connect or rquest to learn handler 
     }
-
-
-
-
     private string GetText(
         string? language,
         string khmer,

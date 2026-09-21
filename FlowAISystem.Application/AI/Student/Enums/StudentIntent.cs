@@ -28,7 +28,7 @@ public enum StudentIntent
     /// "What is OOP?"
     /// "Tell me about Database Normalization"
     /// </summary>
-    Learn,
+    Learn, 
 
     /// <summary>
     /// Access the student's personal academic information.

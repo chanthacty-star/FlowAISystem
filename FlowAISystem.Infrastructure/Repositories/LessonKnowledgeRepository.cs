@@ -3,6 +3,7 @@ using FlowAISystem.Application.Interfaces.Repositories;
 using FlowAISystem.Infrastructure.Data;
 using FlowAISystem.Domain.Entities;
 using FlowAISystem.Shared.DTOs.AI.LessonKnowledge;
+using FlowAISystem.Application.AI.Student.Handlers;
 
 namespace FlowAISystem.Infrastructure.Repositories;
 
@@ -366,6 +367,31 @@ public class LessonKnowledgeRepository : ILessonKnowledgeRepository
                 IsActive = x.IsActive,
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<LessonKnowledgeDto?> GetNextLessonAsync(int courseOfferingId, int currentOrder)
+    {
+        return await _context.LessonKnowledges
+            .AsNoTracking()
+            .Where(x => x.CourseOfferingId == courseOfferingId
+                     && x.IsActive
+                     && x.Order > currentOrder)
+            .OrderBy(x => x.Order)
+            .Select(x => new LessonKnowledgeDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                Content = x.Content,
+                Difficulty = x.Difficulty,
+                ActivityType = x.ActivityType,
+                Order = x.Order,
+                Keywords = x.Keywords,
+                Category = x.Category,
+                CourseOfferingId = x.CourseOfferingId,
+                IsActive = x.IsActive
             })
             .FirstOrDefaultAsync();
     }

@@ -8,212 +8,123 @@ namespace FlowAISystem.Infrastructure.Repositories;
 
 public class AttendanceRepository : IAttendanceRepository
 {
-
     private readonly AppDbContext _context;
 
-
-    public AttendanceRepository(
-        AppDbContext context)
+    public AttendanceRepository(AppDbContext context)
     {
         _context = context;
     }
 
-
-
-    public async Task<List<AttendanceListItemDto>> GetAllAsync(
-        AttendanceSearchDto search)
+    public async Task<List<AttendanceListItemDto>> GetAllAsync(AttendanceSearchDto search)
     {
-
-        var query =
-            _context.Attendances
-
-            .Include(a => a.Enrollment!)
-                .ThenInclude(e => e.Student)
-
-            .Include(a => a.Enrollment!)
-                .ThenInclude(e => e.CourseOffering!)
-                    .ThenInclude(c => c.Subject)
-
+        var query = _context.Attendances
+            .AsNoTracking()
             .AsQueryable();
 
-
-
+        // 1. Text Search Filter (Matches Student Name, Course, OR numeric Student ID inside SearchTerm)
         if (!string.IsNullOrWhiteSpace(search.SearchTerm))
         {
+            var term = search.SearchTerm.Trim().ToLower();
 
             query = query.Where(a =>
-                a.Enrollment!.Student!.Name.FirstName
-                    .Contains(search.SearchTerm)
-
-                ||
-
-                a.Enrollment.Student.Name.LastName
-                    .Contains(search.SearchTerm)
-
-                ||
-
-                a.Enrollment.CourseOffering!
-                    .Subject!.Name
-                    .Contains(search.SearchTerm));
-
+                (a.Enrollment != null && a.Enrollment.Student != null &&
+                    (a.Enrollment.Student.Name.FirstName.ToLower().Contains(term) ||
+                     a.Enrollment.Student.Name.LastName.ToLower().Contains(term) ||
+                     a.Enrollment.Student.Id.ToString().Contains(term))) ||
+                (a.Enrollment != null && a.Enrollment.CourseOffering != null &&
+                 a.Enrollment.CourseOffering.Subject != null &&
+                 a.Enrollment.CourseOffering.Subject.Name.ToLower().Contains(term)));
         }
 
-
-
-        if (search.EnrollmentId.HasValue)
+        // 2. Specific Student ID Filter
+        if (search.StudentId.HasValue && search.StudentId.Value > 0)
         {
             query = query.Where(a =>
-                a.EnrollmentId == search.EnrollmentId);
+                a.Enrollment != null &&
+                a.Enrollment.StudentId == search.StudentId.Value);
         }
 
+        // 3. Specific Enrollment ID Filter
+        if (search.EnrollmentId.HasValue && search.EnrollmentId.Value > 0)
+        {
+            query = query.Where(a => a.EnrollmentId == search.EnrollmentId.Value);
+        }
 
-
-        if (search.AttendanceDate.HasValue)
+        // 4. Course Offering Filter
+        if (search.CourseOfferingId.HasValue && search.CourseOfferingId.Value > 0)
         {
             query = query.Where(a =>
-                a.AttendanceDate ==
-                search.AttendanceDate);
+                a.Enrollment != null &&
+                a.Enrollment.CourseOfferingId == search.CourseOfferingId.Value);
         }
 
-
-
-        if (search.CourseOfferingId.HasValue)
+        // 5. Date Filter (Option A)
+        if (search.AttendanceDate.HasValue && search.AttendanceDate.Value != default)
         {
-            query = query.Where(a =>
-                a.Enrollment!
-                .CourseOfferingId ==
-                search.CourseOfferingId);
+            var filterDate = DateOnly.FromDateTime(search.AttendanceDate.Value);
+            query = query.Where(a => a.AttendanceDate == filterDate);
         }
 
-
-
+        // 6. Projection
         return await query
-
-            .OrderByDescending(a =>
-                a.AttendanceDate)
-
+            .OrderByDescending(a => a.AttendanceDate)
             .Select(a => new AttendanceListItemDto
             {
-
                 Id = a.Id,
-
-
-                StudentName =
-                    a.Enrollment!
-                    .Student!
-                    .Name
-                    .ToString(),
-
-
-                CourseName =
-                    a.Enrollment!
-                    .CourseOffering!
-                    .Subject!
-                    .Name,
-
-
-                ClassName =
-                    a.Enrollment!
-                    .CourseOffering!
-                    .ClassName,
-
-
-                AttendanceDate =
-                    a.AttendanceDate,
-
-
-                Status =
-                    a.Status
-
+                StudentName = a.Enrollment != null && a.Enrollment.Student != null
+                    ? (a.Enrollment.Student.Name.FirstName + " " + a.Enrollment.Student.Name.LastName).Trim()
+                    : "(Unknown Student)",
+                CourseName = a.Enrollment != null
+                             && a.Enrollment.CourseOffering != null
+                             && a.Enrollment.CourseOffering.Subject != null
+                    ? a.Enrollment.CourseOffering.Subject.Name
+                    : "(Unknown Course)",
+                ClassName = a.Enrollment != null && a.Enrollment.CourseOffering != null
+                    ? a.Enrollment.CourseOffering.ClassName
+                    : "(Unknown Class)",
+                AttendanceDate = a.AttendanceDate,
+                Status = a.Status
             })
-
             .ToListAsync();
-
     }
 
-
-
-    public async Task<Attendance?> GetByIdAsync(
-        int id)
+    public async Task<Attendance?> GetByIdAsync(int id)
     {
-
         return await _context.Attendances
-
-            .Include(a => a.Enrollment!)
-                .ThenInclude(e => e.Student)
-
-            .Include(a => a.Enrollment!)
-                .ThenInclude(e => e.CourseOffering!)
-                    .ThenInclude(c => c.Subject)
-
-            .FirstOrDefaultAsync(a =>
-                a.Id == id);
-
+            .Include(a => a.Enrollment)
+                .ThenInclude(e => e!.Student)
+            .Include(a => a.Enrollment)
+                .ThenInclude(e => e!.CourseOffering)
+                    .ThenInclude(c => c!.Subject)
+            .FirstOrDefaultAsync(a => a.Id == id);
     }
 
-
-
-
-    public async Task CreateAsync(
-        Attendance attendance)
+    public async Task CreateAsync(Attendance attendance)
     {
-
         _context.Attendances.Add(attendance);
-
         await _context.SaveChangesAsync();
-
     }
 
-
-
-
-    public async Task UpdateAsync(
-        Attendance attendance)
+    public async Task UpdateAsync(Attendance attendance)
     {
-
         _context.Attendances.Update(attendance);
-
         await _context.SaveChangesAsync();
-
     }
 
-
-
-
-    public async Task DeleteAsync(
-        Attendance attendance)
+    public async Task DeleteAsync(Attendance attendance)
     {
-
         _context.Attendances.Remove(attendance);
-
         await _context.SaveChangesAsync();
-
     }
-
-
-
 
     public async Task<bool> ExistsAsync(
         int enrollmentId,
         DateOnly attendanceDate,
         int? ignoreId = null)
     {
-
         return await _context.Attendances.AnyAsync(a =>
-
-            a.EnrollmentId == enrollmentId
-
-            &&
-
-            a.AttendanceDate == attendanceDate
-
-            &&
-
-            (!ignoreId.HasValue ||
-             a.Id != ignoreId)
-
-        );
-
+            a.EnrollmentId == enrollmentId &&
+            a.AttendanceDate == attendanceDate &&
+            (!ignoreId.HasValue || a.Id != ignoreId.Value));
     }
-
 }

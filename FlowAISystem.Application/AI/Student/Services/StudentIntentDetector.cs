@@ -3,7 +3,7 @@ using FlowAISystem.Application.AI.Student.Interfaces;
 
 namespace FlowAISystem.Application.AI.Student.Services;
 
-public class StudentIntentDetector
+public class StudentIntentDetector // create to take the message from use's/ what user's message should be
     : IStudentIntentDetector
 {
     public StudentIntent Detect(string message)
@@ -44,6 +44,7 @@ public class StudentIntentDetector
 
         if (
             message.Contains("thank") ||
+            message.Contains("thank you") ||
             message.Contains("thanks") ||
             message.Contains("appreciate") ||
 
@@ -154,10 +155,13 @@ public class StudentIntentDetector
         // =====================================================
 
         if (
+            message.Contains("i want to learn") ||
+            message.Contains("i want to learn about") ||
             message.Contains("explain") ||
             message.Contains("what is") ||
             message.Contains("what are") ||
             message.Contains("tell me about") ||
+            message.Contains("tell me the") ||
             message.Contains("how does") ||
             message.Contains("define") ||
             message.Contains("meaning") ||
@@ -177,7 +181,8 @@ public class StudentIntentDetector
         // General Conversation
         // =====================================================
 
-        return StudentIntent.General;
+        //return StudentIntent.General;
+        return StudentIntent.Unknown;
     }
 }
 

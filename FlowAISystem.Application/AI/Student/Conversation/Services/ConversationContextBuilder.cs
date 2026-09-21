@@ -8,6 +8,8 @@ public class ConversationContextBuilder
 {
     private readonly IConversationHistoryService _historyService;
 
+    private const int RecentMessageLimit = 10;
+
     public ConversationContextBuilder(
         IConversationHistoryService historyService)
     {
@@ -32,6 +34,12 @@ public class ConversationContextBuilder
                     currentQuestion
             };
         }
+        // object recent Message
+        var recentMessage =
+            messages
+                .OrderBy(x => x.CreatedAt)
+                .TakeLast(RecentMessageLimit)
+                .ToList();
 
 
         // Get the latest user message
@@ -65,7 +73,9 @@ public class ConversationContextBuilder
                 previousUserMessage,
 
             PreviousAssistantMessage =
-                previousAssistantMessage
+                previousAssistantMessage,
+            RecentMessage =
+                recentMessage
         };
     }
 }

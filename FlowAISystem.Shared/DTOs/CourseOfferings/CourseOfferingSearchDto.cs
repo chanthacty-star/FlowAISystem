@@ -10,6 +10,11 @@ public class CourseOfferingSearchDto
 
     public int? TeacherId { get; set; }
 
+    public string? TeacherName { get; set; } // then make sure in Repository exist TeacherName
+
 
     public int? SemesterId { get; set; }
+
+    // Text search by Semester Name (string?) e.g. "Spring 2026" or "Fall"
+    public string? SemesterName { get; set; }
 }

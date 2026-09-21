@@ -15,9 +15,7 @@ public class KeywordExtractor : IKeywordExtractor
             .ToLowerInvariant()
             .Trim();
 
-        // ==================================================
         // English Stop Words
-        // ==================================================
 
         var englishIgnored = new HashSet<string>
         {
@@ -26,8 +24,8 @@ public class KeywordExtractor : IKeywordExtractor
             "what's",
             "is",
             "are",
-            "the",
             "a",
+            "the",
             "an",
             "about",
             "tell",
@@ -62,9 +60,34 @@ public class KeywordExtractor : IKeywordExtractor
             "its"
         };
 
-        // ==================================================
+        //technical terms
+        var technicalTerm = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase)
+        {
+            "c#",
+            "c++",
+            "Java",
+            "Python",
+            "JavaScript",
+            "HTML",
+            "CSS",
+            "SQL",
+            "API",
+            "REST",
+            "GraphQL",
+            "JSON",
+            "XML",
+            "HTTP",
+            "HTTPS",
+            ".NET",
+            "Node.js",
+            "AI",
+            "ML",
+            "ASP.NET",
+            
+        };
+
         // Khmer Stop Words
-        // ==================================================
 
         var khmerIgnored = new HashSet<string>
         {
@@ -98,9 +121,7 @@ public class KeywordExtractor : IKeywordExtractor
             "ដូចម្តេច"
         };
 
-        // ==================================================
         // Normalize punctuation
-        // ==================================================
 
         var normalized = message
             .Replace("?", " ")
@@ -129,9 +150,7 @@ public class KeywordExtractor : IKeywordExtractor
 
         var keywords = new List<string>();
 
-        // ==================================================
         // Single-word keywords
-        // ==================================================
 
         foreach (var word in words)
         {
@@ -141,6 +160,12 @@ public class KeywordExtractor : IKeywordExtractor
             if (khmerIgnored.Contains(word))
                 continue;
 
+            if (technicalTerm.Contains(word)) // this logic is handle the world that has 2 c like C# that has only 2 c while condition >2 not =2 so, C# is not word 
+            {
+                keywords.Add(word);
+
+                continue;
+            }
             // English
             if (word.All(c => c < 128))
             {
@@ -156,9 +181,7 @@ public class KeywordExtractor : IKeywordExtractor
             keywords.Add(word);
         }
 
-        // ==================================================
         // Common multi-word AI concepts
-        // ==================================================
 
         for (int i = 0; i < words.Count - 1; i++)
         {
@@ -182,9 +205,7 @@ public class KeywordExtractor : IKeywordExtractor
             keywords.Add(phrase);
         }
 
-        // ==================================================
         // Return distinct keywords
-        // ==================================================
 
         return keywords
             .Distinct(StringComparer.OrdinalIgnoreCase)

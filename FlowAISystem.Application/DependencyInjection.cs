@@ -3,6 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using FlowAISystem.Application.Interfaces.Services;
 using FlowAISystem.Application.Services;
 
+//AI knowledge provider 
+using FlowAISystem.Application.AI;
+using FlowAISystem.Application.AI.Knowledge.Services;
+
 // ==========================================================
 // Teacher AI - Lesson Enhancement
 // ==========================================================
@@ -29,7 +33,6 @@ using FlowAISystem.Application.AI.Student.Services;
 
 using FlowAISystem.Application.AI.Student.Quiz.Interfaces;
 using FlowAISystem.Application.AI.Student.Quiz.Services;
-
 // ==========================================================
 // General AI
 // ==========================================================
@@ -253,6 +256,9 @@ public static class DependencyInjection
         services.AddScoped<
             IPromptBuilder,
             PromptBuilder>();
+        services.AddScoped<
+            IRecommendationService,
+            RecommendationService>();
 
 
         // ==================================================
@@ -270,6 +276,20 @@ public static class DependencyInjection
         services.AddScoped<
             IStudentAIWorkflowHandler,
             GreetingHandler>();
+
+        services.AddScoped<
+            IStudentAIWorkflowHandler,
+            ThankYouHandler>();
+        services.AddScoped<
+            IStudentAIWorkflowHandler,
+            RecommendationHandler>();
+        services.AddScoped<
+            IStudentAIWorkflowHandler,
+            GeneralHandler>();
+
+        services.AddScoped<
+            IStudentAIWorkflowHandler,
+            UnknownHandler>();
 
 
         // ==================================================
@@ -292,7 +312,12 @@ public static class DependencyInjection
         services.AddScoped<
             IStudentAIResponseBuilder,
             StudentAIResponseBuilder>();
-
+        //Who is provide lesson => LessonKnowledgeProvider
+        //services.AddScoped<IKnowledgeProvider, LessonKnowledgeProvider>();
+        services.AddScoped<IKnowledgeRetriever, KnowledgeRetriever>();
+        services.AddScoped<IRequestAnalyzer, RequestAnalyzer>();
+        services.AddScoped<IAIOrchestrator, AIOrchestrator>();
+        // IAIGenerator not registered — Piece 10 still open
 
         // ==================================================
         // Return Application Services

@@ -88,13 +88,18 @@ public class LearnHandler : IStudentAIWorkflowHandler
 
         if (lesson != null)
         {
+            var remainingSections = _formatter.GetAvailableSectionKeys(
+                lesson.Content,
+                lesson.Difficulty);
+
             return new StudentAIResponseDto
             {
-                Answer = _formatter.Format(
+                Answer = _formatter.FormatIntro(
                     lesson.Title,
                     lesson.Content,
                     lesson.Difficulty,
-                    language),
+                    language,
+                    remainingSections.Any()),
 
                 Source = "Teacher Lesson Knowledge",
 
@@ -104,7 +109,6 @@ public class LearnHandler : IStudentAIWorkflowHandler
                 Confidence = 0.90m,
 
                 CreatedAt = DateTime.UtcNow,
-
             };
         }
 

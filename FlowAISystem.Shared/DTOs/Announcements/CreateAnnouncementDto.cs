@@ -21,7 +21,7 @@ public class CreateAnnouncementDto
 
     [Required]
     public DateTime PublishDate { get; set; }
-        = DateTime.Now;
+        = DateTime.UtcNow;
 
 
 

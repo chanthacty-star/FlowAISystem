@@ -20,5 +20,5 @@ public class CourseOfferingListItemDto
     public int Capacity { get; set; }
 
 
-    public string? Room { get; set; }
+    public string? Room { get; set; } = string.Empty;
 }

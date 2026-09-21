@@ -24,74 +24,86 @@ public class CourseOfferingRepository
     public async Task<List<CourseOfferingListItemDto>> GetAllAsync(
         CourseOfferingSearchDto search)
     {
+        var query = _context.CourseOfferings
+            .AsNoTracking()
+            .AsQueryable();
 
-        var query =
-            _context.CourseOfferings
-                .Include(c => c.Subject)
-                .Include(c => c.Teacher)
-                .Include(c => c.Semester)
-                .AsQueryable();
-
-
-
+        // 1. General Search Term Filter (ClassName, Subject Name, OR Teacher Name)
         if (!string.IsNullOrWhiteSpace(search.SearchTerm))
         {
+            var term = search.SearchTerm.Trim().ToLower();
+
             query = query.Where(c =>
-                c.ClassName.Contains(search.SearchTerm) ||
-                c.Subject!.Name.Contains(search.SearchTerm));
+                c.ClassName.ToLower().Contains(term) ||
+                (c.Subject != null && c.Subject.Name.ToLower().Contains(term)) ||
+                (c.Teacher != null &&
+                    (c.Teacher.TeacherName.ToLower().Contains(term) ||
+                     c.Teacher.Name.FirstName.ToLower().Contains(term) ||
+                     c.Teacher.Name.LastName.ToLower().Contains(term))) ||
+                    (c.Semester != null && c.Semester.Name.ToLower().Contains(term))); // Match Semester Name in SearchTerm
         }
 
-
-
-        if (search.SubjectId.HasValue)
+        // 2. Subject ID Filter
+        if (search.SubjectId.HasValue && search.SubjectId.Value > 0)
         {
-            query = query.Where(c =>
-                c.SubjectId == search.SubjectId);
+            query = query.Where(c => c.SubjectId == search.SubjectId.Value);
         }
 
-
-
-        if (search.TeacherId.HasValue)
+        // 3. Teacher ID Filter
+        if (search.TeacherId.HasValue && search.TeacherId.Value > 0)
         {
-            query = query.Where(c =>
-                c.TeacherId == search.TeacherId);
+            query = query.Where(c => c.TeacherId == search.TeacherId.Value);
         }
-
-
-
-        if (search.SemesterId.HasValue)
+        // 3.1. Specific Semester Name Filter (string?) -> Use !string.IsNullOrWhiteSpace
+        if (!string.IsNullOrWhiteSpace(search.SemesterName))
         {
+            var semesterTerm = search.SemesterName.Trim().ToLower();
+
             query = query.Where(c =>
-                c.SemesterId == search.SemesterId);
+                c.Semester != null &&
+                c.Semester.Name.ToLower().Contains(semesterTerm));
         }
 
+        // 4. Semester ID Filter
+        if (search.SemesterId.HasValue && search.SemesterId.Value > 0)
+        {
+            query = query.Where(c => c.SemesterId == search.SemesterId.Value);
+        }
 
+        // 5. Specific Teacher Name Filter
+        if (!string.IsNullOrWhiteSpace(search.TeacherName))
+        {
+            var nameTerm = search.TeacherName.Trim().ToLower();
 
+            query = query.Where(c =>
+                c.Teacher != null &&
+                (c.Teacher.TeacherName.ToLower().Contains(nameTerm) ||
+                 c.Teacher.Name.FirstName.ToLower().Contains(nameTerm) ||
+                 c.Teacher.Name.LastName.ToLower().Contains(nameTerm) ||
+                 (c.Teacher.Name.FirstName + " " + c.Teacher.Name.LastName).ToLower().Contains(nameTerm)));
+        }
 
+        // 6. Direct Projection to DTO
         return await query
             .OrderBy(c => c.ClassName)
             .Select(c => new CourseOfferingListItemDto
             {
-
                 Id = c.Id,
-
                 ClassName = c.ClassName,
+                SubjectName = c.Subject != null ? c.Subject.Name : "(No Subject)",
 
+                // Constructs full name if TeacherName property is empty
+                TeacherName = c.Teacher != null
+                    ? (!string.IsNullOrWhiteSpace(c.Teacher.TeacherName)
+                        ? c.Teacher.TeacherName
+                        : (c.Teacher.Name.FirstName + " " + c.Teacher.Name.LastName).Trim())
+                    : "(No Teacher)",
 
-                SubjectName =
-                    c.Subject!.Name,
-
-
-                TeacherName =
-                    c.Teacher!.TeacherName,
-
-
-                SemesterName =
-                    c.Semester!.Name
-
+                SemesterName = c.Semester != null ? c.Semester.Name : "(No Semester)",
+                Room = c.Room,
+                Capacity = c.Capacity, // when the item inside UI list not appear look for Repository
             })
             .ToListAsync();
-
     }
 
 
@@ -111,9 +123,6 @@ public class CourseOfferingRepository
     }
 
 
-
-
-
     public async Task CreateAsync(
         CourseOffering offering)
     {
@@ -123,9 +132,6 @@ public class CourseOfferingRepository
         await _context.SaveChangesAsync();
 
     }
-
-
-
 
 
     public async Task UpdateAsync(
@@ -138,10 +144,6 @@ public class CourseOfferingRepository
 
     }
 
-
-
-
-
     public async Task DeleteAsync(
         CourseOffering offering)
     {
@@ -151,9 +153,6 @@ public class CourseOfferingRepository
         await _context.SaveChangesAsync();
 
     }
-
-
-
 
 
     public async Task<bool> ExistsAsync(

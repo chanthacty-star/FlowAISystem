@@ -57,4 +57,12 @@ public interface ILessonKnowledgeRepository
     Task<LessonKnowledgeDto?> GetLessonForAIAsync(
         int lessonId);
 
+    // ==================================================
+    // Recommendation
+    // ==================================================
+
+    Task<LessonKnowledgeDto?> GetNextLessonAsync(
+        int courseOfferingId,
+        int currentOrder);
+
 }

@@ -298,6 +298,127 @@ public class StudentAIResponseFormatter : IStudentAIResponseFormatter
     }
 
     /// <summary>
+    /// Shows only the Explanation and Summary. Steps/Example/Time Complexity/
+    /// Advanced are withheld until the student asks to continue.
+    /// </summary>
+    public string FormatIntro(
+        string title,
+        string content,
+        LessonDifficulty difficulty,
+        string language,
+        bool hasMoreSections)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return string.Empty;
+        }
+
+        bool isKhmer = language == "km-KH";
+        var result = new List<string>();
+
+        result.Add($"📘 {title}");
+
+        result.Add($"🎯 {(isKhmer ? "កម្រិតមេរៀន" : "Difficulty")}: {GetDifficultyName(difficulty, isKhmer)}");
+
+        result.Add($"""
+🔎 {(isKhmer ? "ការពន្យល់" : "Explanation")}
+{GetDifficultyExplanation(ExtractExplanation(content), difficulty, isKhmer)}
+""");
+
+        result.Add($"""
+✅ {(isKhmer ? "សង្ខេប" : "Summary")}
+{BuildSummary(title, difficulty, isKhmer)}
+""");
+
+        if (hasMoreSections)
+        {
+            result.Add(isKhmer
+                ? "👉 វាយ \"បន្ត\" ដើម្បីមើលបន្ថែម (ជំហាន ឧទាហរណ៍ ។ល។)"
+                : "👉 Type \"continue\" to see more (steps, examples, and more).");
+        }
+
+        return string.Join(
+            Environment.NewLine + Environment.NewLine,
+            result);
+    }
+
+    /// <summary>
+    /// Returns the keys of optional sections that actually exist in this
+    /// lesson's raw content, in the fixed reveal order.
+    /// </summary>
+    public List<string> GetAvailableSectionKeys(
+        string content,
+        LessonDifficulty difficulty)
+    {
+        var keys = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(ExtractSection(content, "Steps")))
+        {
+            keys.Add("Steps");
+        }
+
+        if (!string.IsNullOrWhiteSpace(ExtractSection(content, "Example")))
+        {
+            keys.Add("Example");
+        }
+
+        var timeComplexity = ExtractSection(content, "Time Complexity");
+        if (!string.IsNullOrWhiteSpace(timeComplexity))
+        {
+            keys.Add("TimeComplexity");
+        }
+
+        if (difficulty == LessonDifficulty.Advanced)
+        {
+            var complexity = ExtractSection(content, "Complexity");
+
+            if (!string.IsNullOrWhiteSpace(complexity) &&
+                !complexity.Equals(timeComplexity, StringComparison.OrdinalIgnoreCase))
+            {
+                keys.Add("Advanced");
+            }
+        }
+
+        return keys;
+    }
+
+    /// <summary>
+    /// Formats a single section, identified by key, as a standalone chunk.
+    /// </summary>
+    public string FormatSection(
+        string sectionKey,
+        string content,
+        string language)
+    {
+        bool isKhmer = language == "km-KH";
+
+        return sectionKey switch
+        {
+            "Steps" => $"""
+⚙️ {(isKhmer ? "របៀបដំណើរការ" : "How It Works")}
+{ExtractSection(content, "Steps")}
+""",
+
+            "Example" => $"""
+💡 {(isKhmer ? "ឧទាហរណ៍" : "Example")}
+{ExtractSection(content, "Example")}
+""",
+
+            "TimeComplexity" => $"""
+⏱ {(isKhmer ? "ភាពស្មុគស្មាញពេលវេលា" : "Time Complexity")}
+{ExtractSection(content, "Time Complexity")}
+""",
+
+            "Advanced" => $"""
+🧠 {(isKhmer ? "ព័ត៌មានបន្ថែម" : "Advanced Details")}
+{ExtractSection(content, "Complexity")}
+""",
+
+            _ => string.Empty
+        };
+    }
+
+    /// <summary>
     /// Finds the index of a section heading as a whole word — e.g. "Example"
     /// will not match inside "Examples". Only matches when the heading is
     /// immediately followed by ':', a line break, or the end of the string.

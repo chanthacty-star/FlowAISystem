@@ -12,36 +12,23 @@ public interface ILessonKnowledgeService
     Task<List<LessonKnowledgeListItemDto>> GetAllAsync(
         LessonKnowledgeSearchDto search);
 
-
-
     Task<LessonKnowledgeDto?> GetByIdAsync(
         int id);
-
-
 
     Task CreateAsync(
         CreateLessonKnowledgeDto dto);
 
-
-
     Task UpdateAsync(
         UpdateLessonKnowledgeDto dto);
 
-
-
     Task DeleteAsync(
         int id);
-
-
-
     // ==================================================
     // Teacher Lessons
     // ==================================================
 
     Task<List<LessonKnowledgeListItemDto>> GetByTeacherAsync(
         int teacherId);
-
-
 
     // ==================================================
     // Student AI Knowledge Search
@@ -59,5 +46,9 @@ public interface ILessonKnowledgeService
 
     Task<LessonKnowledgeDto?> GetLessonForAIAsync(
         int lessonId);
+
+    Task<LessonKnowledgeDto?> GetNextLessonAsync(
+        int courseOfferingId,
+        int currentOrder);
 
 }

@@ -1,189 +1,100 @@
+using System.Text.RegularExpressions;
 using FlowAISystem.Application.AI.Student.Conversation.Enums;
 using FlowAISystem.Application.AI.Student.Conversation.Interfaces;
 
 namespace FlowAISystem.Application.AI.Student.Conversation.Services;
 
-public class ConversationActionDetector
-    : IConversationActionDetector
+public class ConversationActionDetector : IConversationActionDetector
 {
+    // Specific, low-ambiguity phrases — checked first.
+    private static readonly (ConversationAction Action, string[] Phrases)[] SpecificPhrases =
+    {
+        (ConversationAction.ExplainMore, new[]
+        {
+            "explain more", "explain further", "more detail", "more details",
+            "explain again", "tell me more",
+            "ពន្យល់បន្ថែម", "ពន្យល់ម្ដងទៀត", "ពន្យល់ម្តងទៀត", "ប្រាប់បន្ថែម"
+        }),
+        (ConversationAction.ShowExample, new[]
+        {
+            "show example", "give example", "give me an example", "practical example",
+            "បង្ហាញឧទាហរណ៍", "ឧទាហរណ៍ជាក់ស្តែង"
+        }),
+        (ConversationAction.CreateQuiz, new[]
+        {
+            "create quiz", "make a quiz", "give me a quiz", "quiz me", "test me",
+            "practice questions", "practice question",
+            "ធ្វើតេស្ត", "សំណួរអនុវត្ត", "ប្រឡង"
+        }),
+        (ConversationAction.Translate, new[]
+        {
+            "translate this", "translate it", "translate to khmer", "translate into khmer",
+            "បកប្រែជាខ្មែរ", "បកប្រែទៅខ្មែរ"
+        }),
+        (ConversationAction.Compare, new[]
+        {
+            "compare them", "difference between", "comparison",
+            "ប្រៀបធៀប", "ភាពខុសគ្នា"
+        }),
+        (ConversationAction.Summarize, new[]
+        {
+            "summarize this", "short summary", "summarise",
+            "សង្ខេបមេរៀន", "សង្ខេបអត្ថបទ"
+        }),
+        (ConversationAction.Continue, new[]
+        {
+            "keep going", "go on",
+            "បន្តទៅ", "បន្តទៀត"
+        }),
+    };
+
+    // Generic single-word fallbacks — checked only if no specific phrase matched.
+    private static readonly (ConversationAction Action, string[] Words)[] FallbackWords =
+    {
+        (ConversationAction.CreateQuiz, new[] { "quiz", "សំណួរ" }),
+        (ConversationAction.ShowExample, new[] { "example", "ឧទាហរណ៍" }),
+        (ConversationAction.Translate, new[] { "translate", "បកប្រែ" }),
+        (ConversationAction.Compare, new[] { "compare", "ប្រៀបធៀប" }),
+        (ConversationAction.Summarize, new[] { "summary", "summarize", "សង្ខេប" }),
+        (ConversationAction.Continue, new[] { "continue", "បន្ត" }),
+        // "next" deliberately excluded — it now belongs to Recommendation
+        // ("next lesson"), not "continue this topic."
+    };
+
     public ConversationAction Detect(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
             return ConversationAction.None;
 
-        message = Normalize(message);
+        var normalized = Normalize(message);
 
-
-        // ==========================================
-        // 1. Explain More
-        // ==========================================
-
-        if (
-            message.Contains("explain more") ||
-            message.Contains("explain further") ||
-            message.Contains("more detail") ||
-            message.Contains("more details") ||
-            message.Contains("explain again") ||
-            message.Contains("tell me more") ||
-
-            // Khmer
-            message.Contains("ពន្យល់បន្ថែម") ||
-            message.Contains("ពន្យល់ម្ដងទៀត") ||
-            message.Contains("ពន្យល់ម្តងទៀត") ||
-            message.Contains("ប្រាប់បន្ថែម")
-        )
+        foreach (var (action, phrases) in SpecificPhrases)
         {
-            return ConversationAction.ExplainMore;
+            if (phrases.Any(p => normalized.Contains(p, StringComparison.OrdinalIgnoreCase)))
+                return action;
         }
 
-
-        // ==========================================
-        // 2. Show Example
-        // ==========================================
-
-        if (
-            message.Contains("show example") ||
-            message.Contains("give example") ||
-            message.Contains("give me an example") ||
-            message.Contains("practical example") ||
-            message.Contains("example") ||
-
-            // Khmer
-            message.Contains("ឧទាហរណ៍") ||
-            message.Contains("បង្ហាញឧទាហរណ៍") ||
-            message.Contains("ឧទាហរណ៍ជាក់ស្តែង")
-        )
+        foreach (var (action, words) in FallbackWords)
         {
-            return ConversationAction.ShowExample;
+            if (words.Any(w => ContainsWord(normalized, w)))
+                return action;
         }
-
-
-        // ==========================================
-        // 3. Create Quiz
-        // ==========================================
-
-        if (
-            message.Contains("create quiz") ||
-            message.Contains("make a quiz") ||
-            message.Contains("give me a quiz") ||
-            message.Contains("quiz me") ||
-            message.Contains("test me") ||
-            message.Contains("practice questions") ||
-            message.Contains("practice question") ||
-            message.Contains("quiz") ||
-
-            // Khmer
-            message.Contains("ធ្វើតេស្ត") ||
-            message.Contains("សំណួរអនុវត្ត") ||
-            message.Contains("សំណួរ") ||
-            message.Contains("ប្រឡង")
-        )
-        {
-            return ConversationAction.CreateQuiz;
-        }
-
-
-        // ==========================================
-        // 4. Translate
-        // ==========================================
-
-        if (
-            message.Contains("translate") ||
-            message.Contains("translate this") ||
-            message.Contains("translate it") ||
-            message.Contains("translate to khmer") ||
-            message.Contains("translate into khmer") ||
-
-            // Khmer
-            message.Contains("បកប្រែ") ||
-            message.Contains("បកប្រែជាខ្មែរ") ||
-            message.Contains("បកប្រែទៅខ្មែរ")
-        )
-        {
-            return ConversationAction.Translate;
-        }
-
-
-        // ==========================================
-        // 5. Continue
-        // ==========================================
-
-        if (
-            message == "continue" ||
-            message.Contains("continue") ||
-            message.Contains("keep going") ||
-            message.Contains("go on") ||
-            message.Contains("next") ||
-
-            // Khmer
-            message == "បន្ត" ||
-            message.Contains("បន្តទៅ") ||
-            message.Contains("បន្តទៀត")
-        )
-        {
-            return ConversationAction.Continue;
-        }
-
-
-        // ==========================================
-        // 6. Compare
-        // ==========================================
-
-        if (
-            message.Contains("compare") ||
-            message.Contains("comparison") ||
-            message.Contains("compare them") ||
-            message.Contains("difference between") ||
-
-            // Khmer
-            message.Contains("ប្រៀបធៀប") ||
-            message.Contains("ភាពខុសគ្នា")
-        )
-        {
-            return ConversationAction.Compare;
-        }
-
-
-        // ==========================================
-        // 7. Summarize
-        // ==========================================
-
-        if (
-            message.Contains("summary") ||
-            message.Contains("summarize") ||
-            message.Contains("summarise") ||
-            message.Contains("summarize this") ||
-            message.Contains("short summary") ||
-
-            // Khmer
-            message.Contains("សង្ខេប") ||
-            message.Contains("សង្ខេបមេរៀន") ||
-            message.Contains("សង្ខេបអត្ថបទ")
-        )
-        {
-            return ConversationAction.Summarize;
-        }
-
-
-        // ==========================================
-        // 8. No Conversation Action
-        // ==========================================
 
         return ConversationAction.None;
     }
 
+    private bool ContainsWord(string text, string word)
+    {
+        // Word-boundary match for ASCII (English); Khmer script has no
+        // reliable \b support in .NET regex, so it falls back to substring.
+        if (word.All(c => c < 128))
+        {
+            return Regex.IsMatch(text, $@"\b{Regex.Escape(word)}\b", RegexOptions.IgnoreCase);
+        }
 
-    // ==========================================
-    // Normalize Message
-    // ==========================================
+        return text.Contains(word, StringComparison.OrdinalIgnoreCase);
+    }
 
     private string Normalize(string message)
-    {
-        return message
-            .Trim()
-            .ToLowerInvariant()
-            .Replace("\r", " ")
-            .Replace("\n", " ");
-    }
+        => message.Trim().ToLowerInvariant().Replace("\r", " ").Replace("\n", " ");
 }
-

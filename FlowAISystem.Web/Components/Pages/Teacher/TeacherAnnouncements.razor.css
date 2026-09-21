@@ -1,0 +1,49 @@
+/* Announcement Card Base */
+.ann-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    height: 100%;
+}
+
+/* Header & Title */
+.ann-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.ann-title {
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.ann-date {
+    font-size: 0.8rem;
+    background-color: #f8f9fa;
+    color: #212529;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+/* Body Text */
+.ann-body {
+    white-space: pre-wrap;
+    color: #4b5563;
+    margin-bottom: 1rem;
+}
+
+/* Footer & Author */
+.ann-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #6c757d;
+    border-top: 1px solid #dee2e6;
+    padding-top: 0.5rem;
+    margin-top: auto;
+}

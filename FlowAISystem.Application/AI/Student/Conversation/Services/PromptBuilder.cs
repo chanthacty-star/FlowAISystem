@@ -15,6 +15,10 @@ public class PromptBuilder : IPromptBuilder
         return $"""
         You are FlowAI, a university learning assistant.
 
+        Recent conversation: 
+        {BuildConversationHistory(context)}
+        Student's current resquest:
+        "{context.CurrentQuestion}"
         The student is continuing a previous conversation.
 
         Previous student question:
@@ -52,6 +56,12 @@ public class PromptBuilder : IPromptBuilder
         return $"""
         You are FlowAI, a university learning assistant.
 
+        Recent conversation:
+        {BuildConversationHistory(context)}
+
+        Student's current request:
+        "{context.CurrentQuestion}"
+
         Previous student question:
         {context.PreviousUserMessage?.Content}
 
@@ -85,6 +95,12 @@ public class PromptBuilder : IPromptBuilder
     {
         return $"""
         You are FlowAI, a university learning assistant.
+                
+        Recent conversation:
+        {BuildConversationHistory(context)}
+
+        Student's current request:
+        "{context.CurrentQuestion}"
 
         Previous student question:
         {context.PreviousUserMessage?.Content}
@@ -120,6 +136,12 @@ public class PromptBuilder : IPromptBuilder
     {
         return $"""
         You are FlowAI, a university learning assistant.
+               
+        Recent conversation:
+        {BuildConversationHistory(context)}
+
+        Student's current request:
+        "{context.CurrentQuestion}"
 
         Previous assistant explanation:
         {context.PreviousAssistantMessage?.Content}
@@ -150,6 +172,12 @@ public class PromptBuilder : IPromptBuilder
     {
         return $"""
         You are FlowAI, a university learning assistant.
+                
+        Recent conversation:
+        {BuildConversationHistory(context)}
+
+        Student's current request:
+        "{context.CurrentQuestion}"
 
         Previous student question:
         {context.PreviousUserMessage?.Content}
@@ -173,8 +201,6 @@ public class PromptBuilder : IPromptBuilder
         - Make the response useful for learning.
         """;
     }
-
-
     // =========================================================
     // Compare
     // =========================================================
@@ -187,6 +213,12 @@ public class PromptBuilder : IPromptBuilder
 
         Previous student question:
         {context.PreviousUserMessage?.Content}
+                
+        Recent conversation:
+        {BuildConversationHistory(context)}
+
+        Student's current request:
+        "{context.CurrentQuestion}"
 
         Previous assistant answer:
         {context.PreviousAssistantMessage?.Content}
@@ -207,8 +239,6 @@ public class PromptBuilder : IPromptBuilder
         - Use simple English suitable for a university student.
         """;
     }
-
-
     // =========================================================
     // Summary
     // =========================================================
@@ -218,6 +248,12 @@ public class PromptBuilder : IPromptBuilder
     {
         return $"""
         You are FlowAI, a university learning assistant.
+               
+        Recent conversation:
+        {BuildConversationHistory(context)}
+
+        Student's current request:
+        "{context.CurrentQuestion}"
 
         Previous student question:
         {context.PreviousUserMessage?.Content}
@@ -239,6 +275,21 @@ public class PromptBuilder : IPromptBuilder
         - Make the summary easy for a university student to review.
         - Include important formulas or key rules when relevant.
         """;
+
+      
+    }
+    //Now all promt will work with conversation history not only user's question anymore
+    private string BuildConversationHistory(ConversationContext context)
+    {
+        if (context.RecentMessage == null || 
+            context.RecentMessage.Count == 0)
+        {
+            return "No prviouse coversation history is aviable.";
+        }
+        return string.Join(
+            "\n",
+            context.RecentMessage.Select(message =>
+                $"{message.Role}: {message.Content}"));
     }
 }
 

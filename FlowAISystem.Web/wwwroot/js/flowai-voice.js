@@ -121,12 +121,8 @@ window.flowAIVoice = {
 
         }
 
-
-
         this.recognition =
             new SpeechRecognition();
-
-
 
         this.recognition.continuous=true;
 
@@ -156,10 +152,6 @@ window.flowAIVoice = {
             };
 
         }
-
-
-
-
         // ==========================
         // START
         // ==========================
@@ -181,9 +173,6 @@ window.flowAIVoice = {
 
 
         };
-
-
-
 
         // ==========================
         // END
@@ -234,9 +223,6 @@ window.flowAIVoice = {
 
         };
 
-
-
-
         // ==========================
         // ERROR
         // ==========================
@@ -258,11 +244,6 @@ window.flowAIVoice = {
 
 
         };
-
-
-
-
-
         // ==========================
         // RESULT
         // ==========================
@@ -286,8 +267,6 @@ window.flowAIVoice = {
 
             }
 
-
-
             console.log(
                 "Voice Result:",
                 text
@@ -306,9 +285,6 @@ window.flowAIVoice = {
                 language
             );
 
-
-
-
             let last =
             event.results[
                 event.results.length-1
@@ -318,9 +294,6 @@ window.flowAIVoice = {
 
             if(!last.isFinal)
                 return;
-
-
-
 
             // ==========================
             // WAKE WORD MODE
@@ -342,8 +315,6 @@ window.flowAIVoice = {
                     command.includes(word)
                 );
 
-
-
                 if(found)
                 {
 
@@ -361,8 +332,6 @@ window.flowAIVoice = {
                         "WakeWordDetected"
                     );
 
-
-
                     // Remove wake word
 
                     command =
@@ -372,8 +341,6 @@ window.flowAIVoice = {
                     .replace("flow ai","")
                     .replace("flowai","")
                     .trim();
-
-
 
                     if(command.length>0)
                     {
@@ -389,16 +356,9 @@ window.flowAIVoice = {
 
                 }
 
-
-
                 return;
 
             }
-
-
-
-
-
             // ==========================
             // NORMAL SPEECH
             // ==========================
@@ -409,19 +369,13 @@ window.flowAIVoice = {
                 text
             );
 
-
-
             this.callDotNet(
                 "SpeechCompleted",
                 text,
                 language
             );
 
-
         };
-
-
-
 
         this.initialized=true;
 
@@ -433,11 +387,6 @@ window.flowAIVoice = {
 
 
     },
-
-
-
-
-
     // ==========================
     // VOICES
     // ==========================
@@ -455,11 +404,6 @@ window.flowAIVoice = {
         });
 
     },
-
-
-
-
-
     // ==========================
     // BACKGROUND LISTEN
     // ==========================
@@ -467,23 +411,14 @@ window.flowAIVoice = {
     startBackgroundListening()
     {
 
-
         console.log(
             "Background listening"
         );
 
-
-
         this.backgroundMode=true;
 
-
-
         this.start();
-
-
     },
-
-
 
     // ==========================
     // START
@@ -496,14 +431,10 @@ window.flowAIVoice = {
         if(!this.recognition)
             return;
 
-
-
         this.isRunning=true;
 
 
         this.isPaused=false;
-
-
 
         try
         {
@@ -520,22 +451,13 @@ window.flowAIVoice = {
 
         }
 
-
     },
-
-
-
-
-
-
     // ==========================
     // STOP
     // ==========================
 
     stop()
     {
-
-
         console.log(
             "Voice stopped"
         );
@@ -549,8 +471,6 @@ window.flowAIVoice = {
 
         this.backgroundMode=false;
 
-
-
         clearTimeout(
             this.restartTimer
         );
@@ -563,9 +483,6 @@ window.flowAIVoice = {
             this.synth.cancel();
 
         }
-
-
-
         try
         {
 
@@ -576,14 +493,7 @@ window.flowAIVoice = {
         {
 
         }
-
-
     },
-
-
-
-
-
 
     // ==========================
     // PAUSE
@@ -607,16 +517,7 @@ window.flowAIVoice = {
         {
 
         }
-
-
     },
-
-
-
-
-
-
-
     // ==========================
     // RESUME
     // ==========================
@@ -624,11 +525,8 @@ window.flowAIVoice = {
     resume()
     {
 
-
         if(this.isSpeaking)
             return;
-
-
 
         this.isPaused=false;
 
@@ -641,12 +539,6 @@ window.flowAIVoice = {
 
 
     },
-
-
-
-
-
-
 
     // ==========================
     // SPEAK
@@ -745,10 +637,6 @@ window.flowAIVoice = {
 
     },
 
-
-
-
-
     // ==========================
     // CLEAN TEXT
     // ==========================
@@ -776,12 +664,6 @@ window.flowAIVoice = {
         .trim();
 
     },
-
-
-
-
-
-
 
     // ==========================
     // LANGUAGE

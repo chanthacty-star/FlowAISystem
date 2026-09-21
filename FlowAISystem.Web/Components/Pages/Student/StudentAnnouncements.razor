@@ -1,219 +1,111 @@
 @page "/student/announcements"
 
+@layout StudentMainLayout 
 @using FlowAISystem.Application.Interfaces.Services
 @using FlowAISystem.Shared.DTOs.Announcements
 @using Microsoft.AspNetCore.Authorization
 
-
 @attribute [Authorize(Roles = "Student")]
-
-
 @inject IAnnouncementService AnnouncementService
 
-
-
-<PageTitle>
-    Announcements
-</PageTitle>
-
-
+<PageTitle>Announcements</PageTitle>
 
 @if (announcements == null)
 {
-    <div class="container py-5">
-
-        <div class="text-center">
-
-            <div class="spinner-border text-primary">
-            </div>
-
-
-            <p class="mt-3">
-                Loading announcements...
-            </p>
-
-
-        </div>
-
+    <div class="container py-5 text-center">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3 text-muted">Loading announcements...</p>
     </div>
 }
 else
 {
-
     <div class="container-fluid py-4">
 
-
-        <!-- Header -->
-
-        <div class="card shadow-sm border-0 mb-4">
-
+        <!-- Page Header -->
+        <div class="card announcement-card mb-4">
             <div class="card-body">
-
-                <h2 class="fw-bold">
-                    📢 Announcements
-                </h2>
-
-
-                <p class="text-muted mb-0">
-                    Latest announcements from university.
-                </p>
-
+                <h2 class="fw-bold mb-1">📢 Announcements</h2>
+                <p class="text-muted mb-0">Latest updates from the university.</p>
             </div>
-
         </div>
-
-
 
         <!-- Summary -->
-
         <div class="row mb-4">
-
-
             <div class="col-md-4">
-
-
-                <div class="card shadow-sm border-0">
-
-
+                <div class="card announcement-card">
                     <div class="card-body">
-
-
-                        <small class="text-muted">
-                            Total Announcements
-                        </small>
-
-
-                        <h2 class="fw-bold mt-2">
-
-                            @announcements.Count
-
-                        </h2>
-
-
+                        <small class="text-muted">Total Active</small>
+                        <h2 class="fw-bold mt-1 mb-0 text-primary">@announcements.Count</h2>
                     </div>
-
-
                 </div>
-
-
             </div>
-
-
         </div>
 
-
-
-
-
-        <!-- Announcement List -->
-
-
+        <!-- Cards List -->
         @if (!announcements.Any())
         {
-
-            <div class="alert alert-info">
-
-                No announcements available.
-
-            </div>
-
+            <div class="alert alert-info">No active announcements available.</div>
         }
         else
         {
-
             <div class="row">
-
-
                 @foreach (var item in announcements)
                 {
-
                     <div class="col-lg-6 mb-4">
+                        <div class="card announcement-card h-100">
+                            <div class="card-body d-flex flex-column">
 
-
-                        <div class="card shadow-sm border-0 h-100">
-
-
-                            <div class="card-body">
-
-
-                                <div class="d-flex justify-content-between align-items-center">
-
-
-                                    <h5 class="fw-bold mb-0">
-
-                                        📢 @item.Title
-
-                                    </h5>
-
-
-                                    <small class="text-muted">
-
-                                        @item.PublishDate
-                                            .ToString("dd MMM yyyy")
-
-                                    </small>
-
-
+                                <!-- Header -->
+                                <div class="announcement-header">
+                                    <h5 class="fw-bold mb-0">📢 @item.Title</h5>
+                                    <span class="badge bg-light text-dark border">
+                                        @item.PublishDate.ToLocalTime().ToString("MMM dd, yyyy")
+                                    </span>
                                 </div>
 
+                                <hr class="my-2" />
 
-
-                                <hr />
-
-
-
-                                <p>
-
+                                <!-- Body Text -->
+                                <p class="announcement-body flex-grow-1">
                                     @item.Content
-
                                 </p>
 
+                                <hr class="my-2" />
 
+                                <!-- Footer -->
+                                <div class="announcement-footer">
+                                    <span>
+                                        Posted by: <strong>@(string.IsNullOrWhiteSpace(item.CreatedByName) ? "Administration" : item.CreatedByName)</strong>
+                                    </span>
 
-                                <small class="text-muted">
-
-                                    Posted by:
-                                    @item.CreatedByName
-
-                                </small>
-
+                                    @if (item.ExpireDate.HasValue)
+                                    {
+                                        <span>Expires: @item.ExpireDate.Value.ToLocalTime().ToString("MMM dd")</span>
+                                    }
+                                </div>
 
                             </div>
-
-
                         </div>
-
-
                     </div>
-
                 }
-
-
             </div>
-
         }
 
-
     </div>
-
 }
 
-
-
-
 @code {
-
     private List<AnnouncementDto>? announcements;
-
-
 
     protected override async Task OnInitializedAsync()
     {
-
-        announcements =
-            await AnnouncementService
-                .GetActiveAnnouncementsAsync();
-
+        try
+        {
+            announcements = await AnnouncementService.GetActiveAnnouncementsAsync();
+        }
+        catch (Exception)
+        {
+            announcements = new List<AnnouncementDto>();
+        }
     }
-
 }

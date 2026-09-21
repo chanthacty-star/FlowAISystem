@@ -10,7 +10,6 @@ public class LessonKnowledgeDto
 
     public int Id { get; set; }
 
-
     // ==================================================
     // Lesson Information
     // ==================================================
@@ -23,8 +22,6 @@ public class LessonKnowledgeDto
 
     public string Content { get; set; }
         = string.Empty;
-
-
     // ==================================================
     // AI Knowledge
     // ==================================================
@@ -54,8 +51,6 @@ public class LessonKnowledgeDto
 
     public string TeacherName { get; set; }
         = string.Empty;
-
-
     // ==================================================
     // Course Information
     // ==================================================
@@ -64,8 +59,6 @@ public class LessonKnowledgeDto
 
     public string CourseName { get; set; }
         = string.Empty;
-
-
     // ==================================================
     // Learning Material
     // ==================================================
@@ -73,15 +66,11 @@ public class LessonKnowledgeDto
     public string? ReferenceUrl { get; set; }
 
     public string? AttachmentPath { get; set; }
-
-
     // ==================================================
     // Status
     // ==================================================
 
     public bool IsActive { get; set; }
-
-
     // ==================================================
     // Audit
     // ==================================================

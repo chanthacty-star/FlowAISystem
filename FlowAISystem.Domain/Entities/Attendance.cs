@@ -16,7 +16,6 @@ public class Attendance : BaseEntity
     public string? Remark { get; set; }
 
 
-
     // Enrollment
 
     public int EnrollmentId { get; set; }

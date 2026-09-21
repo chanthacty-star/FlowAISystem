@@ -17,4 +17,6 @@ public interface IPromptBuilder
     string BuildComparison(ConversationContext context);
 
     string BuildSummary(ConversationContext context);
+
+    //string BuildConversationHistory(ConversationContext context);
 }

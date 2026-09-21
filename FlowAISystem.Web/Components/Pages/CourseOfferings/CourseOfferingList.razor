@@ -35,6 +35,16 @@
 
 
             <button class="btn btn-primary"
+                    @onclick="ResetSearch">
+                   
+                Reset
+            </button>           
+            @* <button class="btn btn-primary"
+                    @onclick="Search">
+                   
+                Search
+            </button>            *@
+            <button class="btn btn-primary"
                     @onclick="Create">
 
                 + Create Offering
@@ -158,7 +168,7 @@
 
 
                                 <td>
-                                    @(item.Room ?? "-")
+                                    @item.Room
                                 </td>
 
 
@@ -281,9 +291,6 @@
     }
 
 
-
-
-
     private void Create()
     {
 
@@ -305,7 +312,11 @@
 
     }
 
-
+    private async Task ResetSearch()
+    {
+    search = new CourseOfferingSearchDto();
+    await LoadData();
+    }
 
 
 

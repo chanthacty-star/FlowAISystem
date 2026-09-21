@@ -1,7 +1,7 @@
 window.typeHTML = async function (
     element,
     html,
-    speed = 15
+    speed = 5
 ) {
 
     const temp =
@@ -14,15 +14,11 @@ window.typeHTML = async function (
     element.innerHTML =
         temp.innerHTML;
 
-
-
     const walker =
         document.createTreeWalker(
             element,
             NodeFilter.SHOW_TEXT
         );
-
-
 
     const textNodes = [];
 
@@ -34,22 +30,15 @@ window.typeHTML = async function (
         );
     }
 
-
-
     const texts =
         textNodes.map(
             node => node.textContent
         );
 
-
-
     textNodes.forEach(node =>
     {
         node.textContent = "";
     });
-
-
-
 
 
     for(let i = 0; i < textNodes.length; i++)
@@ -61,8 +50,6 @@ window.typeHTML = async function (
 
         const text =
             texts[i];
-
-
 
         for(let j = 0; j < text.length; j++)
         {
@@ -92,7 +79,6 @@ window.typeHTML = async function (
         }
 
     }
-
 
     // Re-highlight code blocks
 
@@ -137,10 +123,6 @@ window.typeHTML = async function (
 
 };
 
-
-
-
-
 // Scroll after loading old conversation
 
 window.scrollChatBottom = function(element)
@@ -170,8 +152,6 @@ window.addCodeCopyButtons = function(container)
         if(block.querySelector(".copy-code-btn"))
             return;
 
-
-
         const button =
             document.createElement("button");
 
@@ -179,19 +159,13 @@ window.addCodeCopyButtons = function(container)
         button.className =
             "copy-code-btn";
 
-
         button.innerHTML =
-            "📋 Copy";
-
-
+            "📋😍😍 Copy";
 
         button.onclick = function()
         {
             window.copyCode(button);
         };
-
-
-
         block.style.position =
             "relative";
 

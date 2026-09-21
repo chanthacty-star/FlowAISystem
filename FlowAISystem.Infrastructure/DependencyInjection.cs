@@ -3,6 +3,9 @@ using FlowAISystem.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using FlowAISystem.Application.AI.Interfaces;
 
+//using FlowAISystem.Infrastructure.AI.Knowledge.Providers;  // LessonKnowledgeProvider
+using FlowAISystem.Application.AI.Knowledge.Interfaces;
+using FlowAISystem.Infrastructure.AI.Knowledge.Providers; //who
 
 namespace FlowAISystem.Infrastructure;
 
@@ -45,6 +48,9 @@ public static class DependencyInjection
         services.AddScoped<ILessonKnowledgeRepository, LessonKnowledgeRepository>();
 
         services.AddScoped<IAIConversationRepository, AIConversationRepository>(); // conversaytion memmory 
+
+        services.AddScoped<IKnowledgeProvider, LessonKnowledgeProvider>(); // who --provider
+
 
         return services;
     }

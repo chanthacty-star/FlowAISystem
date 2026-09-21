@@ -14,12 +14,9 @@ public class AttendanceDto
 
     public int EnrollmentId { get; set; }
 
-    public string StudentName { get; set; }
-        = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
 
-    public string CourseName { get; set; }
-        = string.Empty;
+    public string CourseName { get; set; } = string.Empty;
 
-    public string ClassName { get; set; }
-        = string.Empty;
+    public string ClassName { get; set; } = string.Empty;
 }
