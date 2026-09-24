@@ -66,8 +66,6 @@ public class ReportRepository : IReportRepository
             .FirstOrDefaultAsync();
 
     }
-
-
     // =====================================================
     // Attendance Report
     // =====================================================
@@ -86,8 +84,6 @@ public class ReportRepository : IReportRepository
                     .ThenInclude(c => c.Subject)
             .AsQueryable();
 
-
-
         if (courseOfferingId.HasValue)
         {
 
@@ -97,8 +93,6 @@ public class ReportRepository : IReportRepository
                     == courseOfferingId.Value);
 
         }
-
-
 
         return await query
 
@@ -199,9 +193,6 @@ public class ReportRepository : IReportRepository
 
             .AsQueryable();
 
-
-
-
         if (courseOfferingId.HasValue)
         {
 
@@ -212,9 +203,6 @@ public class ReportRepository : IReportRepository
                     courseOfferingId.Value);
 
         }
-
-
-
 
         return await query
 
@@ -235,8 +223,6 @@ public class ReportRepository : IReportRepository
                     s.Enrollment.CourseOffering.Subject.Name
 
             })
-
-
 
             .Select(g => new ScoreReportDto
             {
@@ -316,8 +302,6 @@ public class ReportRepository : IReportRepository
 
         }
 
-
-
         return await query
 
             .GroupBy(e =>
@@ -339,8 +323,6 @@ public class ReportRepository : IReportRepository
             .ToListAsync();
 
     }
-
-
     // =====================================================
     // Dashboard Report
     // =====================================================
@@ -371,8 +353,6 @@ public class ReportRepository : IReportRepository
         };
 
     }
-
-
     // =====================================================
     // Grade Calculation
     // =====================================================

@@ -1,4 +1,4 @@
-namespace FlowAISystem.Shared.DTOs.AI;
+namespace FlowAISystem.Shared.DTOs.AI;// Create for Conversation history
 
 
 public class AIConversationDto

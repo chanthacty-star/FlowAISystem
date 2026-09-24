@@ -1,4 +1,4 @@
-namespace FlowAISystem.Application.AI.Interfaces;
+namespace FlowAISystem.Application.AI.Interfaces;// for addmin
 
 public interface IStudentAIHandler
 {

@@ -17,7 +17,7 @@ public class StudentAIRequestDto
     // Used when asking about specific lesson
     public int? LessonId { get; set; }
 
-    // Student Personalization
+    // Student Personalization mean when student want their student's data AI ask for studentId
     // Used for:
     // - GPA
     // - Attendance

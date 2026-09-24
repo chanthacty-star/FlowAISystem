@@ -1,0 +1,75 @@
+@* @page "/lesson-studio-v2"
+@using FlowAISystem.Application.Common.Interfaces
+@using FlowAISystem.Application.Common.Models
+@inject ISpeechPreparationService SpeechPrepService
+@inject ITextToSpeechService TtsService
+
+<h3>FlowAISystem Lesson Studio (V2 Architecture)</h3>
+
+<div class="row">
+    <!-- Step 1: Input Raw Lesson Text -->
+    <div class="col-md-6">
+        <label class="form-label"><b>1. Raw Lesson / Code Content:</b></label>
+        <textarea class="form-control" rows="6" @bind="rawLessonText"></textarea>
+        <button class="btn btn-secondary mt-2" @onclick="PrepareSpeech" disabled="@isPreparing">
+            @if (isPreparing) { <span>Preparing Script...</span> } else { <span>1. Prepare Script (AI)</span> }
+        </button>
+    </div>
+
+    <!-- Step 2: Human Review & Edit Spoken Script -->
+    <div class="col-md-6">
+        <label class="form-label"><b>2. Spoken Narration Script (Editable):</b></label>
+        <textarea class="form-control" rows="6" @bind="editableNarrationScript"></textarea>
+        
+        @if (preparedScript != null)
+        {
+            <small class="text-muted d-block mt-1">
+                Words: @preparedScript.EstimatedWordCount | 
+                Est. Duration: @preparedScript.EstimatedSpeakingTime.TotalSeconds.ToString("F0")s
+            </small>
+        }
+
+        <button class="btn btn-primary mt-2" @onclick="GenerateAudio" disabled="@(isGenerating || string.IsNullOrWhiteSpace(editableNarrationScript))">
+            @if (isGenerating) { <span>Synthesizing...</span> } else { <span>2. Approve & Generate Audio</span> }
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert alert-info mt-3">@statusMessage</div>
+}
+
+@code {
+    private string rawLessonText = "Create a variable using int age = 20;";
+    private string editableNarrationScript = string.Empty;
+    private PreparedSpeechScript? preparedScript;
+    private string statusMessage = string.Empty;
+    private bool isPreparing = false;
+    private bool isGenerating = false;
+
+    private async Task PrepareSpeech()
+    {
+        isPreparing = true;
+        statusMessage = "Analyzing lesson code and preparing spoken narration...";
+
+        var request = new SpeechPreparationRequest(rawLessonText);
+        preparedScript = await SpeechPrepService.PrepareScriptAsync(request);
+        editableNarrationScript = preparedScript.NarrationScript;
+
+        statusMessage = "Script prepared! Review and edit the narration on the right before generating audio.";
+        isPreparing = false;
+    }
+
+    private async Task GenerateAudio()
+    {
+        isGenerating = true;
+        statusMessage = "Sending approved script to Text-to-Speech service...";
+
+        var request = new TtsRequest(editableNarrationScript);
+        var result = await TtsService.SynthesizeAsync(request);
+
+        statusMessage = $"Success! Generated audio size: {result.AudioData.Length} bytes for spoken text.";
+        isGenerating = false;
+    }
+} *@

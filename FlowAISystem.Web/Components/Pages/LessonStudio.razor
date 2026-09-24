@@ -1,0 +1,248 @@
+@* @page "/lesson-studio"
+@using FlowAISystem.Application.Common.Models
+@using FlowAISystem.Application.Interfaces.Services
+@inject ITextToSpeechService SpeechService
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Lesson Studio - AI Narration</MudText>
+
+    <MudGrid>
+        <!-- Lesson Script Input -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Script Editor</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField T="string"
+                                  Label="Enter script to synthesize"
+                                  Lines="6"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="lessonText"
+                                  Placeholder="Type lesson narration here..." />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="GenerateAudioAsync"
+                               Disabled="isLoading || string.IsNullOrWhiteSpace(lessonText)">
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Synthesizing Azure TTS...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Generate Audio Narration</MudText>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Live Synchronized Audio Player -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Interactive Narration Preview</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (audioBytes != null && wordBookmarks.Any())
+                    {
+                        <AudioWordHighlighter AudioData="audioBytes"
+                                             ContentType="audio/mp3"
+                                             Bookmarks="wordBookmarks" />
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-2">
+                            Enter text on the left and click "Generate Audio Narration" to preview synchronized live highlighting.
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private string lessonText = "Welcome to the Clean Architecture lesson. Today we will build interactive AI narration with Azure Speech SDK.";
+    private byte[]? audioBytes;
+    private List<WordBookmark> wordBookmarks = new();
+    private bool isLoading = false;
+
+    private async Task GenerateAudioAsync()
+    {
+        try
+        {
+            isLoading = true;
+
+            // Call Azure TTS Service to receive synthesized audio + word boundary timestamps
+            var result = await SpeechService.SynthesizeSpeechWithBookmarksAsync(lessonText);
+
+            if (result.IsSuccess)
+            {
+                audioBytes = result.AudioData;
+                wordBookmarks = result.Bookmarks;
+                Snackbar.Add("TTS Audio generated successfully!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Speech synthesis failed: {result.ErrorMessage}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+} *@
+
+@page "/lesson-studio"
+@using System.Threading
+@using FlowAISystem.Application.Common.Interfaces
+@using FlowAISystem.Application.Common.Models
+@inject ITextToSpeechService SpeechService
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Lesson Studio - Expressive AI Narration</MudText>
+
+    <MudGrid>
+        <!-- Script & Synthesis Settings -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Script & Voice Settings</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField T="string"
+                                  Label="Lesson Script"
+                                  Lines="5"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="lessonText"
+                                  Class="mb-4"
+                                  Placeholder="Type lesson narration here..." />
+
+                    <MudSelect T="string" Label="Voice Actor" @bind-Value="selectedVoice" Variant="Variant.Outlined" Class="mb-3">
+                        <MudSelectItem Value="@("en-US-JennyNeural")">Jenny (Multilingual / Expressive)</MudSelectItem>
+                        <MudSelectItem Value="@("en-US-AriaNeural")">Aria (Conversational)</MudSelectItem>
+                        <MudSelectItem Value="@("en-US-GuyNeural")">Guy (Male / Expressive)</MudSelectItem>
+                        <MudSelectItem Value="@("en-US-SteffanNeural")">Steffan (Male / Professional)</MudSelectItem>
+                    </MudSelect>
+
+                    <MudSelect T="string" Label="Speaking Style" @bind-Value="selectedStyle" Variant="Variant.Outlined" Class="mb-3">
+                        <MudSelectItem Value="@("general")">Default (Neutral)</MudSelectItem>
+                        <MudSelectItem Value="@("cheerful")">Cheerful</MudSelectItem>
+                        <MudSelectItem Value="@("empathetic")">Empathetic</MudSelectItem>
+                        <MudSelectItem Value="@("customerservice")">Customer Service</MudSelectItem>
+                        <MudSelectItem Value="@("excited")">Excited</MudSelectItem>
+                        <MudSelectItem Value="@("newscast")">Newscast</MudSelectItem>
+                    </MudSelect>
+
+                    <MudText Typo="Typo.caption" Class="mt-2">Style Intensity: @styleDegree.ToString("F1")x</MudText>
+                    <MudSlider T="double" 
+                               Min="0.1" 
+                               Max="2.0" 
+                               Step="0.1" 
+                               @bind-Value="styleDegree" 
+                               Color="Color.Primary" 
+                               Disabled="@(selectedStyle == "general")" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="GenerateAudioAsync"
+                               Disabled="isLoading || string.IsNullOrWhiteSpace(lessonText)">
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Synthesizing Speech...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Generate Audio Narration</MudText>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Synchronized Audio Player Preview -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Interactive Narration Preview</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (ttsResult != null && ttsResult.WordBookmarks.Any())
+                    {
+                        <AudioWordHighlighter AudioData="ttsResult.AudioData"
+                                             ContentType="@ttsResult.ContentType"
+                                             Bookmarks="ttsResult.WordBookmarks.ToList()" />
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-2">
+                            Select voice parameters on the left and click "Generate Audio Narration" to preview synchronized live highlighting.
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private string lessonText = "Welcome to Lesson Studio! Today we will explore expressive AI speech synthesis with real-time text highlighting.";
+    private string selectedVoice = "en-US-JennyNeural";
+    private string selectedStyle = "cheerful";
+    private double styleDegree = 1.2;
+
+    private TtsResult? ttsResult;
+    private bool isLoading = false;
+
+    private async Task GenerateAudioAsync()
+    {
+        try
+        {
+            isLoading = true;
+
+            string? activeStyle = selectedStyle == "general" ? null : selectedStyle;
+
+            // 1. Construct TtsRequest payload
+            var request = new TtsRequest(
+                Text: lessonText,
+                VoiceName: selectedVoice,
+                Style: activeStyle,
+                StyleDegree: styleDegree
+            );
+
+            // 2. Execute SynthesizeAsync call
+            ttsResult = await SpeechService.SynthesizeAsync(request, CancellationToken.None);
+
+            Snackbar.Add($"Expressive audio generated! ({ttsResult.Duration.TotalSeconds:F1}s)", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Speech synthesis failed: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

@@ -1,0 +1,56 @@
+@using FlowAISystem.Application.Common.Models
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div class="audio-highlighter-container p-4 border rounded">
+    <div class="text-display mb-3">
+        @foreach (var bookmark in Bookmarks)
+        {
+            <span class="@(activeOffset == bookmark.TextOffset ? "highlighted-word" : "")">
+                @bookmark.Word{" "}
+            </span>
+        }
+    </div>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="PlayAudioAsync">
+        Play Synchronized Audio
+    </MudButton>
+</div>
+
+<style>
+    .highlighted-word {
+        background-color: #ffeb3b;
+        font-weight: bold;
+        transition: background-color 0.1s ease;
+    }
+</style>
+
+@code {
+    [Parameter] public byte[] AudioData { get; set; } = Array.Empty<byte>();
+    [Parameter] public string ContentType { get; set; } = "audio/mp3";
+    [Parameter] public List<WordBookmark> Bookmarks { get; set; } = new();
+
+    private uint activeOffset = uint.MaxValue;
+
+    private async Task PlayAudioAsync()
+    {
+        var dotNetObjRef = DotNetObjectReference.Create(this);
+        var base64Audio = Convert.ToBase64String(AudioData);
+
+        var formattedBookmarks = Bookmarks.Select(b => new {
+            word = b.Word,
+            offsetMs = b.Offset.TotalMilliseconds,
+            durationMs = b.Duration.TotalMilliseconds,
+            textOffset = b.TextOffset
+        }).ToList();
+
+        await JSRuntime.InvokeVoidAsync("audioPlayer.playWithSync", base64Audio, ContentType, formattedBookmarks, dotNetObjRef);
+    }
+
+    [JSInvokable]
+    public void OnWordHighlighted(string word, uint textOffset)
+    {
+        activeOffset = textOffset;
+        StateHasChanged();
+    }
+}

@@ -1,4 +1,4 @@
-namespace FlowAISystem.Shared.DTOs.AI;
+namespace FlowAISystem.Shared.DTOs.AI; // for admin and also IAIKnowledgeRankingDto
 
 public class AIKnowledgeRankingDto
 {
