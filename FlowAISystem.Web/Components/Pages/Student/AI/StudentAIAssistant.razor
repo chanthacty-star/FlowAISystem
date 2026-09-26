@@ -855,7 +855,6 @@
 
     private string voiceLanguage = "en-US";
 
-
     // =========================================================
     // CONVERSATION
     // =========================================================
@@ -871,8 +870,6 @@
     private int? currentConversationId;
 
     private List<AIConversationDto> conversations = new();
-
-
     // =========================================================
     // STUDENT
     // =========================================================
@@ -884,8 +881,6 @@
     private string studentName = string.Empty;
 
     private string? studentProfileImage;
-
-
     // =========================================================
     // CHAT
     // =========================================================
@@ -899,8 +894,6 @@
     private ElementReference chatScrollContainer;
 
     private List<ChatMessage> chats = new();
-
-
     // =========================================================
     // LESSON CONTEXT
     // =========================================================
@@ -908,8 +901,6 @@
     private int? currentLessonId;
 
     private LessonKnowledgeDto? currentLesson;
-
-
     // =========================================================
     // QUIZ
     // =========================================================
@@ -925,12 +916,9 @@
     private bool quizAnswerSubmitted;
 
     private bool quizCompleted;
-
-
     // =========================================================
     // INITIALIZATION
     // =========================================================
-
     protected override async Task OnInitializedAsync()
     {
         var authState =
@@ -962,11 +950,9 @@
         await LoadConversations();
     }
 
-
     // =========================================================
     // LOAD STUDENT
     // =========================================================
-
     private async Task LoadStudent()
     {
         var profile =
@@ -986,8 +972,6 @@
         studentProfileImage =
             profile.ProfileImage;
     }
-
-
     // =========================================================
     // LOAD LESSON
     // =========================================================
@@ -1010,12 +994,9 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
-
     // =========================================================
     // START QUIZ
     // =========================================================
-
     private async Task StartQuiz()
     {
         Console.WriteLine("=== START QUIZ ===");
@@ -1047,8 +1028,6 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
-
     // =========================================================
     // CURRENT QUESTION
     // =========================================================
@@ -1058,8 +1037,6 @@
             .Questions
             .ElementAtOrDefault(
                 currentQuizIndex);
-
-
     // =========================================================
     // SELECT ANSWER
     // =========================================================
@@ -1094,8 +1071,6 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
-
     // =========================================================
     // SUBMIT ANSWER
     // =========================================================
@@ -1136,8 +1111,6 @@
             quizScore++;
         }
     }
-
-
     // =========================================================
     // NEXT QUESTION
     // =========================================================
@@ -1168,8 +1141,6 @@
 
         quizAnswerSubmitted = false;
     }
-
-
     // =========================================================
     // RESET QUIZ
     // =========================================================
@@ -1188,8 +1159,6 @@
 
         quizCompleted = false;
     }
-
-
     // =========================================================
     // RESULT MESSAGE
     // =========================================================
@@ -1219,8 +1188,6 @@
 
         return "Keep studying and try again. 📚";
     }
-
-
     // =========================================================
     // ASK AI
     // =========================================================
@@ -1426,11 +1393,9 @@
                 StateHasChanged);
         }
     }
-
     // =========================================================
     // CONVERSATIONS
     // =========================================================
-
     private async Task LoadConversations()
     {
         conversations =
@@ -1438,8 +1403,6 @@
                 .GetUserConversationsAsync(
                     currentUserId);
     }
-
-
     // =========================================================
     // CREATE CONVERSATION
     // =========================================================
@@ -1460,8 +1423,6 @@
 
         await LoadConversations();
     }
-
-
     // =========================================================
     // LOAD EXISTING CONVERSATION
     // =========================================================
@@ -1594,8 +1555,6 @@
     {
         chats.Clear();
     }
-
-
     // =========================================================
     // INPUT
     // =========================================================
@@ -1617,8 +1576,6 @@
             await AskAI();
         }
     }
-
-
     // =========================================================
     // FOLLOW-UP
     // =========================================================
@@ -1626,7 +1583,6 @@
     {
         await AskAI();
     }
-
     private async Task HandleFollowUp(string action)
     {
         question = action switch
@@ -1648,7 +1604,6 @@
 
         await AskAI();
     }
-
     // =========================================================
     // LANGUAGE
     // =========================================================
@@ -1667,12 +1622,9 @@
             ? "km-KH"
             : "en-US";
     }
-
-
     // =========================================================
     // VOICE INITIALIZATION
     // =========================================================
-
     protected override async Task OnAfterRenderAsync(
         bool firstRender)
     {
@@ -1709,12 +1661,9 @@
                 $"Voice init error: {ex.Message}");
         }
     }
-
-
     // =========================================================
     // VOICE CALLBACKS
     // =========================================================
-
     [JSInvokable]
     public Task VoiceStarted()
     {
@@ -1723,8 +1672,6 @@
         return InvokeAsync(
             StateHasChanged);
     }
-
-
     [JSInvokable]
     public Task VoiceStopped()
     {
@@ -1738,8 +1685,6 @@
         return InvokeAsync(
             StateHasChanged);
     }
-
-
     [JSInvokable]
     public Task VoiceError(
         string error)
@@ -1752,8 +1697,6 @@
         return InvokeAsync(
             StateHasChanged);
     }
-
-
     [JSInvokable]
     public Task SpeechStreaming(
         string text,
@@ -1766,8 +1709,6 @@
         return InvokeAsync(
             StateHasChanged);
     }
-
-
     [JSInvokable]
     public async Task SpeechCompleted(
         string text,
@@ -1789,8 +1730,6 @@
             text,
             language);
     }
-
-
     [JSInvokable]
     public async Task WakeWordDetected()
     {
@@ -1808,8 +1747,6 @@
         {
         }
     }
-
-
     [JSInvokable]
     public Task AISpeakingStarted()
     {
@@ -1818,8 +1755,6 @@
         return InvokeAsync(
             StateHasChanged);
     }
-
-
     [JSInvokable]
     public async Task AISpeakingFinished()
     {
@@ -1832,12 +1767,9 @@
                 "flowAIVoice.resume");
         }
     }
-
-
     // =========================================================
     // VOICE CONTROLS
     // =========================================================
-
     private async Task ToggleVoice()
     {
         if (isListening)
@@ -1860,8 +1792,6 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
-
     private async Task PauseVoice()
     {
         isPaused = true;
@@ -1872,8 +1802,6 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
-
     private async Task ResumeVoice()
     {
         isPaused = false;
@@ -1884,7 +1812,6 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
 
     private async Task SafeVoiceJS(
         string function,
@@ -1910,8 +1837,6 @@
                 $"Voice JS Error: {ex.Message}");
         }
     }
-
-
     // =========================================================
     // DELETE
     // =========================================================
@@ -1922,8 +1847,6 @@
 
         showDeleteModal = true;
     }
-
-
     private async Task ConfirmDelete()
     {
         await ConversationService
@@ -1947,18 +1870,13 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
-
     private void CancelDelete()
     {
         showDeleteModal = false;
     }
-
-
     // =========================================================
     // RENAME
     // =========================================================
-
     private void OpenRenameModal(int id)
     {
         selectedConversationId = id;
@@ -1974,8 +1892,6 @@
 
         showRenameModal = true;
     }
-
-
     private async Task ConfirmRename()
     {
         if (string.IsNullOrWhiteSpace(
@@ -1989,7 +1905,6 @@
                 selectedConversationId,
                 renameTitle.Trim());
 
-
         await LoadConversations();
 
         showRenameModal = false;
@@ -1997,18 +1912,13 @@
         await InvokeAsync(
             StateHasChanged);
     }
-
-
     private void CancelRename()
     {
         showRenameModal = false;
     }
-
-
     // =========================================================
     // CHAT MESSAGE MODEL
     // =========================================================
-
     private class ChatMessage
     {
         public bool IsStudent { get; set; }
@@ -2023,8 +1933,6 @@
 
         public bool EnableTyping { get; set; }
     }
-
-
     // =========================================================
     // SCROLL
     // =========================================================
@@ -2035,8 +1943,6 @@
             "scrollChatBottom",
             chatScrollContainer);
     }
-
-
     // =========================================================
     // DISPOSE
     // =========================================================

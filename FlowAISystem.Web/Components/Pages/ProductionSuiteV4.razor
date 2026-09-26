@@ -1,314 +1,220 @@
-@page "/production-suite-v4"
-@using System.IO
-@using System.Collections.Generic
-@using FlowAISystem.Application.Common.Interfaces
-@using FlowAISystem.Application.Common.Models
-@using FlowAISystem.Infrastructure.Services
-@inject ITextToSpeechService TtsService
-@inject ISpeechPreparationService SpeechPrepService
-@inject IVideoTimelineOrchestrator TimelineOrchestrator
+@page "/productionsuite/v4"
+@inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
-@inject IJSRuntime JS
+@layout MainLayoutProductionSuiteV4
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-12">
-    <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary" Class="fw-bold">
-        <MudIcon Icon="@Icons.Material.Filled.VideoLibrary" Class="mr-2 mb-1" />
-        Lesson Production Suite V4
+<PageTitle>Production Suite V4 - FlowAI Audio Hub</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-4">
+    <MudText Typo="Typo.h4" GutterBottom="true" Class="bold">
+        <MudIcon Icon="@Icons.Material.Filled.MovieCreation" Size="Size.Large" Class="mr-2" /> Production Suite V4
     </MudText>
-    <MudText Typo="Typo.subtitle1" Class="mb-6 text-muted">
-        Generate SSML express-as audio, coordinate video timelines, and inspect real-time word boundary timing markers.
+    <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mb-4">
+        Advanced AI Narration, Dynamic Audio Ducking, Waveform Visualization, and Analytics Suite.
     </MudText>
 
-    <MudGrid>
-        <!-- Left Panel: Lesson Input & Voice Configuration -->
-        <MudItem xs="12" md="6">
-            <MudCard Elevation="4" Class="pa-4">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Narration & Audio Settings</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudTextField T="string" 
-                                  Label="Lesson Title" 
-                                  @bind-Value="_lessonTitle" 
-                                  Variant="Variant.Outlined" 
-                                  Class="mb-4" />
-
-                    <MudTextField T="string" 
-                                  Label="Raw Script / Code Context" 
-                                  @bind-Value="_rawScript" 
-                                  Lines="5" 
-                                  Variant="Variant.Outlined" 
-                                  Class="mb-4" 
-                                  Placeholder="Enter raw text or code snippets (e.g. int age = 25;)..." />
-
-                    <MudGrid Class="mb-4">
-                        <MudItem xs="12" sm="6">
-                            <MudSelect T="string" Label="Voice Actor" @bind-Value="_selectedVoice" Variant="Variant.Outlined">
-                                <MudSelectItem Value="@("en-US-JennyNeural")">Jenny (Neural - US)</MudSelectItem>
-                                <MudSelectItem Value="@("en-US-GuyNeural")">Guy (Neural - US)</MudSelectItem>
-                                <MudSelectItem Value="@("en-US-AriaNeural")">Aria (Neural - US)</MudSelectItem>
-                                <MudSelectItem Value="@("en-GB-SoniaNeural")">Sonia (Neural - UK)</MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudSelect T="string" Label="Express-As Style" @bind-Value="_selectedStyle" Variant="Variant.Outlined">
-                                <MudSelectItem Value="@("cheerful")">Cheerful</MudSelectItem>
-                                <MudSelectItem Value="@("empathetic")">Empathetic</MudSelectItem>
-                                <MudSelectItem Value="@("excited")">Excited</MudSelectItem>
-                                <MudSelectItem Value="@("friendly")">Friendly</MudSelectItem>
-                                <MudSelectItem Value="@("hopeful")">Hopeful</MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
-                    </MudGrid>
-
-                    <MudText Typo="Typo.caption">Style Intensity: @_styleDegree.ToString("F1")</MudText>
-                    <MudSlider T="double" @bind-Value="_styleDegree" Min="0.5" Max="2.0" Step="0.1" Color="Color.Primary" Class="mb-6" />
-
-                    <MudStack Spacing="3">
-                        <MudStack Row="true" Spacing="2">
-                            <MudButton Variant="Variant.Filled" 
-                                       Color="Color.Primary" 
-                                       StartIcon="@Icons.Material.Filled.VolumeUp" 
-                                       OnClick="SynthesizeAudioAsync" 
-                                       Disabled="_isProcessing">
-                                @if (_isProcessing)
-                                {
-                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                                    <MudText Class="ms-2">Synthesizing...</MudText>
-                                }
-                                else
-                                {
-                                    <MudText>Synthesize Narration</MudText>
-                                }
-                            </MudButton>
-
-                            <MudButton Variant="Variant.Outlined" 
-                                       Color="Color.Secondary" 
-                                       StartIcon="@Icons.Material.Filled.AutoFixHigh" 
-                                       OnClick="PrepareSsmlScriptAsync" 
-                                       Disabled="_isProcessing">
-                                Prepare SSML
-                            </MudButton>
-                        </MudStack>
-
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Tertiary"
-                                   StartIcon="@Icons.Material.Filled.Timeline"
-                                   OnClick="GenerateFullTimelineAsync"
-                                   Disabled="_isProcessing">
-                            Generate Full Video Timeline
-                        </MudButton>
-
-                        <MudDivider Class="my-2" />
-
-                        <!-- Robust standard Blazor InputFile with MudButton -->
-                        <div class="mb-2">
-                            <MudText Typo="Typo.subtitle2" Class="mb-1">Or Use Custom Pre-recorded Audio</MudText>
-                            <InputFile id="customAudioInput" OnChange="HandleFileSelected" style="display:none;" />
-                            <MudButton HtmlTag="label"
-                                       Variant="Variant.Outlined"
-                                       Color="Color.Secondary"
-                                       StartIcon="@Icons.Material.Filled.CloudUpload"
-                                       for="customAudioInput">
-                                Upload Custom Audio Clip (.mp3 / .wav)
-                            </MudButton>
-                        </div>
-
-                        <MudButton Variant="Variant.Outlined" 
-                                   Color="Color.Primary" 
-                                   StartIcon="@Icons.Material.Filled.Download"
-                                   OnClick="DownloadMasterAudioAsync"
-                                   Disabled="@(_timeline == null || !_timeline.Segments.Any())">
-                            Download Complete Master MP3
-                        </MudButton>
-                    </MudStack>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Right Panel: Audio Preview & Live Word Highlighting -->
-        <MudItem xs="12" md="6">
-            <MudCard Elevation="4" Class="pa-4">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Live Studio Monitor</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    @if (_audioBytes != null && _audioBytes.Length > 0)
-                    {
-                        <div class="mb-4">
-                            <audio id="ttsAudioPlayer" controls class="w-100" src="@_audioDataUrl"></audio>
-                        </div>
-                    }
-                    else
-                    {
-                        <MudAlert Severity="Severity.Info" Class="mb-4">
-                            No synthesized audio generated yet. Click "Synthesize Narration" to create voiceover tracks.
-                        </MudAlert>
-                    }
-
-                    <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Synchronized Word Bookmarks</MudText>
-                    <MudPaper Style="max-height: 250px; overflow-y: auto;" Class="pa-3 bg-light" Outlined="true">
-                        @if (_wordBookmarks != null && _wordBookmarks.Any())
-                        {
-                            <div class="d-flex flex-wrap gap-1">
-                                @foreach (var bookmark in _wordBookmarks)
-                                {
-                                    <MudChip T="string" 
-                                               Size="Size.Small" 
-                                               Variant="Variant.Outlined" 
-                                               Color="Color.Info">
-                                        @bookmark.Word (@bookmark.Offset.TotalMilliseconds.ToString("F0") ms)
-                                    </MudChip>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2" Class="text-muted">
-                                Word-level boundary timestamps will appear here after synthesis.
-                            </MudText>
-                        }
-                    </MudPaper>
-
-                    @if (!string.IsNullOrEmpty(_preparedSsml))
-                    {
-                        <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Generated SSML Markup</MudText>
-                        <MudPaper Class="pa-3 bg-dark text-white font-monospace" Outlined="true" Style="max-height: 150px; overflow-y: auto;">
-                            <pre style="margin: 0; white-space: pre-wrap;">@_preparedSsml</pre>
-                        </MudPaper>
-                    }
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Full Width: Video Timeline Orchestration Output -->
-        @if (_timeline != null)
-        {
-            <MudItem xs="12" Class="mt-4">
-                <MudCard Elevation="4" Class="pa-4">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">
-                                <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2 mb-1" />
-                                Orchestrated Video Timeline: @_timeline.LessonTitle
-                            </MudText>
-                            <MudText Typo="Typo.caption">Total Estimated Duration: @_timeline.TotalDuration.ToString(@"mm\:ss\.fff")</MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudTable Items="_timeline.Segments" Hover="true" Striped="true" Bordered="true">
-                            <HeaderContent>
-                                <MudTh>#</MudTh>
-                                <MudTh>Code Snippet Slide</MudTh>
-                                <MudTh>Raw Script</MudTh>
-                                <MudTh>Start Offset</MudTh>
-                                <MudTh>Duration</MudTh>
-                                <MudTh>Bookmarks</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="#">@context.SequenceOrder</MudTd>
-                                <MudTd DataLabel="Code Snippet">
-                                    <code>@context.DisplayCodeSnippet</code>
-                                </MudTd>
-                                <MudTd DataLabel="Raw Script">@context.RawSpeechScript</MudTd>
-                                <MudTd DataLabel="Start Offset">@context.StartTime.ToString(@"mm\:ss\.fff")</MudTd>
-                                <MudTd DataLabel="Duration">@context.Duration.ToString(@"ss\.fff")s</MudTd>
-                                <MudTd DataLabel="Bookmarks">
-                                    <MudBadge Content="@(context.WordTimings?.Count ?? 0)" Color="Color.Primary" Overlap="true">
-                                        <MudIcon Icon="@Icons.Material.Filled.Bookmark" />
-                                    </MudBadge>
-                                </MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                    </MudCardContent>
-                </MudCard>
+    <!-- 1. FILE UPLOAD & CONFIGURATION CARD -->
+    <MudPaper Class="pa-4 mb-4" Elevation="3">
+        <MudText Typo="Typo.h6" Class="mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Class="mr-2" /> Asset Ingestion
+        </MudText>
+        
+        <MudGrid>
+            <!-- Narration Upload -->
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.body2" Class="mb-1">Narration Audio (WAV/MP3)</MudText>
+                <InputFile OnChange="UploadNarrationAsync" class="form-control" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">File: @_narrationFileName</MudText>
             </MudItem>
-        }
-    </MudGrid>
+
+            <!-- Background Music Upload -->
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.body2" Class="mb-1">Background Music (WAV/MP3)</MudText>
+                <InputFile OnChange="UploadBackgroundAsync" class="form-control" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">File: @_backgroundFileName</MudText>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- 2. DYNAMIC AUDIO DUCKING CONTROLS -->
+    <MudPaper Class="pa-4 mb-4" Elevation="3">
+        <MudText Typo="Typo.h6" Class="mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.Tune" Class="mr-2" /> Dynamic Audio Ducking Parameters
+        </MudText>
+
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.body2">Normal Music Volume: <b>@((_normalMusicVolume * 100).ToString("F0"))%</b></MudText>
+                <MudSlider T="float" Min="0.0f" Max="1.0f" Step="0.05f" Color="Color.Primary" 
+                           Value="@_normalMusicVolume" ValueChanged="OnNormalVolumeChanged" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.body2">Ducked Music Volume: <b>@((_duckedMusicVolume * 100).ToString("F0"))%</b></MudText>
+                <MudSlider T="float" Min="0.0f" Max="0.5f" Step="0.01f" Color="Color.Secondary" 
+                           Value="@_duckedMusicVolume" ValueChanged="OnDuckedVolumeChanged" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.body2">Threshold Sensitivity: <b>@_thresholdDb.ToString("F0") dB</b></MudText>
+                <MudSlider T="float" Min="-60.0f" Max="-10.0f" Step="1.0f" Color="Color.Info" 
+                           Value="@_thresholdDb" ValueChanged="OnThresholdChanged" />
+            </MudItem>
+        </MudGrid>
+
+        <MudStack Row="true" Class="mt-4" Justify="Justify.FlexEnd">
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Success" 
+                       StartIcon="@Icons.Material.Filled.GraphicEq" 
+                       OnClick="RebakeAudioMixAsync" 
+                       Disabled="@(_isProcessing || string.IsNullOrEmpty(_narrationFilePath))">
+                @if (_isProcessing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Processing Audio Mix...</MudText>
+                }
+                else
+                {
+                    <MudText>Rebake & Process Mix</MudText>
+                }
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    <!-- 3. INTERACTIVE WAVEFORM PLAYER WITH REGIONS -->
+    <WaveformPlayer @ref="_waveformPlayer" WaveColor="#4a90e2" ProgressColor="#50e3c2" />
+
+    <!-- 4. ANALYTICS DONUT CHART & REPORT EXPORTS -->
+    <AudioStatsDonutChart Stats="@_stats" IsDarkMode="@IsDarkMode" />
+
+    <MudPaper Class="pa-4 mb-4" Elevation="3">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="mr-2" /> Comprehensive Report Exports
+            </MudText>
+
+            <MudMenu Label="Export Analytics" 
+                     Variant="Variant.Filled" 
+                     Color="Color.Primary" 
+                     StartIcon="@Icons.Material.Filled.Download" 
+                     EndIcon="@Icons.Material.Filled.KeyboardArrowDown"
+                     Disabled="@(_stats == null)">
+                <MudMenuItem OnClick="ExportCsvAsync" Icon="@Icons.Material.Filled.TableChart">
+                    Export CSV Data
+                </MudMenuItem>
+                <MudMenuItem OnClick="ExportPdfAsync" Icon="@Icons.Material.Filled.PictureAsPdf">
+                    Export PDF Document
+                </MudMenuItem>
+            </MudMenu>
+        </MudStack>
+    </MudPaper>
 </MudContainer>
 
 @code {
-    private string _lessonTitle = "C# Variables & Syntax Introduction";
-    private string _rawScript = "int age = 25; Welcome to C# programming with .NET.";
-    private string _selectedVoice = "en-US-JennyNeural";
-    private string _selectedStyle = "cheerful";
-    private double _styleDegree = 1.2;
+    [CascadingParameter(Name = "IsDarkMode")] public bool IsDarkMode { get; set; }
+
+    private WaveformPlayer? _waveformPlayer;
+    private AudioDurationStats? _stats;
+    private List<AudioRegion> _duckedRegions = new();
 
     private bool _isProcessing = false;
-    private byte[]? _audioBytes;
-    private string? _audioDataUrl;
-    private string? _preparedSsml;
-    private IReadOnlyList<WordBookmark> _wordBookmarks = new List<WordBookmark>();
-    private VideoTimeline? _timeline;
+    private string _narrationFileName = "None";
+    private string _backgroundFileName = "None";
+    private string _narrationFilePath = string.Empty;
+    private string _backgroundFilePath = string.Empty;
+    private string _outputFilePath = Path.Combine(Path.GetTempPath(), "final_ducked_mix.wav");
 
-    private async Task PrepareSsmlScriptAsync()
+    private float _normalMusicVolume = 0.30f;
+    private float _duckedMusicVolume = 0.06f;
+    private float _thresholdDb = -32.0f;
+
+    private async Task UploadNarrationAsync(InputFileChangeEventArgs e)
     {
-        try
+        var file = e.File;
+        if (file != null)
         {
-            _isProcessing = true;
-            var prepRequest = new SpeechPreparationRequest(
-                RawText: _rawScript,
-                TargetAudience: "Beginner Developer",
-                InjectSsmlTags: true,
-                VoiceLocale: "en-US"
-            );
-
-            var prepResult = await SpeechPrepService.PrepareScriptAsync(prepRequest);
-            _preparedSsml = prepResult.SsmlScript;
-
-            Snackbar.Add("SSML script prepared successfully!", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"SSML preparation error: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isProcessing = false;
+            _narrationFileName = file.Name;
+            _narrationFilePath = Path.Combine(Path.GetTempPath(), file.Name);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+            await using var fs = new FileStream(_narrationFilePath, FileMode.Create);
+            await stream.CopyToAsync(fs);
+            Snackbar.Add("Narration audio loaded successfully!", Severity.Success);
         }
     }
 
-    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    private async Task UploadBackgroundAsync(InputFileChangeEventArgs e)
     {
-        await UploadCustomAudioAsync(e.File);
+        var file = e.File;
+        if (file != null)
+        {
+            _backgroundFileName = file.Name;
+            _backgroundFilePath = Path.Combine(Path.GetTempPath(), file.Name);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+            await using var fs = new FileStream(_backgroundFilePath, FileMode.Create);
+            await stream.CopyToAsync(fs);
+            Snackbar.Add("Background track loaded successfully!", Severity.Success);
+        }
     }
 
-    private async Task UploadCustomAudioAsync(IBrowserFile file)
+    private void OnNormalVolumeChanged(float val)
     {
-        if (file == null) return;
+        _normalMusicVolume = val;
+        if (_duckedMusicVolume > _normalMusicVolume) _duckedMusicVolume = _normalMusicVolume;
+    }
+
+    private void OnDuckedVolumeChanged(float val) => _duckedMusicVolume = val;
+    private void OnThresholdChanged(float val) => _thresholdDb = val;
+
+    private async Task RebakeAudioMixAsync()
+    {
+        if (string.IsNullOrEmpty(_narrationFilePath))
+        {
+            Snackbar.Add("Please upload a narration audio file first.", Severity.Warning);
+            return;
+        }
 
         try
         {
             _isProcessing = true;
+            StateHasChanged();
 
-            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-
-            _audioBytes = memoryStream.ToArray();
-            _audioDataUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(_audioBytes)}";
-
-            // Fully compliant positional instantiation matching WordBookmark(string, TimeSpan, TimeSpan, uint, uint)
-            _wordBookmarks = new List<WordBookmark>
+            // If no background music uploaded, copy narration as direct mix or process ducking if both exist
+            if (string.IsNullOrEmpty(_backgroundFilePath) || !File.Exists(_backgroundFilePath))
             {
-                new WordBookmark(
-                    $"[Custom Audio: {file.Name}]",
-                    TimeSpan.Zero,
-                    TimeSpan.FromSeconds(5),
-                    0,
-                    (uint)file.Name.Length
-                )
-            };
+                File.Copy(_narrationFilePath, _outputFilePath, true);
+                _duckedRegions = AudioConcatenator.DetectSpeechRegions(_narrationFilePath, _thresholdDb);
+                _stats = AudioConcatenator.CalculateDurationStats(_outputFilePath, _duckedRegions);
+            }
+            else
+            {
+                await AudioConcatenator.MixWithDuckingAsync(
+                    narrationFilePath: _narrationFilePath,
+                    backgroundFilePath: _backgroundFilePath,
+                    outputPath: _outputFilePath,
+                    normalMusicVolume: _normalMusicVolume,
+                    duckedMusicVolume: _duckedMusicVolume,
+                    thresholdDb: _thresholdDb
+                );
 
-            Snackbar.Add($"Custom audio clip '{file.Name}' loaded successfully!", Severity.Success);
+                _duckedRegions = AudioConcatenator.DetectSpeechRegions(_narrationFilePath, _thresholdDb);
+                _stats = AudioConcatenator.CalculateDurationStats(_outputFilePath, _duckedRegions);
+            }
+
+            // Bind Waveform and Regions
+            byte[] audioBytes = await File.ReadAllBytesAsync(_outputFilePath);
+            string audioSourceUrl = $"data:audio/wav;base64,{Convert.ToBase64String(audioBytes)}";
+
+            if (_waveformPlayer != null)
+            {
+                await _waveformPlayer.LoadAudioAsync(audioSourceUrl);
+                await _waveformPlayer.RenderRegionsAsync(_duckedRegions);
+            }
+
+            Snackbar.Add("Audio mix rebaked successfully with active ducking regions!", Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Failed to load audio file: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Audio processing failed: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -317,92 +223,26 @@
         }
     }
 
-    private async Task GenerateFullTimelineAsync()
+    private async Task ExportCsvAsync()
     {
-        try
-        {
-            _isProcessing = true;
-
-            var sampleBlocks = new List<(string CodeSnippet, string RawScript)>
-            {
-                ("int age = 25;", _rawScript)
-            };
-
-            _timeline = await TimelineOrchestrator.BuildTimelineAsync(_lessonTitle, sampleBlocks);
-
-            if (_timeline != null && _timeline.Segments.Any())
-            {
-                _audioBytes = _timeline.Segments[0].SynthesizedAudio;
-                _wordBookmarks = _timeline.Segments[0].WordTimings;
-                _audioDataUrl = $"data:audio/mp3;base64,{Convert.ToBase64String(_audioBytes)}";
-            }
-
-            Snackbar.Add("Video timeline successfully orchestrated!", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Timeline orchestration failed: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isProcessing = false;
-        }
+        if (_stats == null) return;
+        byte[] bytes = AudioReportExporter.GenerateCsvReport(_stats, _duckedRegions);
+        await DownloadFileAsync(bytes, $"AudioReport_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        Snackbar.Add("CSV report exported!", Severity.Success);
     }
 
-    private async Task DownloadMasterAudioAsync()
+    private async Task ExportPdfAsync()
     {
-        if (_timeline == null || !_timeline.Segments.Any())
-        {
-            Snackbar.Add("No timeline segments available to download.", Severity.Warning);
-            return;
-        }
-
-        try
-        {
-            byte[] masterAudioBytes = AudioConcatenator.CombineAudioSegments(_timeline.Segments);
-
-            var base64 = Convert.ToBase64String(masterAudioBytes);
-            var fileName = $"{(_timeline.LessonTitle ?? "Lesson").Replace(" ", "_")}-Master.mp3";
-
-            await JS.InvokeVoidAsync("downloadFileFromBase64", fileName, "audio/mp3", base64);
-            Snackbar.Add("Master MP3 audio downloaded successfully!", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
-        }
+        if (_stats == null) return;
+        byte[] bytes = AudioReportExporter.GeneratePdfReport(_stats, _duckedRegions);
+        await DownloadFileAsync(bytes, $"AudioReport_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+        Snackbar.Add("PDF report exported!", Severity.Success);
     }
 
-    private async Task SynthesizeAudioAsync()
+    private async Task DownloadFileAsync(byte[] bytes, string fileName)
     {
-        try
-        {
-            _isProcessing = true;
-
-            await PrepareSsmlScriptAsync();
-
-            var ttsRequest = new TtsRequest(
-                Text: !string.IsNullOrEmpty(_preparedSsml) ? _preparedSsml : _rawScript,
-                VoiceName: _selectedVoice,
-                Style: _selectedStyle,
-                StyleDegree: _styleDegree
-            );
-
-            var result = await TtsService.SynthesizeAsync(ttsRequest);
-
-            _audioBytes = result.AudioData;
-            _wordBookmarks = result.WordBookmarks;
-            _audioDataUrl = $"data:audio/mp3;base64,{Convert.ToBase64String(_audioBytes)}";
-
-            Snackbar.Add($"Audio synthesized! Captured {_wordBookmarks.Count} word bookmarks.", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Synthesis failed: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isProcessing = false;
-        }
+        using var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 }

@@ -1,0 +1,131 @@
+@page "/productionsuite/voice"
+@using MudBlazor
+@inject IJSRuntime JSRuntime
+
+<PageTitle>AI Voice Synthesis & Studio</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-1">AI Voice & Speech Studio</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+    Configure neural Text-to-Speech, transcribe audio files, or record live voiceovers.
+</MudText>
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" panelclass="pa-6">
+    
+    <!-- TAB 1: TEXT-TO-SPEECH (TTS) -->
+    <MudTabPanel Text="Text-to-Speech (TTS)" Icon="@Icons.Material.Filled.RecordVoiceOver">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudSelect T="string" Label="Neural Voice" @bind-Value="_selectedVoice" Class="mb-3">
+                    <MudSelectItem Value="@("en-US-JennyNeural")">en-US-JennyNeural (English, Female)</MudSelectItem>
+                    <MudSelectItem Value="@("km-KH-SreymomNeural")">km-KH-SreymomNeural (Khmer, Female)</MudSelectItem>
+                </MudSelect>
+
+                <MudTextField T="string" Label="Narration Script" Lines="6" Variant="Variant.Outlined" 
+                              Placeholder="Enter text to synthesize..." @bind-Value="_narrationText" Class="mb-3" />
+                
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PlayArrow"
+                           OnClick="SynthesizeSpeechAsync">
+                    Synthesize Speech
+                </MudButton>
+
+                @if (!string.IsNullOrEmpty(_ttsAudioUrl))
+                {
+                    <MudDivider Class="my-3" />
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Synthesized Audio Result:</MudText>
+                    <audio controls src="@_ttsAudioUrl" style="width: 100%;" class="mb-3"></audio>
+                }
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+    <!-- TAB 2: LIVE MICROPHONE VOICEOVER -->
+    <MudTabPanel Text="Live Voiceover Recording" Icon="@Icons.Material.Filled.Mic">
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-2">Record Narration Voiceover</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                        Click record, speak into your microphone, then click stop to preview and save.
+                    </MudText>
+
+                    <MudStack Row="true" Spacing="3" Class="mb-4">
+                        @if (!_isRecording)
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Error" 
+                                       StartIcon="@Icons.Material.Filled.FiberManualRecord" 
+                                       OnClick="StartRecordingAsync">
+                                Start Recording
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Warning" 
+                                       StartIcon="@Icons.Material.Filled.Stop" 
+                                       OnClick="StopRecordingAsync">
+                                Stop Recording
+                            </MudButton>
+                        }
+                    </MudStack>
+
+                    @if (!string.IsNullOrEmpty(_audioDataUrl))
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Recorded Preview:</MudText>
+                        <audio controls src="@_audioDataUrl" style="width: 100%;" class="mb-3"></audio>
+                        
+                        <MudButton Variant="Variant.Outlined" Color="Color.Success" 
+                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                            Add to Timeline Project
+                        </MudButton>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+</MudTabs>
+
+@code {
+    private string _selectedVoice = "en-US-JennyNeural";
+    private string _narrationText = "Hello, welcome to FlowAI Voice Synthesis Studio.";
+    private string? _ttsAudioUrl;
+
+    private bool _isRecording = false;
+    private string? _audioDataUrl;
+
+    private async Task SynthesizeSpeechAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_narrationText)) return;
+
+        // Calls your backend TTS or simulates synthesis for immediate UI preview
+        // (You can map this directly to your AzureTextToSpeechService implementation)
+        await Task.Delay(500); 
+        
+        // For demonstration, use a sample placeholder audio data URI or hooked backend output
+        _ttsAudioUrl = "https://actions.google.com/sounds/v1/ambiences/rain_heavy.ogg";
+        StateHasChanged();
+    }
+
+    private async Task StartRecordingAsync()
+    {
+        _audioDataUrl = null;
+        bool success = await JSRuntime.InvokeAsync<bool>("micRecorder.startRecording");
+        if (success)
+        {
+            _isRecording = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StopRecordingAsync()
+    {
+        var base64String = await JSRuntime.InvokeAsync<string>("micRecorder.stopRecording");
+        _isRecording = false;
+
+        if (!string.IsNullOrEmpty(base64String))
+        {
+            _audioDataUrl = $"data:audio/webm;base64,{base64String}";
+            StateHasChanged();
+        }
+    }
+}

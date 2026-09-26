@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <!-- Add NAudio package reference to fix the namespace errors -->
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\FlowAISystem.Domain\FlowAISystem.Domain.csproj" />
     <ProjectReference Include="..\FlowAISystem.Application\FlowAISystem.Application.csproj" />
     <ProjectReference Include="..\FlowAISystem.Shared\FlowAISystem.Shared.csproj" />

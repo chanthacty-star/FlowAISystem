@@ -8,171 +8,133 @@
 @inject JwtAuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
 
-<MudThemeProvider />
+<MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_flowAiTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<div class="Teacher-page @(isSidebarOpen ? "" : "Teacher-sidebar-collapsed")">
-
+<div class="Teacher-page @(isSidebarOpen ? "" : "Teacher-sidebar-collapsed") @(_isDarkMode ? "dark-theme" : "light-theme")">
 
     <!-- Sidebar -->
-
     <aside class="Teacher-sidebar">
-
         <TeacherNavMenu />
-
     </aside>
 
-
-
     <!-- Main -->
-
     <main class="Teacher-main-content">
 
-
         <!-- Top Navigation -->
-
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 sticky-top">
-
+        <nav class="navbar navbar-expand-lg @(_isDarkMode ? "navbar-dark bg-dark border-secondary" : "navbar-light bg-white border-bottom") shadow-sm px-4 sticky-top">
 
             <!-- Toggle Button -->
-
-            <button class="btn btn-outline-secondary me-3"
-                    @onclick="ToggleSidebar">
-
+            <button class="btn btn-outline-secondary me-3" @onclick="ToggleSidebar">
                 ☰
-
             </button>
 
+            <!-- Dark/Light Mode Toggle with MudTooltip -->
+            <MudTooltip Text="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+                <MudToggleIconButton @bind-Toggled="_isDarkMode"
+                                     Icon="@Icons.Material.Filled.LightMode" 
+                                     Color="Color.Inherit" 
+                                     ToggledIcon="@Icons.Material.Filled.DarkMode" 
+                                     ToggledColor="Color.Inherit" />
+            </MudTooltip>
+
             <div>
-
-                <a class="navbar-brand fw-bold"
-                   href="/teacher-dashboard">
-
+                <a class="navbar-brand fw-bold" href="/teacher-dashboard">
                     FlowAISystem
-
                 </a>
-
                 <div class="text-muted small">
-
-                    teacher Portal
-
+                    Teacher Portal
                 </div>
-
             </div>
 
             <div class="ms-auto">
-
                 <AuthorizeView>
-
                     <Authorized>
-
                         <div class="d-flex align-items-center">
-
-                            <a class="btn btn-outline-primary me-3"
-                               href="/Teacher/ai-assistant">
-
+                            <a class="btn btn-outline-primary me-3" href="/Teacher/ai-assistant">
                                 🤖 Teacher AI Assistant
-
                             </a>
 
                             <div class="text-end me-3">
-
                                 <div class="fw-bold">
-
                                     👤 @context.User.Identity?.Name
-
                                 </div>
-
                                 <small class="badge bg-primary">
-
                                     🎓 Student -> now Teacher
-
                                 </small>
-
                             </div>
 
-                            <button class="btn btn-outline-danger"
-                                    @onclick="Logout">
-
+                            <button class="btn btn-outline-danger" @onclick="Logout">
                                 🚪 Logout
-
                             </button>
-
                         </div>
-
                     </Authorized>
-
                     <NotAuthorized>
-
-                        <a class="btn btn-primary"
-                           href="/login">
-
+                        <a class="btn btn-primary" href="/login">
                             Login
-
                         </a>
-
                     </NotAuthorized>
-
                 </AuthorizeView>
-
             </div>
 
         </nav>
 
-
-
         <!-- Content -->
-
-        <div class="flex-grow-1 overflow-auto bg-light">
-
+        <div class="flex-grow-1 overflow-auto @(_isDarkMode ? "bg-dark text-light" : "bg-light")">
             <article class="container-fluid py-4">
-
                 @Body
-
             </article>
-
         </div>
 
-
-
         <!-- Footer -->
-
-        <footer class="border-top bg-white text-center py-3">
-
+        <footer class="@(_isDarkMode ? "bg-dark border-secondary text-light" : "bg-white border-top") text-center py-3">
             <small class="text-muted">
-
                 © 2026 FlowAISystem • Teacher Portal
-
             </small>
-
         </footer>
 
     </main>
-
 </div>
 
 <NotificationContainer />
-
 <ConfirmationDialog />
 
 @code {
-
     private bool isSidebarOpen = true;
+    private bool _isDarkMode = false;
 
+    private readonly MudTheme _flowAiTheme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = Colors.Indigo.Default,
+            Secondary = Colors.Teal.Accent4,
+            AppbarBackground = Colors.Indigo.Darken2,
+            Background = "#f4f6f9",
+            Surface = Colors.Shades.White,
+            TextPrimary = Colors.Gray.Darken3
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = Colors.Indigo.Lighten1,
+            Secondary = Colors.Teal.Accent3,
+            AppbarBackground = "#1a1a2e",
+            Background = "#121212",
+            Surface = "#1e1e2f",
+            TextPrimary = Colors.Gray.Lighten4
+        }
+    };
 
     private void ToggleSidebar()
     {
         isSidebarOpen = !isSidebarOpen;
     }
 
-
     private async Task Logout()
     {
         await AuthProvider.NotifyUserLogout();
-
         Navigation.NavigateTo("/login");
     }
-
 }

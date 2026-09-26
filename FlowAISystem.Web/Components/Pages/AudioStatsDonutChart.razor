@@ -1,0 +1,85 @@
+@using MudBlazor
+@using FlowAISystem.Infrastructure.Services
+
+<MudPaper Class="pa-4 my-3" Elevation="3">
+    <MudText Typo="Typo.h6" Class="mb-2">
+        <MudIcon Icon="@Icons.Material.Filled.PieChart" Class="mr-2" /> Track Composition Ratio
+    </MudText>
+
+    @if (Stats != null && Stats.TotalDuration > TimeSpan.Zero)
+    {
+        <MudGrid>
+            <!-- Donut Chart Display with lowercase attributes for MUD0002 LowerCase rule -->
+            <MudItem xs="12" sm="7" Class="d-flex justify-center align-center">
+                <MudChart t="double"
+                          charttype="ChartType.Donut"
+                          width="220px"
+                          height="220px"
+                          chartdata="@_chartData"
+                          chartlabels="@_chartLabels"
+                          chartoptions="@_chartOptions">
+                    <CustomGraphics>
+                        <text x="50%" y="48%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-size="14" font-weight="bold">
+                            @Stats.TotalDuration.ToString(@"mm\:ss")
+                        </text>
+                        <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-secondary)" font-size="10">
+                            Total Length
+                        </text>
+                    </CustomGraphics>
+                </MudChart>
+            </MudItem>
+
+            <!-- Key Metrics Summary Cards -->
+            <MudItem xs="12" sm="5">
+                <MudStack Spacing="2">
+                    <MudPaper Class="pa-2 border-left-4" Style="@($"border-color: {_activePalette[0]};")" Elevation="0">
+                        <MudText Typo="Typo.caption" Color="Color.Error">Active Speech / Ducked</MudText>
+                        <MudText Typo="Typo.body1" Class="bold">
+                            @Stats.SpeechDuration.ToString(@"mm\:ss") (@Stats.SpeechPercentage%)
+                        </MudText>
+                    </MudPaper>
+
+                    <MudPaper Class="pa-2 border-left-4" Style="@($"border-color: {_activePalette[1]};")" Elevation="0">
+                        <MudText Typo="Typo.caption" Color="Color.Info">Background Music Only</MudText>
+                        <MudText Typo="Typo.body1" Class="bold">
+                            @Stats.MusicOnlyDuration.ToString(@"mm\:ss") (@Stats.MusicOnlyPercentage%)
+                        </MudText>
+                    </MudPaper>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    }
+    else
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary">No audio metadata or statistics calculated yet.</MudText>
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public AudioDurationStats? Stats { get; set; }
+    [Parameter] public bool IsDarkMode { get; set; }
+
+    private double[] _chartData = Array.Empty<double>();
+    private readonly string[] _chartLabels = new[] { "Speech (Ducked)", "Music Only" };
+
+    private static readonly string[] LightPalette = new[] { "#e53935", "#00897b" };
+    private static readonly string[] DarkPalette = new[] { "#ef5350", "#26a69a" };
+
+    private string[] _activePalette = LightPalette;
+    private ChartOptions _chartOptions = new();
+
+    protected override void OnParametersSet()
+    {
+        _activePalette = IsDarkMode ? DarkPalette : LightPalette;
+        _chartOptions.ChartPalette = _activePalette;
+
+        if (Stats != null)
+        {
+            _chartData = new double[] 
+            { 
+                Math.Round(Stats.SpeechDuration.TotalSeconds, 1), 
+                Math.Round(Stats.MusicOnlyDuration.TotalSeconds, 1) 
+            };
+        }
+    }
+}

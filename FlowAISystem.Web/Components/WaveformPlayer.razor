@@ -1,0 +1,55 @@
+@inject IJSRuntime JSRuntime
+
+<MudPaper Class="pa-4 mb-4" Elevation="3">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.GraphicEq" Class="mr-2" /> Interactive Waveform & Ducking Timeline
+        </MudText>
+        
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.PlayArrow" 
+                   OnClick="TogglePlayPauseAsync">
+            Play / Pause Mix
+        </MudButton>
+    </MudStack>
+
+    <!-- WaveSurfer DOM Container -->
+    <div id="@_containerId" style="width: 100%;"></div>
+</MudPaper>
+
+@code {
+    [Parameter] public string WaveColor { get; set; } = "#4a90e2";
+    [Parameter] public string ProgressColor { get; set; } = "#50e3c2";
+
+    private readonly string _containerId = $"waveform_{Guid.NewGuid():N}";
+    private bool _isInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("waveformInterop.init", _containerId, WaveColor, ProgressColor);
+            _isInitialized = true;
+        }
+    }
+
+    public async Task LoadAudioAsync(string audioUrl)
+    {
+        if (!_isInitialized) return;
+        await JSRuntime.InvokeVoidAsync("waveformInterop.loadAudio", audioUrl);
+    }
+
+    public async Task RenderRegionsAsync(List<AudioRegion> regions)
+    {
+        if (!_isInitialized) return;
+        await JSRuntime.InvokeVoidAsync("waveformInterop.renderRegions", regions);
+    }
+
+    private async Task TogglePlayPauseAsync()
+    {
+        if (!_isInitialized) return;
+        await JSRuntime.InvokeVoidAsync("waveformInterop.playPause");
+    }
+}

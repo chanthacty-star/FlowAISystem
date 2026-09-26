@@ -1,0 +1,85 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_flowAiTheme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Class="app-bar-surface">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudIcon Icon="@Icons.Material.Filled.GraphicEq" Size="Size.Medium" Class="mx-2" />
+        <MudText Typo="Typo.h6" Class="bold">FlowAI <span style="font-weight: 300;">Production Suite V4</span></MudText>
+        <MudSpacer />
+        
+        <!-- Dark/Light Mode Toggle with MudTooltip -->
+        <MudTooltip Text="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+            <MudToggleIconButton @bind-Toggled="_isDarkMode"
+                                 Icon="@Icons.Material.Filled.LightMode" 
+                                 Color="Color.Inherit" 
+                                 ToggledIcon="@Icons.Material.Filled.DarkMode" 
+                                 ToggledColor="Color.Inherit" />
+        </MudTooltip>
+        
+        <MudTooltip Text="Help & Documentation">
+            <MudIconButton Icon="@Icons.Material.Filled.HelpOutline" Color="Color.Inherit" />
+        </MudTooltip>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Class="drawer-surface">
+        <div class="pa-4">
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-2">NAVIGATION</MudText>
+            <MudNavMenu>
+                <MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.MovieCreation" Href="/productionsuite/v4" Match="NavLinkMatch.Prefix">
+                    Production Suite V4
+                </MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.Mic" Href="/productionsuite/voice" Match="NavLinkMatch.Prefix">
+                    Voice Synthesis
+                </MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.Analytics" Href="/productionsuite/analytics" Match="NavLinkMatch.Prefix">
+                    Analytics Hub
+                </MudNavLink>
+            </MudNavMenu>
+        </div>
+    </MudDrawer>
+
+    <MudMainContent>
+        <CascadingValue Value="_isDarkMode" Name="IsDarkMode">
+            @Body
+        </CascadingValue>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private bool _isDarkMode = false;
+
+    private readonly MudTheme _flowAiTheme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = Colors.Indigo.Default,
+            Secondary = Colors.Teal.Accent4,
+            AppbarBackground = Colors.Indigo.Darken2,
+            Background = "#f4f6f9",
+            Surface = Colors.Shades.White,
+            TextPrimary = Colors.Gray.Darken3
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = Colors.Indigo.Lighten1,
+            Secondary = Colors.Teal.Accent3,
+            AppbarBackground = "#1a1a2e",
+            Background = "#121212",
+            Surface = "#1e1e2f",
+            TextPrimary = Colors.Gray.Lighten4
+        }
+    };
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
